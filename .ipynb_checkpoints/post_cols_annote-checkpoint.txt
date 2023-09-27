@@ -1,0 +1,11 @@
+no;question;expect;answers
+1;Please select how long your have been using the mingrid.
+;cat;[1-3 months,3-6 months,6-12 months,12-24 months,24-36 months,Over 36 months]
+2;What is your Renewvia Minigrid account number?;num;
+3;First Name;text;
+4;Last Name;text;
+5;Country;cat;[Nigeria,Kenya]
+6;Nigeria Community;cat;[Akipelai,Oloibiri,Ozuzu,Opu,Balep,Bendeghe-Afi,Ekong Anaku,Emereoke]
+7;Kenya Community;cat;[Kalobeyei Settlement,Kalobeyei Town,Ndeda,Ngurunit,Ringiti,Oyamo,Olkiramatian,Lomekwi,Katiko,Locheremoit,Kagintankori,Kapelbok,Lorengelup,Nakukulas]
+8;Location/Neighborhood Name;text;
+9;Age;num;

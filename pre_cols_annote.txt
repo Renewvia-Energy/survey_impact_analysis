@@ -1,0 +1,84 @@
+no;question;expect;answers
+1;Select your Minigrid Connection Status;bin;[Pre-Connection,Post-Connection] 
+2;If Post-Connection, select how long your have been using the mingrid;cat;[1-3 months,3-6 months,6-12 months,12-24 months,24-36 months,Over 36 months]
+3;What is your Renewvia Minigrid account number?;num;
+4;First Name;text;
+5;Last Name;text;
+6;Country;cat;[Nigeria,Kenya]
+7;Nigeria Community;cat;[Akipelai,Oloibiri,Ozuzu,Opu,Balep,Bendeghe-Afi,Ekong Anaku,Emereoke]
+8;Kenya Community;cat;[Kalobeyei Settlement,Kalobeyei Town,Ndeda,Ngurunit,Ringiti,Oyamo,Olkiramatian,Lomekwi,Katiko,Locheremoit,Kagintankori,Kapelbok,Lorengelup,Nakukulas]
+9;Location/Neighborhood Name;text;
+10;Age;num;
+11;Gender;bin;[Male,Female]
+12;What is your occupation?;cat;[Farming,Fishing,Shopkeeper,Salon/Barbershop,Trade Labor (welding,technician,electrician,carpenter,mechanic,etc),Driver,Religious Institution,Education,INGO,House-work (paid),House-work (unpaid),Food Processing,Manual Labor (non-farming),Health Center/Hospital,Cleaner,Security,I do not earn income]
+13;Are you the primary provider for your household?;bin;[Yes,No]
+14;If you are NOT the Primary Provider of Household,what is Occupation of Primary Provider?;cat;[Farming,Fishing,Shopkeeper,Salon/Barbershop,Trade Labor (welding,technician,electrician,carpenter,mechanic,etc),Driver,Religious Institution,Education,INGO,House-work (paid),House-work (unpaid),Food Processing,Manual Labor (non-farming),Health Center/Hospital,Cleaner,Security,Not currently employed,Other]
+15;If you selected "other" in the question above,please explain: (if not,please skip);text;
+16;Occupation of Secondary Income Provider of Household;cat;[Farming,Fishing,Shopkeeper,Salon/Barbershop,Trade Labor (welding,technician,electrician,carpenter,mechanic,etc),Driver,Religious Institution,Education,INGO,House-work (paid),House-work (unpaid),Food Processing,Manual Labor (non-farming),Health Center/Hospital,Cleaner,Security,Not currently employed,Other Business,Other]
+17;If you selected "other" in the question above,please explain: (if not,please skip);text;
+18;Type of employment for Primary Provider;cat;[Seasonal,self-employed,Seasonal,non self-employed,Regular,self employed,Regular,non self-employed
+19;What is your average monthly household income:;num;
+20;How many people live in your household,including yourself?;num;
+21;How many adults?;num;
+22;How many female children?;num;
+23;How many male children?;num;
+24;What are the ages of your female children?;cat;[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,Older than 16]
+25;What are the ages of your male children?;cat;[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,Older than 16]
+26;How many of your female children attend school?;num;
+27;If any female children do not attend school full time,please specifiy why;cat;[They all attend school,Household chores,Lacking money for school fees,Health Reasons,Childcare,Not old enough,Too old,Other]
+28;If you selected "other" in the question above,please explain: (if not,please skip);text;
+29;How many of your male children attend school?;num;
+30;If any male children do not attend school full time,please specifiy why;cat;[They all attend school,Household chores,Lacking money for school fees,Health Reasons,Childcare,Not old enough,Too old,Other]
+31;If you selected "other" in the question above,please explain: (if not,please skip);text;
+32;Are any household members business owners?;cat;[None,Adult Male,Adult Female]
+33;What is the MAIN reason for signing up for connection to mini-grid?;cat;[Reliable access to light,Ability to charge mobile phone(s),Possibility to purchase a TV,Safety (of persons,physical),Security (of property,home,possessions),Ability to earn more money,Ability to save more money,Increased hours of productivity (business,studying,etc),Ability to start a new business]
+34;What is the SECOND MAIN reason for signing up for connection to mini-grid?;cat;[Reliable access to light,Ability to charge mobile phone(s),Possibility to purchase a TV,Safety (of persons,physical),Security (of property,home,possessions),Ability to earn more money,Ability to save more money,Increased hours of productivity (business,studying,etc),Ability to start a new business]
+35;Current Source(s) of Power (before mini-grid connection) Select all that apply;cat;[solar home kit,charcoal,kerosene lamp,petrol generator,diesel generator,candles,minigrid electricity (Renewvia),Other]
+36;If you selected "other" in the question above,please explain: (if not,please skip);text;
+37;How many hours a day do you use at least one source of power you checked above?;cat;[Less than 2 hours,Between 2 and 5 hours,Between 5 and 8 hours,More than 8 hours]
+38;What is your Current MAIN Source of Power;cat;[solar home kit,charcoal,kerosene lamp,petrol generator,diesel generator,candles,minigrid electricity (Renewvia),Other]
+39;If you selected "other" in the question above,please explain: (if not,please skip);text;
+40;How many electronic devices or appliances do you currently use in the household (Pre- connection)?;num;
+41;How many cell phones does your household have?;num;
+42;Types of Electronic Devices or Appliances in Household (pre-mini-grid connection) Select all that apply;cat;[stovetop,television,computer,radio,lights,fan,cell phone charger,Other]
+43;If you selected "other" in the question above,please explain: (if not,please skip);text;
+44;What types of Electronic Devices or Appliances would you like to add to your Household (pre-mini-grid connection) Select all that apply;cat;[stovetop,television,computer,radio,lights,fan,cell phone charger,Other]
+45;If you selected "other" in the question above,please explain: (if not,please skip);text;
+46;How many hours of light per day do you currently have at home? (pre mini-grid connection);num;
+47;What are your current main sources of light?;cat;[Battery powered (Flashlight/Torch),Electric source (Phone Light,Electric Lightbulb),Kerosene Source (Kerosene Lamps)]
+48;How many kerosene lamps do you currently use in your household? (before grid connection);num;
+49;Approximately how many hours a day do you use kerosene lamps?;cat;[Less than one hour,1-2 hours,3-5 hours,Greater than 5 hours]
+50;How much do you pay monthly for kerosene used only in kerosene lamps?;cat;[0- 200 N/KES,200- 600 N/KES,600-1000 N/KES,1000- 1400 N/KES,1400 N/KES and above]
+51;What are your main sources of energy for cooking?;cat;[Charcoal,Kerosene,Firewood,Biomass,Minigrid electricity (Renewvia),Other]
+52;If you selected "other" in the question above,please explain: (if not,please skip);text;
+53;How long does the cooking fuel collection process take on a daily basis?;cat;[Less than one hour,1-2 hours,3-5 hours,Greater than 5 hours]
+54;Who is mainly responsible for cooking fuel collection on a daily basis? Select all that apply;cat;[Adult Male,Adult Female,Child Male,Child Female, Whole family]
+55;What is the approximate monthly cost of energy used strictly for cooking?;cat;[0-1000 N/KES,1000-1500 N/KES,1500- 2000 N/KES,2000- 3000 N/KES,3000- 4000 N/KES]
+56;What are your main sources of energy for charging appliances (eg phones)? PRE - CONNECTION;cat;[Solar home kit,Petrol generator,Diesel generator,Battery,Minigrid Electricity (Renewvia),Other]
+57;If you selected "other" in the question above,please explain: (if not,please skip);text; 
+58;What is the approximate monthly cost of energy used strictly for charging appliances?;cat; [0- 150 N/KES,150- 1000 N/KES,1000- 3000 N/KES,3000- 4000 N/KES,4000- 6000 N/KES]
+59;How safe do you feel outside your home when it is dark?;cat;[Very safe,Somewhat safe,Neither safe nor unsafe,Somewhat unsafe,Very unsafe]
+60;Does your community currently have outdoor community lights?;bin;[Yes,No]
+61;Does your home have exterior lighting?;bin;[Yes,No]
+62;How safe would you feel outside your home at nighttime IF you had exterior lights?;cat;[Very safe,Somewhat safe,Neither safe nor unsafe,Somewhat unsafe,Very unsafe]
+63;What makes you feel the most unsafe?;cat;[Potential theft,Unsafe travel to obtain,water,supplies and charging phones,Lack of community lighting,Other,I don't feel unsafe]
+64;If you selected "other" in the question above,please explain: (if not,please skip);text; 
+65;Where do you typically charge your mobile phone?;cat;[Home,Neighbor,Shop,Other]
+66;If you selected "other" in the question above,please explain: (if not,please skip);text;
+67;How often do you need to charge your mobile phone?;cat;[Every day,Every 1-2 days,Every 2-3 days,Every 4 or more days]
+68;How much do you pay per month to charge your mobile phone?;cat;[0- 100 N/KES,100- 500 N/KES,500- 750 N/KES,750- 1000 N/KES,1000 N and above]
+69;How far must you travel to charge your mobile phone?;cat;[less than 1 km,1-2 km,2-5 km,5-10 km,Greater than 10 km]
+70;What is your source of water?;cat;[At home tap,Community well or pump,Clear water source (fresh spring,lake etc.),Dirty water source (pond,contaminated well etc.)]
+71;Do you have a source for clean drinking water?;bin;[Yes,No]
+72;What is the source for clean drinking water?;cat;[Boiled water,Bottled water,Treated / filtered water,Clean community source]
+73;What is your clean community water source?;text;
+74;How far must you travel to obtain your water supply?;cat;[less than 1 km,1-2 km,2-5 km,5-10 km,greater than 10 km]
+75;How long does the water collection process take on a daily basis?;cat;[less than 1 hour,1-2 hours,2-3 hours,3-4 hours,greater than 4 hours]
+76;Who is mainly responsible for water collection on a daily basis?;cat;[Adult Male,Adult Female,Child Male,Child Female]
+77;What is the average age of the person in charge of water collection?;cat;[under 5 years old,5-10 years old,10-12 years old,12-15 years old,15 years or older]
+78;How much do you pay per month for water?;cat;[I don't pay,it's free.,0- 500 N/KES,500- 3000 N/KES,3000- 5000 N/KES,5000 N/KES and above]
+79;Does your household spend time doing any of the following? Select all that apply;cat;Processing ugali/gari,Processing alcohols,Processing palm oil,Other food processing,Sewing,Hair cutting/salon]
+80;How close is the nearest Health Center/Clinic?;cat;[less than 1km,between 1-2 km,between 2-3 km,between 3-5 km,greater than 5 km]
+81;Does your Health Center have access to electricity?;bin;[Yes,No]
+82;What hours is the Health Center / Clinic open?;num;
+83;Does your Health Center / Clinic have access to refrigeration?;bin;[Yes,No]
