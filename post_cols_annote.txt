@@ -1,6 +1,5 @@
-no;question;expect;answers
-1;Please select how long your have been using the mingrid.
-;cat;[1-3 months,3-6 months,6-12 months,12-24 months,24-36 months,Over 36 months]
+question;expect;answers
+1;Please select how long your have been using the mingrid.;cat;[1-3 months,3-6 months,6-12 months,12-24 months,24-36 months,Over 36 months]
 2;What is your Renewvia Minigrid account number?;num;
 3;First Name;text;
 4;Last Name;text;
@@ -9,3 +8,83 @@ no;question;expect;answers
 7;Kenya Community;cat;[Kalobeyei Settlement,Kalobeyei Town,Ndeda,Ngurunit,Ringiti,Oyamo,Olkiramatian,Lomekwi,Katiko,Locheremoit,Kagintankori,Kapelbok,Lorengelup,Nakukulas]
 8;Location/Neighborhood Name;text;
 9;Age;num;
+10;Gender;bin;[Male,Female]
+11;Has your (or your spouse's) occupation changed since you've been connected to minigrid power?;bin;[Yes,No]
+12;If yes, please explain or list the new occupation:;text;
+13;Has your household income changed since your  connection to minigrid power?;cat;[No, it is the same,Yes, it has increased,Yes, it has decreased]
+14;If yes, please explain why;text;
+15;What is your average monthly household income:;num;
+16;Has the number of people living in your household changed since connection to minigrid power?;cat;[No, it is the same,Yes, it has increased,Yes, it has decreased]
+17;If yes, please explain why/how:;text;
+18;Has there been a change in the number of females in your household who attend school full time since connection to minigrid power?;cat;[No, it is the same,Yes, it's gotten better ,Yes, it has decreased]
+19;Has there been a change in the number of males in your household who attend school FULL TIME since connection to minigrid power?;cat;
+20;Has school performance changed since connection to minigrid?;cat;[No, it is the same, Yes,it has increased, Yes,it's gotten worse]
+21;If yes, please tell us why or how it has changed:;text;
+22;If any female children do not attend school full time, please specifiy why;cat;[They all attend school,Household chores,Lacking money for school fees,Health Reasons,Childcare,Not old enough,Too old,Other]
+23;If you selected "other" in the question above, please explain: (if not, please skip);text;
+24;If any male children do not attend school full time, please specifiy why;cat;[They all attend school,Household chores,Lacking money for school fees,Health Reasons,Childcare,Not old enough,Too old,Other]
+25;If you selected "other" in the question above, please explain: (if not, please skip);text;
+26;Are any household members business owners?;cat;[None,Adult Male,Adult Female]
+27;If yes, what type of business is this?;text;
+28;Is this business recent (started after connection to minigrid power?);bin;[Yes,No]
+29;If this business is new, do you consider this new business a result of having access to minigrid power?;bin;[Option 1,Option 2]
+30;Does this business use minigrid power?;bin;[Yes,No]
+31;Current Source(s) of Power (before mini-grid connection) Select all that apply;cat;[solar home kit,charcoal,kerosene lamp,petrol generator,diesel generator,candles,minigrid electricity (Renewvia),Other]
+32;If you selected "other" in the question above, please explain: (if not, please skip);text;
+33;How many hours a day do you use at least one source of power you checked above?;cat;[Less than 2 hours,Between 2 and 5 hours,Between 5 and 8 hours More than 8 hours]
+34;What is your Current MAIN Source of Power;cat;[solar home kit,charcoal,kerosene lamp,petrol generator,diesel generator,candles,minigrid electricity (Renewvia),Other]
+35;If you selected "other" in the question above, please explain: (if not, please skip);text;
+36;How many electronic devices or appliances do you currently use in the household (Pre-connection)?;num;
+37;Has the number of electronic devices or appliances increased since connection to minigrid?;bin;[Yes,No]
+38;How many cell phones does your household have?;num;
+39;Types of Electronic Devices or Appliances in Household (POST mini-grid connection) Select all that apply;cat;[stovetop,television,computer,radio,lights,fan,cell phone charger,Other]
+40;If you selected "other" in the question above, please explain: (if not, please skip);text;
+41;Have you added any of the following Electronic Devices or Appliances after you were connected to minigrid (POST connection) Select all that apply;cat;[stovetop,television,computer,radio,lights,fan,cell phone charger,Other]
+42;If you selected "other" in the question above, please explain: (if not, please skip);text;
+43;How many hours of light per day do you currently have at home?;num; 
+44;What are your current main sources of light?;cat;[Battery powered (Flashlight/Torch),Electric source (Phone Light,Electric Lightbulb),Kerosene Source (Kerosene Lamps),Renewvia Minigrid electricity]
+45;Has the number of kerosene lamps in your household changed since connection to minigrid?;cat;[No, it is the same,Yes, it has increased,Yes, it has decreased]
+46;How many kerosene lamps do you currently use in your household?;num;
+47;Approximately how many hours a day do you use kerosene lamps?;cat;[Less than one hour,1-2 hours,3-5 hours,Greater than 5 hours,We don't have a kerosene lamp]
+48;How much do you pay monthly for kerosene used only in kerosene lamps?;cat;[Nothing,0- 200 N/KES,200- 600 N/KES,600-1000 N/KES,1000- 1400 N/KES,1400 N/KES and above]
+49;What are your main sources of energy for cooking?;cat;[Charcoal,Kerosene,Firewood,Biomass,Minigrid electricity (Renewvia),Other]
+50;If you selected "other" in the question above, please explain: (if not, please skip);text;
+51;How long does the cooking fuel collection process take on a daily basis?;cat;[Less than 1 hour,1-2 hours,3-5 hours,Greater than 5 hours No need to collect fuel]
+52;Who is mainly responsible for cooking fuel collection on a daily basis? Select all that apply;cat;[Adult Male,Adult Female,Child Male,Child Female, Whole family]
+53;What is the approximate monthly cost of energy used strictly for cooking?;cat;[0-1000 N/KES,1000-1500 N/KES,1500- 2000 N/KES,2000- 3000 N/KES,3000- 4000 N/KES,Nothing - we use minigrid power]
+54;What are your main sources of energy for charging appliances (eg phones)? POST - CONNECTION;cat;[Solar home kit,Petrol generator,Diesel generator,Battery,Minigrid Electricity (Renewvia),Other]
+55;If you selected "other" in the question above, please explain: (if not, please skip);text;
+56;What is the approximate monthly cost of energy used strictly for charging appliances?;cat;[0- 150 N/KES,150- 1000 N/KES,1000- 3000 N/KES,3000- 4000 N/KES,4000- 6000 N/KES,Nothing - we use minigrid power]
+57;Does your community currently have outdoor community lights?;bin;[Yes,No]
+58;Does your home have exterior lighting?;bin;[Yes,No]
+59;Is this exterior lighting powered by minigrid?;bin;[Yes,No]
+60;How safe do you feel outside your home when it is dark?;cat;[Very safe,Somewhat safe,Neither safe nor unsafe,Somewhat unsafe,Very unsafe]
+61;How safe would you feel outside your home at nighttime IF you had exterior lights?;cat;[Very safe,Somewhat safe,Neither safe nor unsafe,Somewhat unsafe,Very unsafe]
+62;What makes you feel the most unsafe?;cat;[Potential theft,Unsafe travel to obtain,water,supplies and charging phones,Lack of community lighting,Other,I don't feel unsafe]
+63;If you selected "other" in the question above, please explain: (if not, please skip);text;
+64;Do you feel that having access to minigrid power has made you more safe? Please explain;text;
+65;Where do you typically charge your mobile phone?;cat;[Home,Neighbor,Shop,Other]
+66;If you selected "other" in the question above, please explain: (if not, please skip);text;
+67;How often do you need to charge your mobile phone?;cat;[Every day,Every 1-2 days,Every 2-3 days,Every 4 or more days]
+68;How much do you pay per month to charge your mobile phone?;cat;[0- 100 N/KES,100- 500 N/KES,500- 750 N/KES,750- 1000 N/KES,1000 N and above,Nothing - we use minigrid power]
+69;How far must you travel to charge your mobile phone?;cat;[less than 1 km,1-2 km,2-5 km,5-10 km,Greater than 10 km,No need to travel - charge at hom]
+70;What is your source of water?;cat;[At home tap,Community well or pump,Clear water source (fresh spring,lake etc.),Dirty water source (pond,contaminated well etc.)]
+71;Do you have a source for clean drinking water?;bin;[Yes,No]
+72;What is the source for clean drinking water?;cat;[Boiled water,Bottled water,Treated / filtered water,Clean community source]
+73;What is your clean community water source?;text;
+74;How far must you travel to obtain your water supply?;cat;[less than 1 km,1-2 km,2-5 km,5-10 km,greater than 10 km,No need to travel - at home water supply]
+75;How long does the water collection process take on a daily basis?;cat;[less than 1 hour,1-2 hours,2-3 hours,3-4 hours,greater than 4 hours]
+76;Who is mainly responsible for water collection on a daily basis?;cat;[Adult Male,Adult Female,Child Male,Child Female]
+77;What is the average age of the person in charge of water collection?;cat;[under 5 years old,5-10 years old,10-12 years old,12-15 years old,15 years or older]
+78;How much do you pay per month for water?;cat;[I don't pay,it's free.,0- 500 N/KES,500- 3000 N/KES,3000- 5000 N/KES,5000 N/KES and above]
+79;How close is the nearest Health Center/Clinic?;cat;[less than 1km,between 1-2 km,between 2-3 km,between 3-5 km,greater than 5 km]
+80;Does your Health Center have access to minigrid electricity?;bin;[Yes,No]
+81;What hours is the Health Center / Clinic open?;num;
+82;Does your Health Center / Clinic have access to refrigeration?;bin;[Yes,No]
+83;Do you feel that you have better access to health services because of connection to minigrid?;bin;[Yes,No]
+84;What are some of the benefits you have experienced because of your access to minigrid?;text;
+85;Would you say that having access to minigrid power has improved your quality of life?;bin;[Yes,No]
+86;If yes, please explain:;text;
+87;In what way has minigrid power impacted your life or the life of your family members?;text;
+88;In what way has minigrid power made you or your family more productive?;text;
+89;How has minigrid power affected the females in your household?;text;
