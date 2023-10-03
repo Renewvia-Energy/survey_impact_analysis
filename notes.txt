@@ -1,0 +1,9 @@
+=CONCAT("{", $A$1,":",A2, $B$1,":",B2, $C$1,":",C2, ",",$D$1,":",D2,"}",",",)
+
+["Battery powered (flashlight/torch)",
+"Electric source (phone light, electric lightbulbs)",
+"Kerosene source (kerosene lamps)",
+"Renewvia minigrid electricity",]
+
+["battery_powered_flashlighttorch", "electric_source_phone_light_electric_lightbulbs",
+"kerosene_source_kerosene_lamps", "renewvia_minigrid_electricity"]
