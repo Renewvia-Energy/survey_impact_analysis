@@ -1,101 +1,1182 @@
-{ "col_response mapping": [
-    
-{"original_name":"Start time","col_new_name":"start","answer_original":[],"answer_formatted":[]},
-{"original_name":"Completion time","col_new_name":"end","answer_original":[],"answer_formatted":[]},
-{"original_name":"What is your Renewvia Minigrid account number?","col_new_name":"renewvia_account_number","answer_original":[],"answer_formatted":[]},
-{"original_name":"Have you been interviewed by Renewvia before?","col_new_name":"interviewed_before","answer_original":["Yes","No","Not Sure",],"answer_formatted":["yes","no","not_sure",]},
-{"original_name":"Please select how long your have been using the minigrid?","col_new_name":"connection_period","answer_original":["1-3 months","3-6 months","6-12 months","12-24 months","24-36 months","over 36 months",],"answer_formatted":["months","copy-1-of-months","copy-2-of-months","copy-3-of-months","copy-4-of-months","over_36_months",]},
-{"original_name":"First Name","col_new_name":"first_name","answer_original":[],"answer_formatted":[]},
-{"original_name":"Last Name","col_new_name":"last_name","answer_original":[],"answer_formatted":[]},
-{"original_name":"Country","col_new_name":"country","answer_original":["Nigeria","Kenya",],"answer_formatted":["nigeria","kenya",]},
-{"original_name":"Nigeria","col_new_name":"nigeria_community","answer_original":["Akipelai","Oloibiri","Ozuzu","Opu","Balep","Bendeghe-Afi","Ekong Anaku","Emeroke",],"answer_formatted":["akipelai","oloibiri","ozuzu","opu","balep","bendeghe-afi","ekong_anaku","emeroke",]},
-{"original_name":"Kenya Community","col_new_name":"kenya_community","answer_original":["Kalobeyei Settlement","Kalobeyei Town","Ndeda","Ngurunit","Ringiti","Oyamo","Olkiramatian","Lomekwi","Katiko","Locheremoit","Kangitankori","Kapelbok","Lorengelup","Nakukulas",],"answer_formatted":["kalobeyei_settlement","kalobeyei_town","ndeda","ngurunit","ringiti","oyamo","olkiramatian","lomekwi","katiko","locheremoit","kangitankori","kapelbok","lorengelup","nakukulas",]},
-{"original_name":"Location/Neighborhood Name","col_new_name":"location","answer_original":[],"answer_formatted":[]},
-{"original_name":"Age","col_new_name":"age","answer_original":[],"answer_formatted":[]},
-{"original_name":"Gender","col_new_name":"gender","answer_original":["Male","Female",],"answer_formatted":["male","female",]},
-{"original_name":"Has your (or your spouse's) occupation changed since you've been connected to minigrid power?","col_new_name":"occupation_change","answer_original":["Yes","No",],"answer_formatted":["yes","no",]},
-{"original_name":"If yes, please explain or list the new occupation?","col_new_name":"occupation_change_explain","answer_original":[],"answer_formatted":[]},
-{"original_name":"Has your household income changed since your connection to minigrid power?","col_new_name":"houlsehold_income_change","answer_original":["No, it is the same","Yes, it has increased","Yes, it has decreased",],"answer_formatted":["no_it_is_the_same","yes_it_has_increased","yes_it_has_decreased",]},
-{"original_name":"If yes, please explain why","col_new_name":"houlsehold_income_change_explain","answer_original":[],"answer_formatted":[]},
-{"original_name":"What is your average monthly household income?","col_new_name":"avg_monthly_household_income","answer_original":[],"answer_formatted":[]},
-{"original_name":"Has the number of people living in your household changed since connection to minigrid?","col_new_name":"household_headcount_change","answer_original":["Yes, it's increased","Yes, it's decreased","No, it has stayed the same",],"answer_formatted":["yes_its_increased","yes_its_decreased","no_it_has_stayed_the_same",]},
-{"original_name":"If yes, please explain why/how?","col_new_name":"household_headcount_change_explain","answer_original":[],"answer_formatted":},
-{"original_name":"Has there been a change in the number of females in your household who attend school full time since connection to minigrid?","col_new_name":"female_schooling_change","answer_original":["Yes, it's increased","Yes, it's decreased","No, it's the same",],"answer_formatted":["yes_its_increased","yes_its_decreased","no_its_the_same",]},
-{"original_name":"Has there been a change in the number of males in your household who attend school full time since connection to minigrid?","col_new_name":"male_schooling_change","answer_original":["Yes, it's increased","Yes, it's decreased","No, it's the same",],"answer_formatted":["yes_its_increased","yes_its_decreased","no_its_the_same",]},
-{"original_name":"Has school performance changed since connection to minigrid?","col_new_name":"school_performance_change","answer_original":["Yes, it's gotten better","Yes, it's gotten worse","No, it's the same",],"answer_formatted":["yes_its_gotten_better","yes_its_gotten_worse","no_its_the_same",]},
-{"original_name":"If yes, please tell us why or how it's changed","col_new_name":"school_performance_change_explain","answer_original":[],"answer_formatted":[]},
-{"original_name":"If any female children do not attend school full time, please specify why","col_new_name":"female_unschooled_reasons","answer_original":["They all attend school","Household chores","Lacking money for school fees","Health reasons","Childcare","Not old enough","Too old","Other",],"answer_formatted":["they_all_attend_school","household_chores","lacking_money_for_school_fees","health_reasons","childcare","not_old_enough","too_old","other",]},
-{"original_name":"If you selected 'other' in the question above, please explain (if not, please skip)","col_new_name":"female_unschooled_reasons_explain","answer_original":[],"answer_formatted":[]},
-{"original_name":"If any male children do not attend school full time, please specify why","col_new_name":"male_unschooled_reasons","answer_original":["They all attend school","Household chores","lacking money for school fees","Health reasons","Childcare","Not old enough","Too old","Other",],"answer_formatted":["they_all_attend_school","household_chores","lacking_money_for_school_fees","health_reasons","childcare","not_old_enough","too_old","other",]},
-{"original_name":"If you selected 'Other' in the question above, please explain (if not, please skip)","col_new_name":"male_unschooled_reasons_explain","answer_original":[],"answer_formatted":[]},
-{"original_name":"Are any household members business owners?","col_new_name":"household_business_owner","answer_original":["None", "Adult Male","Adult Female", ],"answer_formatted":["none","adult_male","adult_female",]},
-{"original_name":"If your household does have a business owner, what type of business is this?","col_new_name":"business_type","answer_original":[],"answer_formatted":[]},
-{"original_name":"Is this business recent (started after connection to minigrid)?","col_new_name":"business_recent","answer_original":["Yes","No",],"answer_formatted":["yes","no",]},
-{"original_name":"If this business is new, do you consider this new business a result of having access to minigrid power?","col_new_name":"business_from_minigrid","answer_original":["Yes","No","Maybe",],"answer_formatted":["yes","no","maybe",]},
-{"original_name":"Does this business use minigrid power?","col_new_name":"business_use_minigrid","answer_original":["Yes ","No",],"answer_formatted":["yes","no",]},
-{"original_name":"Current sources of power (after minigrid connection) Select all that apply","col_new_name":"power_sources","answer_original":["solar home kit","charcoal","kerosene lamp","petrol generator","diesel generator","candles","minigrid electricity (Renewvia)","Other",],"answer_formatted":["solar_home_kit","charcoal","kerosene_lamp","petrol_generator","diesel_generator","candles","minigrid_electricity_renewvia","other",]},
-{"original_name":"If you selected 'other' in the question above, please explain (if not, please skip)","col_new_name":"power_sources_explain","answer_original":[],"answer_formatted":[]},
-{"original_name":"How many hours a day do you use at lease one source of power you checked above?","col_new_name":"power_sources_usage","answer_original":["Less than 2 hours","Between 2 and 5 hours","Between 5 and 8 hours","More than 8 hours",],"answer_formatted":["less_than_2_hours","between_2_and_5_hours","between_5_and_8_hours","more_than_8_hours",]},
-{"original_name":"What is your current MAIN source of power?","col_new_name":"power_sources_primary","answer_original":["solar home kit","charcoal","kerosene lamp","petrol generator","diesel generator","candles","minigrid electricity (Renewvia)","Other",],"answer_formatted":["solar_home_kit","charcoal","kerosene_lamp","petrol_generator","diesel_generator","candles","minigrid_electricity_renewvia","other",]},
-{"original_name":"If you selected 'Other' in the question above, please explain (if not, please skip)","col_new_name":"power_sources_primary_explain","answer_original":[],"answer_formatted":[]},
-{"original_name":"How many electronic devices or appliances do you currently use in the household (after connection to minigrid)","col_new_name":"electronics_count","answer_original":[],"answer_formatted":[]},
-{"original_name":"Has the number of electronic devices or appliances increased since connection to minigrid?","col_new_name":"electronics_count_change","answer_original":["Yes","No",],"answer_formatted":["yes","no",]},
-{"original_name":"How many cell phones does your household have?","col_new_name":"cellphones_count","answer_original":[],"answer_formatted":[]},
-{"original_name":"Types of electronic devices or appliances currently in your household (after minigrid connection) Select all that apply","col_new_name":"cellphones_count_change","answer_original":["stovetop","television","computer","radio","lights","fan","cell phone charger","other",],"answer_formatted":["stovetop","television","computer","radio","lights","fan","cell_phone_charger","other",]},
-{"original_name":"If you selected 'other' in the question above, please explain (if not, please skip)","col_new_name":"cellphones_count_change_explain","answer_original":[],"answer_formatted":},
-{"original_name":"Have you added any of the following Electronic devices or appliances after you were connected to minigrid? Select all that apply","col_new_name":"appliances_count_addition","answer_original":["stovetop","television","computer","radio","lights","fan","cell phone charger","other",],"answer_formatted":["stovetop","television","computer","radio","lights","fan","cell_phone_charger","other",]},
-{"original_name":"If you selected 'other' in the question above, please explain (If not, please skip)","col_new_name":"appliances_count_addition_explain","answer_original":[],"answer_formatted":[]},
-{"original_name":"How many hours of light per day do you currently have at home? (after connection to minigrid)","col_new_name":"light_hours_current","answer_original":[],"answer_formatted":[]},
-{"original_name":"What are your main sources of light?","col_new_name":"light_primary_source","answer_original":["Battery powered (flashlight/torch)", "Electric source (phone light, electric lightbulbs)", "Kerosene source (kerosene lamps)", "Renewvia minigrid electricity",],
-"answer_formatted":["battery_powered_flashlighttorch", "electric_source_phone_light_electric_lightbulbs",
-"kerosene_source_kerosene_lamps", "renewvia_minigrid_electricity"]},
-{"original_name":"Has the number of kerosene lamps in your household changed since connection to minigrid?","col_new_name":"kerosene_lamp_usage_change","answer_original":["Yes, it's increased","Yes, it's decreased","No, it's the same",],"answer_formatted":["yes_its_increased","yes_its_decreased","no_its_the_same",]},
-{"original_name":"How many kerosene lamps do you currently use in your household? (after minigrid connection)","col_new_name":"kerosene_lamp_usage_count","answer_original":[],"answer_formatted":[]},
-{"original_name":"Approximately how many hours a day do you use kerosene lamps?","col_new_name":"kerosene_lamp_usage_time","answer_original":["Less than one hour","1-2 hours","3-5 hours","Greater than 5 hours","We don't use a kerosene lamp",],"answer_formatted":["less_than_one_hour","hours","copy-1-of-hours","greater_than_5_hours","we_dont_use_a_kerosene_lamp",]},
-{"original_name":"How much do you pay montly for kerosene used only in kerosene lamps?","col_new_name":"kerosene_lamp_usage_cost","answer_original":["Nothing","'0-200 N/KES","200-600 N/KES","600-1000 N/KES","1000-1400 N/KES","1400 N/KES and above",],"answer_formatted":["nothing","nkes","copy-1-of-nkes","copy-2-of-nkes","copy-3-of-nkes","nkes_and_above",]},
-{"original_name":"What are your main sources of energy for cooking?","col_new_name":"cooking_energy_sources","answer_original":["Charcoal","Kerosene","Firewood","Biomass","Minigrid electricity (Renewvia)","Other",],"answer_formatted":["charcoal","kerosene","firewood","biomass","minigrid_electricity_renewvia","other",]},
-{"original_name":"If you selected 'other' in the question above, please explain (if not, please skip)","col_new_name":"cooking_energy_sources_explain","answer_original":[],"answer_formatted":[]},
-{"original_name":"How long does the cooking fuel collection process take on a daily basis?","col_new_name":"cooking_fuel_collection_time","answer_original":["Less than 1 hour","1-2 hours","3-5 hours","Greater than 5 hours","No need to collect fuel",],"answer_formatted":["less_than_1_hour","hours","copy-1-of-hours","greater_than_5_hours","no_need_to_collect_fuel",]},
-{"original_name":"Who is mainly responsible for cooking fuel collection on a daily basis? Select all that apply","col_new_name":"cooking_fuel_responsible","answer_original":["Adult Male","Adult Female","Child Male","Child Female","Whole family - shared responsibility",],"answer_formatted":["adult_male","adult_female","child_male","child_female", whole_family_-_shared_responsibility]},
-{"original_name":"What is the approximate monthly cost of energy strictly for cooking?","col_new_name":"cooking_energy_monthly_cost","answer_original":["0-1000 N/KES","1000-1500 N/KES","1500-2000 N/KES","2000-3000 N/KES","3000-4000 N/KES","Nothing - we use minigrid power",],"answer_formatted":["nkes","copy-1-of-nkes","copy-2-of-nkes","copy-3-of-nkes","copy-4-of-nkes","nothing_-_we_use_minigrid_power"]},
-{"original_name":"What are your main sources of energy for charging appliances (ex phones) after connection to minigrid?","col_new_name":"applicances_charging_sources","answer_original":["Solar home kit","Petrol generator","Diesel generator","Battery","Minigrid electricity (Renewvia)","Other",],"answer_formatted":["solar_home_kit","petrol_generator","diesel_generator","battery","minigrid_electricity_renewvia","other",]},
-{"original_name":"If you selected 'other' in the question above, please explain (if not, please skip)","col_new_name":"applicances_charging_sources_explain","answer_original":[],"answer_formatted":[]},
-{"original_name":"What is the approximate monthly cost of energy used strictly for charging appliances?","col_new_name":"applicances_charging_monthly_cost","answer_original":["0-150 N/KES","150-1000 N/KES","1000-3000 N/KES","3000-4000 N/KES","4000-6000 N/KES","Nothing - we use minigrid power",],"answer_formatted":["nkes","copy-1-of-nkes","copy-2-of-nkes","copy-3-of-nkes","copy-4-of-nkes","nothing_-_we_use_minigrid_power",]},
-{"original_name":"Does your community currently have outdoor community lights?","col_new_name":"community_lights","answer_original":["Yes","No",],"answer_formatted":["yes","no",]},
-{"original_name":"Does your home have exterior lighting?","col_new_name":"home_exterior_lights","answer_original":["Yes","No",],"answer_formatted":["yes","no",]},
-{"original_name":"Is this exterior lighting powered by minigrid electricity?","col_new_name":"exterior_lights_minigrid","answer_original":["Yes","No",],"answer_formatted":["yes","no",]},
-{"original_name":"How safe do you feel outside your home when it is dark?","col_new_name":"feel_safe_dark","answer_original":["Very safe","Somewhat safe","Neither safe nor unsafe","Somewhat unsafe","Very unsafe",],"answer_formatted":["very_safe","somewhat_safe","neither_safe_nor_unsafe","somewhat_unsafe","very_unsafe",]},
-{"original_name":"If you don't currently have exterior lighting, how safe would you feel outside your home at nighttime IF you had exterior lights?","col_new_name":"feel_safe_if_exterior_lights","answer_original":["Very safe","Somewhat safe","Neither safe nor unsafe","Somewhat unsafe","Very unsafe",],"answer_formatted":["very_safe","somewhat_safe","neither_safe_nor_unsafe","somewhat_unsafe","very_unsafe",]},
-{"original_name":"What makes you feel the most unsafe?","col_new_name":"feel_unsafe_reasons","answer_original":["Potential theft","Unsafe travel to obtain water, supplies and charging phones","Lack of community lighting","Other","I don't feel unsafe",],"answer_formatted":["potential_theft","unsafe_travel_to_obtain_water_supplies_and_charging_phones","lack_of_community_lighting","other","i_dont_feel_unsafe",]},
-{"original_name":"If you selected 'other' in the question above, please explain (if not, please skip)","col_new_name":"feel_unsafe_reasons_explain","answer_original":[],"answer_formatted":[]},
-{"original_name":"Do you feel that having access to minigrid power has made you more safe? Please explain in a few sentences","col_new_name":"feel_safer_with_minigrid","answer_original":[],"answer_formatted":[]},
-{"original_name":"Where do you typically charge your mobile phone?","col_new_name":"phone_charge_location","answer_original":["Home","Neighbor","Shop","Other",],"answer_formatted":["home","neighbor","shop","other",]},
-{"original_name":"If you selected 'other' in the question above, please explain (if not, please skip)","col_new_name":"phone_charge_location_explain","answer_original":[],"answer_formatted":[]},
-{"original_name":"How often do you need to charge your mobile phone?","col_new_name":"phone_charge_frequency","answer_original":["Every day","Every 1-2 days","Every 2-3 days","Every 4 or more days",],"answer_formatted":["every_day","every_1-2_days","every_2-3_days","every_4_or_more_days",]},
-{"original_name":"How much do you pay per month to charge your mobile phone?","col_new_name":"phone_charge_monthly_cost","answer_original":["0-100 N/KES","100-500 N/KES","500-750 N/KES","750-1000 N/KES","1000 N /KES and above","Nothing - we use minigrid power",],"answer_formatted":["nkes","copy-1-of-nkes","copy-2-of-nkes","copy-3-of-nkes","n_kes_and_above","nothing_-_we_use_minigrid_power",]},
-{"original_name":"How far must you travel to charge your mobile phone?","col_new_name":"phone_charge_travel_distance","answer_original":["less than 1 km","1-2 km","2-5km","5-10 km","Greater than 10km","No need to travel - charge at home",],"answer_formatted":["less_than_1_km","km","copy-1-of-km","copy-2-of-km","greater_than_10km","no_need_to_travel_-_charge_at_home",]},
-{"original_name":"What is source of water?","col_new_name":"water_source","answer_original":["At home tap","Community well or pump","Clear water source (fresh spring, lake etc)","Dirty water source (pond, contaminated well, etc)",],"answer_formatted":["at_home_tap","community_well_or_pump","clear_water_source_fresh_spring_lake_etc","dirty_water_source_pond_contaminated_well_etc",]},
-{"original_name":"Do you have a source for clean drinking water?","col_new_name":"clean_drinking_water","answer_original":["Yes","No",],"answer_formatted":["yes","no",]},
-{"original_name":"What is the source for clean drinking water?","col_new_name":"clean_drinking_water_source","answer_original":["Boiled water","Bottled water","Treated / filtered water","Clean community source",],"answer_formatted":["boiled_water","bottled_water","treated__filtered_water","clean_community_source",]},
-{"original_name":"What is your clean community water source?","col_new_name":"community_clean_water_source","answer_original":[],"answer_formatted":[]},
-{"original_name":"How far must you travel to obtain your water supply?","col_new_name":"water_collection_travel_distance","answer_original":["less than 1 km","1-2 km","2-5 km","5-10 km","No need to travel - at home water supply", ],"answer_formatted":["less_than_1_km","km","copy-1-of-km","copy-2-of-km","no_need_to_travel_-_at_home_water_supply",]},
-{"original_name":"How long does the water collection process take on a daily basis?","col_new_name":"water_collection_time","answer_original":["less than 1 hour","1-2 hours","2-3 hours","3-4 hours","greater than 4 hours",],"answer_formatted":["less_than_1_hour","hours","copy-1-of-hours","copy-2-of-hours","greater_than_4_hours",]},
-{"original_name":"Who is mainly responsible for water collection on a daily basis?","col_new_name":"water_collection_responsible","answer_original":["Adult Male","Adult Female","Child Male","Child Female","Whole family - shared responsibility",],"answer_formatted":["adult_male","adult_female","child_male","child_female","whole_family_-_shared_responsibility",]},
-{"original_name":"What is the average age of the person in charge of water collection?","col_new_name":"avg_person_age_water_collection","answer_original":["under 5 years old","5-10 years old","10-12 years old","12-15 years old","15 years or older",],"answer_formatted":["under_5_years_old","years_old","copy-1-of-years_old","copy-2-of-years_old","years_or_older",]},
-{"original_name":"How much do you pay per month for water?","col_new_name":"water_monthly_cost","answer_original":["I don't pay, it's free.","0-500 N/KES","500-3000 N/KES","3000-5000 N/KES","5000 N/KES and above",],"answer_formatted":["i_dont_pay_its_free","nkes","copy-1-of-nkes","copy-2-of-nkes","nkes_and_above",]},
-{"original_name":"How close is the nearest Health Center or Clinic?","col_new_name":"clinic_travel_distance","answer_original":["less than 1 km","between 1-2 km","between 2-3 km","between 2-5 km","greater than 5 km",],"answer_formatted":["less_than_1_km","between_1-2_km","between_2-3_km","between_2-5_km","greater_than_5_km",]},
-{"original_name":"Does your health center or clinic have access to minigrid electricity?","col_new_name":"clinic_electricity_access_minigrid","answer_original":["Yes","No",],"answer_formatted":["yes","no",]},
-{"original_name":"What hours is the Health Center or clinic open?","col_new_name":"clinic_open_hours","answer_original":[],"answer_formatted":[]},
-{"original_name":"Does your health center or clinic have access to refrigeration?","col_new_name":"clinic_refrigeration_access","answer_original":["Yes","No",],"answer_formatted":["yes","no",]},
-{"original_name":"If your clinic has minigrid electricity, do you feel that you have better health services because of connection to minigrid?","col_new_name":"better_access_health_minigrid","answer_original":["Yes","No",],"answer_formatted":["yes","no",]},
-{"original_name":"What are some of the benefits you have experienced because of your access to minigirid?","col_new_name":"minigrid_access_benefits","answer_original":[],"answer_formatted":[]},
-{"original_name":"Would you say that having access to minigrid power has imporoved your quality of life?","col_new_name":"minigrid_access_life_improvement","answer_original":[],"answer_formatted":[]},
-{"original_name":"If yes to the question above, please explain","col_new_name":"minigrid_access_life_improvement_explain","answer_original":[],"answer_formatted":[]},
-{"original_name":"In what way has minigrid power impacted your life or the life of your family members?","col_new_name":"minigrid_access_life_family_impact","answer_original":[],"answer_formatted":[]},
-{"original_name":"In what way has minigrid power made you or your family more productive?","col_new_name":"minigrid_access_productivity_improvement","answer_original":[],"answer_formatted":[]},
-{"original_name":"How has minigrid power affected the females in your household?","col_new_name":"minigrid_female_household_effect","answer_original":[],"answer_formatted":[]},
-
-
-]
-
-}
+{
+    "mapping": [
+      {
+        "col_response mapping": [
+          {
+            "original_name": "Start time",
+            "col_new_name": "start",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "Completion time",
+            "col_new_name": "end",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "What is your Renewvia Minigrid account number?",
+            "col_new_name": "renewvia_account_number",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "Have you been interviewed by Renewvia before?",
+            "col_new_name": "interviewed_before",
+            "answer_original": [
+              "Yes",
+              "No",
+              "Not Sure"
+            ],
+            "answer_formatted": [
+              "yes",
+              "no",
+              "not_sure"
+            ]
+          },
+          {
+            "original_name": "Please select how long your have been using the minigrid?",
+            "col_new_name": "connection_period",
+            "answer_original": [
+              "1-3 months",
+              "3-6 months",
+              "6-12 months",
+              "12-24 months",
+              "24-36 months",
+              "over 36 months"
+            ],
+            "answer_formatted": [
+              "months",
+              "copy-1-of-months",
+              "copy-2-of-months",
+              "copy-3-of-months",
+              "copy-4-of-months",
+              "over_36_months"
+            ]
+          },
+          {
+            "original_name": "First Name",
+            "col_new_name": "first_name",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "Last Name",
+            "col_new_name": "last_name",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "Country",
+            "col_new_name": "country",
+            "answer_original": [
+              "Nigeria",
+              "Kenya"
+            ],
+            "answer_formatted": [
+              "nigeria",
+              "kenya"
+            ]
+          },
+          {
+            "original_name": "Nigeria",
+            "col_new_name": "nigeria_community",
+            "answer_original": [
+              "Akipelai",
+              "Oloibiri",
+              "Ozuzu",
+              "Opu",
+              "Balep",
+              "Bendeghe-Afi",
+              "Ekong Anaku",
+              "Emeroke"
+            ],
+            "answer_formatted": [
+              "akipelai",
+              "oloibiri",
+              "ozuzu",
+              "opu",
+              "balep",
+              "bendeghe-afi",
+              "ekong_anaku",
+              "emeroke"
+            ]
+          },
+          {
+            "original_name": "Kenya Community",
+            "col_new_name": "kenya_community",
+            "answer_original": [
+              "Kalobeyei Settlement",
+              "Kalobeyei Town",
+              "Ndeda",
+              "Ngurunit",
+              "Ringiti",
+              "Oyamo",
+              "Olkiramatian",
+              "Lomekwi",
+              "Katiko",
+              "Locheremoit",
+              "Kangitankori",
+              "Kapelbok",
+              "Lorengelup",
+              "Nakukulas"
+            ],
+            "answer_formatted": [
+              "kalobeyei_settlement",
+              "kalobeyei_town",
+              "ndeda",
+              "ngurunit",
+              "ringiti",
+              "oyamo",
+              "olkiramatian",
+              "lomekwi",
+              "katiko",
+              "locheremoit",
+              "kangitankori",
+              "kapelbok",
+              "lorengelup",
+              "nakukulas"
+            ]
+          },
+          {
+            "original_name": "Location/Neighborhood Name",
+            "col_new_name": "location",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "Age",
+            "col_new_name": "age",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "Gender",
+            "col_new_name": "gender",
+            "answer_original": [
+              "Male",
+              "Female"
+            ],
+            "answer_formatted": [
+              "male",
+              "female"
+            ]
+          },
+          {
+            "original_name": "Has your (or your spouse's) occupation changed since you've been connected to minigrid power?",
+            "col_new_name": "occupation_change",
+            "answer_original": [
+              "Yes",
+              "No"
+            ],
+            "answer_formatted": [
+              "yes",
+              "no"
+            ]
+          },
+          {
+            "original_name": "If yes, please explain or list the new occupation?",
+            "col_new_name": "occupation_change_explain",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "Has your household income changed since your connection to minigrid power?",
+            "col_new_name": "houlsehold_income_change",
+            "answer_original": [
+              "No, it is the same",
+              "Yes, it has increased",
+              "Yes, it has decreased"
+            ],
+            "answer_formatted": [
+              "no_it_is_the_same",
+              "yes_it_has_increased",
+              "yes_it_has_decreased"
+            ]
+          },
+          {
+            "original_name": "If yes, please explain why",
+            "col_new_name": "houlsehold_income_change_explain",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "What is your average monthly household income?",
+            "col_new_name": "avg_monthly_household_income",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "Has the number of people living in your household changed since connection to minigrid?",
+            "col_new_name": "household_headcount_change",
+            "answer_original": [
+              "Yes, it's increased",
+              "Yes, it's decreased",
+              "No, it has stayed the same"
+            ],
+            "answer_formatted": [
+              "yes_its_increased",
+              "yes_its_decreased",
+              "no_it_has_stayed_the_same"
+            ]
+          },
+          {
+            "original_name": "If yes, please explain why/how?",
+            "col_new_name": "household_headcount_change_explain",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "Has there been a change in the number of females in your household who attend school full time since connection to minigrid?",
+            "col_new_name": "female_schooling_change",
+            "answer_original": [
+              "Yes, it's increased",
+              "Yes, it's decreased",
+              "No, it's the same"
+            ],
+            "answer_formatted": [
+              "yes_its_increased",
+              "yes_its_decreased",
+              "no_its_the_same"
+            ]
+          },
+          {
+            "original_name": "Has there been a change in the number of males in your household who attend school full time since connection to minigrid?",
+            "col_new_name": "male_schooling_change",
+            "answer_original": [
+              "Yes, it's increased",
+              "Yes, it's decreased",
+              "No, it's the same"
+            ],
+            "answer_formatted": [
+              "yes_its_increased",
+              "yes_its_decreased",
+              "no_its_the_same"
+            ]
+          },
+          {
+            "original_name": "Has school performance changed since connection to minigrid?",
+            "col_new_name": "school_performance_change",
+            "answer_original": [
+              "Yes, it's gotten better",
+              "Yes, it's gotten worse",
+              "No, it's the same"
+            ],
+            "answer_formatted": [
+              "yes_its_gotten_better",
+              "yes_its_gotten_worse",
+              "no_its_the_same"
+            ]
+          },
+          {
+            "original_name": "If yes, please tell us why or how it's changed",
+            "col_new_name": "school_performance_change_explain",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "If any female children do not attend school full time, please specify why",
+            "col_new_name": "female_unschooled_reasons",
+            "answer_original": [
+              "They all attend school",
+              "Household chores",
+              "Lacking money for school fees",
+              "Health reasons",
+              "Childcare",
+              "Not old enough",
+              "Too old",
+              "Other"
+            ],
+            "answer_formatted": [
+              "they_all_attend_school",
+              "household_chores",
+              "lacking_money_for_school_fees",
+              "health_reasons",
+              "childcare",
+              "not_old_enough",
+              "too_old",
+              "other"
+            ]
+          },
+          {
+            "original_name": "If you selected 'other' in the question above, please explain (if not, please skip)",
+            "col_new_name": "female_unschooled_reasons_explain",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "If any male children do not attend school full time, please specify why",
+            "col_new_name": "male_unschooled_reasons",
+            "answer_original": [
+              "They all attend school",
+              "Household chores",
+              "lacking money for school fees",
+              "Health reasons",
+              "Childcare",
+              "Not old enough",
+              "Too old",
+              "Other"
+            ],
+            "answer_formatted": [
+              "they_all_attend_school",
+              "household_chores",
+              "lacking_money_for_school_fees",
+              "health_reasons",
+              "childcare",
+              "not_old_enough",
+              "too_old",
+              "other"
+            ]
+          },
+          {
+            "original_name": "If you selected 'Other' in the question above, please explain (if not, please skip)",
+            "col_new_name": "male_unschooled_reasons_explain",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "Are any household members business owners?",
+            "col_new_name": "household_business_owner",
+            "answer_original": [
+              "None",
+              "Adult Male",
+              "Adult Female"
+            ],
+            "answer_formatted": [
+              "none",
+              "adult_male",
+              "adult_female"
+            ]
+          },
+          {
+            "original_name": "If your household does have a business owner, what type of business is this?",
+            "col_new_name": "business_type",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "Is this business recent (started after connection to minigrid)?",
+            "col_new_name": "business_recent",
+            "answer_original": [
+              "Yes",
+              "No"
+            ],
+            "answer_formatted": [
+              "yes",
+              "no"
+            ]
+          },
+          {
+            "original_name": "If this business is new, do you consider this new business a result of having access to minigrid power?",
+            "col_new_name": "business_from_minigrid",
+            "answer_original": [
+              "Yes",
+              "No",
+              "Maybe"
+            ],
+            "answer_formatted": [
+              "yes",
+              "no",
+              "maybe"
+            ]
+          },
+          {
+            "original_name": "Does this business use minigrid power?",
+            "col_new_name": "business_use_minigrid",
+            "answer_original": [
+              "Yes ",
+              "No"
+            ],
+            "answer_formatted": [
+              "yes",
+              "no"
+            ]
+          },
+          {
+            "original_name": "Current sources of power (after minigrid connection) Select all that apply",
+            "col_new_name": "power_sources",
+            "answer_original": [
+              "solar home kit",
+              "charcoal",
+              "kerosene lamp",
+              "petrol generator",
+              "diesel generator",
+              "candles",
+              "minigrid electricity (Renewvia)",
+              "Other"
+            ],
+            "answer_formatted": [
+              "solar_home_kit",
+              "charcoal",
+              "kerosene_lamp",
+              "petrol_generator",
+              "diesel_generator",
+              "candles",
+              "minigrid_electricity_renewvia",
+              "other"
+            ]
+          },
+          {
+            "original_name": "If you selected 'other' in the question above, please explain (if not, please skip)",
+            "col_new_name": "power_sources_explain",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "How many hours a day do you use at lease one source of power you checked above?",
+            "col_new_name": "power_sources_usage",
+            "answer_original": [
+              "Less than 2 hours",
+              "Between 2 and 5 hours",
+              "Between 5 and 8 hours",
+              "More than 8 hours"
+            ],
+            "answer_formatted": [
+              "less_than_2_hours",
+              "between_2_and_5_hours",
+              "between_5_and_8_hours",
+              "more_than_8_hours"
+            ]
+          },
+          {
+            "original_name": "What is your current MAIN source of power?",
+            "col_new_name": "power_sources_primary",
+            "answer_original": [
+              "solar home kit",
+              "charcoal",
+              "kerosene lamp",
+              "petrol generator",
+              "diesel generator",
+              "candles",
+              "minigrid electricity (Renewvia)",
+              "Other"
+            ],
+            "answer_formatted": [
+              "solar_home_kit",
+              "charcoal",
+              "kerosene_lamp",
+              "petrol_generator",
+              "diesel_generator",
+              "candles",
+              "minigrid_electricity_renewvia",
+              "other"
+            ]
+          },
+          {
+            "original_name": "If you selected 'Other' in the question above, please explain (if not, please skip)",
+            "col_new_name": "power_sources_primary_explain",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "How many electronic devices or appliances do you currently use in the household (after connection to minigrid)",
+            "col_new_name": "electronics_count",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "Has the number of electronic devices or appliances increased since connection to minigrid?",
+            "col_new_name": "electronics_count_change",
+            "answer_original": [
+              "Yes",
+              "No"
+            ],
+            "answer_formatted": [
+              "yes",
+              "no"
+            ]
+          },
+          {
+            "original_name": "How many cell phones does your household have?",
+            "col_new_name": "cellphones_count",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "Types of electronic devices or appliances currently in your household (after minigrid connection) Select all that apply",
+            "col_new_name": "cellphones_count_change",
+            "answer_original": [
+              "stovetop",
+              "television",
+              "computer",
+              "radio",
+              "lights",
+              "fan",
+              "cell phone charger",
+              "other"
+            ],
+            "answer_formatted": [
+              "stovetop",
+              "television",
+              "computer",
+              "radio",
+              "lights",
+              "fan",
+              "cell_phone_charger",
+              "other"
+            ]
+          },
+          {
+            "original_name": "If you selected 'other' in the question above, please explain (if not, please skip)",
+            "col_new_name": "cellphones_count_change_explain",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "Have you added any of the following Electronic devices or appliances after you were connected to minigrid? Select all that apply",
+            "col_new_name": "appliances_count_addition",
+            "answer_original": [
+              "stovetop",
+              "television",
+              "computer",
+              "radio",
+              "lights",
+              "fan",
+              "cell phone charger",
+              "other"
+            ],
+            "answer_formatted": [
+              "stovetop",
+              "television",
+              "computer",
+              "radio",
+              "lights",
+              "fan",
+              "cell_phone_charger",
+              "other"
+            ]
+          },
+          {
+            "original_name": "If you selected 'other' in the question above, please explain (If not, please skip)",
+            "col_new_name": "appliances_count_addition_explain",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "How many hours of light per day do you currently have at home? (after connection to minigrid)",
+            "col_new_name": "light_hours_current",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "What are your main sources of light?",
+            "col_new_name": "light_primary_source",
+            "answer_original": [
+              "Battery powered (flashlight/torch)",
+              "Electric source (phone light, electric lightbulbs)",
+              "Kerosene source (kerosene lamps)",
+              "Renewvia minigrid electricity"
+            ],
+            "answer_formatted": [
+              "battery_powered_flashlighttorch",
+              "electric_source_phone_light_electric_lightbulbs",
+              "kerosene_source_kerosene_lamps",
+              "renewvia_minigrid_electricity"
+            ]
+          },
+          {
+            "original_name": "Has the number of kerosene lamps in your household changed since connection to minigrid?",
+            "col_new_name": "kerosene_lamp_usage_change",
+            "answer_original": [
+              "Yes, it's increased",
+              "Yes, it's decreased",
+              "No, it's the same"
+            ],
+            "answer_formatted": [
+              "yes_its_increased",
+              "yes_its_decreased",
+              "no_its_the_same"
+            ]
+          },
+          {
+            "original_name": "How many kerosene lamps do you currently use in your household? (after minigrid connection)",
+            "col_new_name": "kerosene_lamp_usage_count",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "Approximately how many hours a day do you use kerosene lamps?",
+            "col_new_name": "kerosene_lamp_usage_time",
+            "answer_original": [
+              "Less than one hour",
+              "1-2 hours",
+              "3-5 hours",
+              "Greater than 5 hours",
+              "We don't use a kerosene lamp"
+            ],
+            "answer_formatted": [
+              "less_than_one_hour",
+              "hours",
+              "copy-1-of-hours",
+              "greater_than_5_hours",
+              "we_dont_use_a_kerosene_lamp"
+            ]
+          },
+          {
+            "original_name": "How much do you pay montly for kerosene used only in kerosene lamps?",
+            "col_new_name": "kerosene_lamp_usage_cost",
+            "answer_original": [
+              "Nothing",
+              "'0-200 N/KES",
+              "200-600 N/KES",
+              "600-1000 N/KES",
+              "1000-1400 N/KES",
+              "1400 N/KES and above"
+            ],
+            "answer_formatted": [
+              "nothing",
+              "nkes",
+              "copy-1-of-nkes",
+              "copy-2-of-nkes",
+              "copy-3-of-nkes",
+              "nkes_and_above"
+            ]
+          },
+          {
+            "original_name": "What are your main sources of energy for cooking?",
+            "col_new_name": "cooking_energy_sources",
+            "answer_original": [
+              "Charcoal",
+              "Kerosene",
+              "Firewood",
+              "Biomass",
+              "Minigrid electricity (Renewvia)",
+              "Other"
+            ],
+            "answer_formatted": [
+              "charcoal",
+              "kerosene",
+              "firewood",
+              "biomass",
+              "minigrid_electricity_renewvia",
+              "other"
+            ]
+          },
+          {
+            "original_name": "If you selected 'other' in the question above, please explain (if not, please skip)",
+            "col_new_name": "cooking_energy_sources_explain",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "How long does the cooking fuel collection process take on a daily basis?",
+            "col_new_name": "cooking_fuel_collection_time",
+            "answer_original": [
+              "Less than 1 hour",
+              "1-2 hours",
+              "3-5 hours",
+              "Greater than 5 hours",
+              "No need to collect fuel"
+            ],
+            "answer_formatted": [
+              "less_than_1_hour",
+              "hours",
+              "copy-1-of-hours",
+              "greater_than_5_hours",
+              "no_need_to_collect_fuel"
+            ]
+          },
+          {
+            "original_name": "Who is mainly responsible for cooking fuel collection on a daily basis? Select all that apply",
+            "col_new_name": "cooking_fuel_responsible",
+            "answer_original": [
+              "Adult Male",
+              "Adult Female",
+              "Child Male",
+              "Child Female",
+              "Whole family - shared responsibility"
+            ],
+            "answer_formatted": [
+              "adult_male",
+              "adult_female",
+              "child_male",
+              "child_female",
+              "whole_family_-_shared_responsibility"
+            ]
+          },
+          {
+            "original_name": "What is the approximate monthly cost of energy strictly for cooking?",
+            "col_new_name": "cooking_energy_monthly_cost",
+            "answer_original": [
+              "0-1000 N/KES",
+              "1000-1500 N/KES",
+              "1500-2000 N/KES",
+              "2000-3000 N/KES",
+              "3000-4000 N/KES",
+              "Nothing - we use minigrid power"
+            ],
+            "answer_formatted": [
+              "nkes",
+              "copy-1-of-nkes",
+              "copy-2-of-nkes",
+              "copy-3-of-nkes",
+              "copy-4-of-nkes",
+              "nothing_-_we_use_minigrid_power"
+            ]
+          },
+          {
+            "original_name": "What are your main sources of energy for charging appliances (ex phones) after connection to minigrid?",
+            "col_new_name": "applicances_charging_sources",
+            "answer_original": [
+              "Solar home kit",
+              "Petrol generator",
+              "Diesel generator",
+              "Battery",
+              "Minigrid electricity (Renewvia)",
+              "Other"
+            ],
+            "answer_formatted": [
+              "solar_home_kit",
+              "petrol_generator",
+              "diesel_generator",
+              "battery",
+              "minigrid_electricity_renewvia",
+              "other"
+            ]
+          },
+          {
+            "original_name": "If you selected 'other' in the question above, please explain (if not, please skip)",
+            "col_new_name": "applicances_charging_sources_explain",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "What is the approximate monthly cost of energy used strictly for charging appliances?",
+            "col_new_name": "applicances_charging_monthly_cost",
+            "answer_original": [
+              "0-150 N/KES",
+              "150-1000 N/KES",
+              "1000-3000 N/KES",
+              "3000-4000 N/KES",
+              "4000-6000 N/KES",
+              "Nothing - we use minigrid power"
+            ],
+            "answer_formatted": [
+              "nkes",
+              "copy-1-of-nkes",
+              "copy-2-of-nkes",
+              "copy-3-of-nkes",
+              "copy-4-of-nkes",
+              "nothing_-_we_use_minigrid_power"
+            ]
+          },
+          {
+            "original_name": "Does your community currently have outdoor community lights?",
+            "col_new_name": "community_lights",
+            "answer_original": [
+              "Yes",
+              "No"
+            ],
+            "answer_formatted": [
+              "yes",
+              "no"
+            ]
+          },
+          {
+            "original_name": "Does your home have exterior lighting?",
+            "col_new_name": "home_exterior_lights",
+            "answer_original": [
+              "Yes",
+              "No"
+            ],
+            "answer_formatted": [
+              "yes",
+              "no"
+            ]
+          },
+          {
+            "original_name": "Is this exterior lighting powered by minigrid electricity?",
+            "col_new_name": "exterior_lights_minigrid",
+            "answer_original": [
+              "Yes",
+              "No"
+            ],
+            "answer_formatted": [
+              "yes",
+              "no"
+            ]
+          },
+          {
+            "original_name": "How safe do you feel outside your home when it is dark?",
+            "col_new_name": "feel_safe_dark",
+            "answer_original": [
+              "Very safe",
+              "Somewhat safe",
+              "Neither safe nor unsafe",
+              "Somewhat unsafe",
+              "Very unsafe"
+            ],
+            "answer_formatted": [
+              "very_safe",
+              "somewhat_safe",
+              "neither_safe_nor_unsafe",
+              "somewhat_unsafe",
+              "very_unsafe"
+            ]
+          },
+          {
+            "original_name": "If you don't currently have exterior lighting, how safe would you feel outside your home at nighttime IF you had exterior lights?",
+            "col_new_name": "feel_safe_if_exterior_lights",
+            "answer_original": [
+              "Very safe",
+              "Somewhat safe",
+              "Neither safe nor unsafe",
+              "Somewhat unsafe",
+              "Very unsafe"
+            ],
+            "answer_formatted": [
+              "very_safe",
+              "somewhat_safe",
+              "neither_safe_nor_unsafe",
+              "somewhat_unsafe",
+              "very_unsafe"
+            ]
+          },
+          {
+            "original_name": "What makes you feel the most unsafe?",
+            "col_new_name": "feel_unsafe_reasons",
+            "answer_original": [
+              "Potential theft",
+              "Unsafe travel to obtain water, supplies and charging phones",
+              "Lack of community lighting",
+              "Other",
+              "I don't feel unsafe"
+            ],
+            "answer_formatted": [
+              "potential_theft",
+              "unsafe_travel_to_obtain_water_supplies_and_charging_phones",
+              "lack_of_community_lighting",
+              "other",
+              "i_dont_feel_unsafe"
+            ]
+          },
+          {
+            "original_name": "If you selected 'other' in the question above, please explain (if not, please skip)",
+            "col_new_name": "feel_unsafe_reasons_explain",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "Do you feel that having access to minigrid power has made you more safe? Please explain in a few sentences",
+            "col_new_name": "feel_safer_with_minigrid",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "Where do you typically charge your mobile phone?",
+            "col_new_name": "phone_charge_location",
+            "answer_original": [
+              "Home",
+              "Neighbor",
+              "Shop",
+              "Other"
+            ],
+            "answer_formatted": [
+              "home",
+              "neighbor",
+              "shop",
+              "other"
+            ]
+          },
+          {
+            "original_name": "If you selected 'other' in the question above, please explain (if not, please skip)",
+            "col_new_name": "phone_charge_location_explain",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "How often do you need to charge your mobile phone?",
+            "col_new_name": "phone_charge_frequency",
+            "answer_original": [
+              "Every day",
+              "Every 1-2 days",
+              "Every 2-3 days",
+              "Every 4 or more days"
+            ],
+            "answer_formatted": [
+              "every_day",
+              "every_1-2_days",
+              "every_2-3_days",
+              "every_4_or_more_days"
+            ]
+          },
+          {
+            "original_name": "How much do you pay per month to charge your mobile phone?",
+            "col_new_name": "phone_charge_monthly_cost",
+            "answer_original": [
+              "0-100 N/KES",
+              "100-500 N/KES",
+              "500-750 N/KES",
+              "750-1000 N/KES",
+              "1000 N /KES and above",
+              "Nothing - we use minigrid power"
+            ],
+            "answer_formatted": [
+              "nkes",
+              "copy-1-of-nkes",
+              "copy-2-of-nkes",
+              "copy-3-of-nkes",
+              "n_kes_and_above",
+              "nothing_-_we_use_minigrid_power"
+            ]
+          },
+          {
+            "original_name": "How far must you travel to charge your mobile phone?",
+            "col_new_name": "phone_charge_travel_distance",
+            "answer_original": [
+              "less than 1 km",
+              "1-2 km",
+              "2-5km",
+              "5-10 km",
+              "Greater than 10km",
+              "No need to travel - charge at home"
+            ],
+            "answer_formatted": [
+              "less_than_1_km",
+              "km",
+              "copy-1-of-km",
+              "copy-2-of-km",
+              "greater_than_10km",
+              "no_need_to_travel_-_charge_at_home"
+            ]
+          },
+          {
+            "original_name": "What is source of water?",
+            "col_new_name": "water_source",
+            "answer_original": [
+              "At home tap",
+              "Community well or pump",
+              "Clear water source (fresh spring, lake etc)",
+              "Dirty water source (pond, contaminated well, etc)"
+            ],
+            "answer_formatted": [
+              "at_home_tap",
+              "community_well_or_pump",
+              "clear_water_source_fresh_spring_lake_etc",
+              "dirty_water_source_pond_contaminated_well_etc"
+            ]
+          },
+          {
+            "original_name": "Do you have a source for clean drinking water?",
+            "col_new_name": "clean_drinking_water",
+            "answer_original": [
+              "Yes",
+              "No"
+            ],
+            "answer_formatted": [
+              "yes",
+              "no"
+            ]
+          },
+          {
+            "original_name": "What is the source for clean drinking water?",
+            "col_new_name": "clean_drinking_water_source",
+            "answer_original": [
+              "Boiled water",
+              "Bottled water",
+              "Treated / filtered water",
+              "Clean community source"
+            ],
+            "answer_formatted": [
+              "boiled_water",
+              "bottled_water",
+              "treated__filtered_water",
+              "clean_community_source"
+            ]
+          },
+          {
+            "original_name": "What is your clean community water source?",
+            "col_new_name": "community_clean_water_source",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "How far must you travel to obtain your water supply?",
+            "col_new_name": "water_collection_travel_distance",
+            "answer_original": [
+              "less than 1 km",
+              "1-2 km",
+              "2-5 km",
+              "5-10 km",
+              "No need to travel - at home water supply"
+            ],
+            "answer_formatted": [
+              "less_than_1_km",
+              "km",
+              "copy-1-of-km",
+              "copy-2-of-km",
+              "no_need_to_travel_-_at_home_water_supply"
+            ]
+          },
+          {
+            "original_name": "How long does the water collection process take on a daily basis?",
+            "col_new_name": "water_collection_time",
+            "answer_original": [
+              "less than 1 hour",
+              "1-2 hours",
+              "2-3 hours",
+              "3-4 hours",
+              "greater than 4 hours"
+            ],
+            "answer_formatted": [
+              "less_than_1_hour",
+              "hours",
+              "copy-1-of-hours",
+              "copy-2-of-hours",
+              "greater_than_4_hours"
+            ]
+          },
+          {
+            "original_name": "Who is mainly responsible for water collection on a daily basis?",
+            "col_new_name": "water_collection_responsible",
+            "answer_original": [
+              "Adult Male",
+              "Adult Female",
+              "Child Male",
+              "Child Female",
+              "Whole family - shared responsibility"
+            ],
+            "answer_formatted": [
+              "adult_male",
+              "adult_female",
+              "child_male",
+              "child_female",
+              "whole_family_-_shared_responsibility"
+            ]
+          },
+          {
+            "original_name": "What is the average age of the person in charge of water collection?",
+            "col_new_name": "avg_person_age_water_collection",
+            "answer_original": [
+              "under 5 years old",
+              "5-10 years old",
+              "10-12 years old",
+              "12-15 years old",
+              "15 years or older"
+            ],
+            "answer_formatted": [
+              "under_5_years_old",
+              "years_old",
+              "copy-1-of-years_old",
+              "copy-2-of-years_old",
+              "years_or_older"
+            ]
+          },
+          {
+            "original_name": "How much do you pay per month for water?",
+            "col_new_name": "water_monthly_cost",
+            "answer_original": [
+              "I don't pay, it's free.",
+              "0-500 N/KES",
+              "500-3000 N/KES",
+              "3000-5000 N/KES",
+              "5000 N/KES and above"
+            ],
+            "answer_formatted": [
+              "i_dont_pay_its_free",
+              "nkes",
+              "copy-1-of-nkes",
+              "copy-2-of-nkes",
+              "nkes_and_above"
+            ]
+          },
+          {
+            "original_name": "How close is the nearest Health Center or Clinic?",
+            "col_new_name": "clinic_travel_distance",
+            "answer_original": [
+              "less than 1 km",
+              "between 1-2 km",
+              "between 2-3 km",
+              "between 2-5 km",
+              "greater than 5 km"
+            ],
+            "answer_formatted": [
+              "less_than_1_km",
+              "between_1-2_km",
+              "between_2-3_km",
+              "between_2-5_km",
+              "greater_than_5_km"
+            ]
+          },
+          {
+            "original_name": "Does your health center or clinic have access to minigrid electricity?",
+            "col_new_name": "clinic_electricity_access_minigrid",
+            "answer_original": [
+              "Yes",
+              "No"
+            ],
+            "answer_formatted": [
+              "yes",
+              "no"
+            ]
+          },
+          {
+            "original_name": "What hours is the Health Center or clinic open?",
+            "col_new_name": "clinic_open_hours",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "Does your health center or clinic have access to refrigeration?",
+            "col_new_name": "clinic_refrigeration_access",
+            "answer_original": [
+              "Yes",
+              "No"
+            ],
+            "answer_formatted": [
+              "yes",
+              "no"
+            ]
+          },
+          {
+            "original_name": "If your clinic has minigrid electricity, do you feel that you have better health services because of connection to minigrid?",
+            "col_new_name": "better_access_health_minigrid",
+            "answer_original": [
+              "Yes",
+              "No"
+            ],
+            "answer_formatted": [
+              "yes",
+              "no"
+            ]
+          },
+          {
+            "original_name": "What are some of the benefits you have experienced because of your access to minigirid?",
+            "col_new_name": "minigrid_access_benefits",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "Would you say that having access to minigrid power has imporoved your quality of life?",
+            "col_new_name": "minigrid_access_life_improvement",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "If yes to the question above, please explain",
+            "col_new_name": "minigrid_access_life_improvement_explain",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "In what way has minigrid power impacted your life or the life of your family members?",
+            "col_new_name": "minigrid_access_life_family_impact",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "In what way has minigrid power made you or your family more productive?",
+            "col_new_name": "minigrid_access_productivity_improvement",
+            "answer_original": [],
+            "answer_formatted": []
+          },
+          {
+            "original_name": "How has minigrid power affected the females in your household?",
+            "col_new_name": "minigrid_female_household_effect",
+            "answer_original": [],
+            "answer_formatted": []
+          }
+        ]
+      }
+    ]
+  }
