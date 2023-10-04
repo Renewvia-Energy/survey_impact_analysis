@@ -1,7 +1,5 @@
 {
     "mapping": [
-      {
-        "col_response mapping": [
           {
             "original_name": "Start time",
             "col_new_name": "start",
@@ -1177,6 +1175,4 @@
             "answer_formatted": []
           }
         ]
-      }
-    ]
   }
