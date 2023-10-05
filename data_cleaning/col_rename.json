@@ -1,852 +1,852 @@
 {
-    "col_rename": [
-      {
-        "orignal_name": "Age",
-        "new_name": "age"
-      },
-      {
-        "orignal_name": "Approximately how many hours a day do you use kerosene lamps?",
-        "new_name": "kerosene_lamp_usage_time"
-      },
-      {
-        "orignal_name": "Are any household members business owners?",
-        "new_name": "household_business_owners"
-      },
-      {
-        "orignal_name": "Are you the original person assigned to this Renewvia ID?",
-        "new_name": "original_person"
-      },
-      {
-        "orignal_name": "Are you the primary provider for your household?",
-        "new_name": "primary_provider"
-      },
-      {
-        "orignal_name": "Are you the primary provider of Household?",
-        "new_name": "primary_provider"
-      },
-      {
-        "orignal_name": "Completed Time",
-        "new_name": "end"
-      },
-      {
-        "orignal_name": "Completed time",
-        "new_name": "end"
-      },
-      {
-        "orignal_name": "Completion time",
-        "new_name": "end"
-      },
-      {
-        "orignal_name": "Country",
-        "new_name": "country"
-      },
-      {
-        "orignal_name": "Current Source(s) of Power (after mini-grid connection) Select all that apply",
-        "new_name": "power_sources"
-      },
-      {
-        "orignal_name": "Current Source(s) of Power (before mini-grid connection) Select all that apply",
-        "new_name": "power_sources"
-      },
-      {
-        "orignal_name": "Current Source(s) of Power (select all that apply)",
-        "new_name": "power_sources"
-      },
-      {
-        "orignal_name": "Do you feel that having access to minigrid power has made you more safe? Please explain",
-        "new_name": "feel_safer_with_minigrid"
-      },
-      {
-        "orignal_name": "Do you feel that having access to minigrid power has made you more safe? Please explain->",
-        "new_name": "better_access_health_minigrid"
-      },
-      {
-        "orignal_name": "Do you feel that you have better access to health services because of connection to minigrid?",
-        "new_name": "clean_drinking_water"
-      },
-      {
-        "orignal_name": "Do you have a source for clean drinking water?",
-        "new_name": "non_renewvia_electrical_sources"
-      },
-      {
-        "orignal_name": "Do you have any other sources of electricity other than Renewvia Minigrid?",
-        "new_name": "business_use_minigrid"
-      },
-      {
-        "orignal_name": "Does this business use minigrid power?",
-        "new_name": "clinic_refrigeration_access"
-      },
-      {
-        "orignal_name": "Does your Health Center / Clinic have access to refrigeration?",
-        "new_name": "clinic_electricity_access_"
-      },
-      {
-        "orignal_name": "Does your Health Center have access to electricity?",
-        "new_name": "clinic_electricity_access_minigrid"
-      },
-      {
-        "orignal_name": "Does your Health Center have access to minigrid electricity?",
-        "new_name": "community_lights"
-      },
-      {
-        "orignal_name": "Does your community currently have outdoor community lights?",
-        "new_name": "home_exterior_lights"
-      },
-      {
-        "orignal_name": "Does your home have exterior lighting?",
-        "new_name": "other_household_activities"
-      },
-      {
-        "orignal_name": "Does your household spend time doing any of the following? Select all that apply",
-        "new_name": "first_name"
-      },
-      {
-        "orignal_name": "First Name",
-        "new_name": "earnings_change"
-      },
-      {
-        "orignal_name": "For businesses or shop owners only: Since connection to Renewvia minigrid, have you seen any change in your weekly or monthly earnings?",
-        "new_name": "health_offering_change"
-      },
-      {
-        "orignal_name": "For clinics or health services only: Since connection to Renewvia minigrid, have your health service offerings changed in any of the following ways: (select all that apply).",
-        "new_name": "school_attendance_change"
-      },
-      {
-        "orignal_name": "For schools only: Since connection to Renewvia minigrid, have you seen a change in overall attendance at school?",
-        "new_name": "gender"
-      },
-      {
-        "orignal_name": "Gender",
-        "new_name": "school_performance_change"
-      },
-      {
-        "orignal_name": "Has school performance changed since connection to minigrid?",
-        "new_name": "electronics_count_change"
-      },
-      {
-        "orignal_name": "Has the number of electronic devices or appliances increased since connection to minigrid?",
-        "new_name": "kerosene_lamp_usage_change"
-      },
-      {
-        "orignal_name": "Has the number of kerosene lamps in your household changed since connection to minigrid?",
-        "new_name": "household_headcount_change"
-      },
-      {
-        "orignal_name": "Has the number of people living in your household changed since connection to minigrid power?",
-        "new_name": "female_schooling_change"
-      },
-      {
-        "orignal_name": "Has there been a change in the number of females in your household who attend school full time since connection to minigrid power?",
-        "new_name": "male_schooling_change"
-      },
-      {
-        "orignal_name": "Has there been a change in the number of males in your household who attend school FULL TIME since connection to minigrid power?",
-        "new_name": "occupation_change"
-      },
-      {
-        "orignal_name": "Has your (or your spouses) occupation changed since youve been connected to minigrid power?",
-        "new_name": "houlsehold_income_change"
-      },
-      {
-        "orignal_name": "Has your household income changed since your connection to minigrid power?",
-        "new_name": "ci_offering_change"
-      },
-      {
-        "orignal_name": "Have you added any new products or services since connection to Renewvia minigrid?",
-        "new_name": "appliances_count_addition"
-      },
-      {
-        "orignal_name": "Have you added any of the following Electronic Devices or Appliances after you were connected to minigrid (POST connection) Select all that apply",
-        "new_name": "interviewed_before"
-      },
-      {
-        "orignal_name": "Have you been interviewed by Renewvia before?",
-        "new_name": "school_attendance_performance"
-      },
-      {
-        "orignal_name": "Have you seen a change in overall school performance?",
-        "new_name": "clinic_travel_distance"
-      },
-      {
-        "orignal_name": "How close is the nearest Health Center / Clinic",
-        "new_name": "clinic_travel_distance"
-      },
-      {
-        "orignal_name": "How close is the nearest Health Center/Clinic?",
-        "new_name": "phone_charge_travel_distance"
-      },
-      {
-        "orignal_name": "How far must you travel to charge your mobile phone?",
-        "new_name": "water_collection_travel_distance"
-      },
-      {
-        "orignal_name": "How far must you travel to obtain your water supply?",
-        "new_name": "minigrid_effect_on_household_female"
-      },
-      {
-        "orignal_name": "How has minigrid power affected the females in your household?",
-        "new_name": "cooking_fuel_collection_time"
-      },
-      {
-        "orignal_name": "How long does the cooking fuel collection process take on a daily basis?",
-        "new_name": "water_collection_time"
-      },
-      {
-        "orignal_name": "How long does the water collection process take on a daily basis?",
-        "new_name": "connection_period"
-      },
-      {
-        "orignal_name": "How long have you been connected to the Renewvia Minigrid?",
-        "new_name": "adult_headcount"
-      },
-      {
-        "orignal_name": "How many adults?",
-        "new_name": "cellphones_count"
-      },
-      {
-        "orignal_name": "How many cell phones does your household have?",
-        "new_name": "appliances_count"
-      },
-      {
-        "orignal_name": "How many electronic devices or appliances do you currently use in the household (POST-connection)?",
-        "new_name": "appliances_count"
-      },
-      {
-        "orignal_name": "How many electronic devices or appliances do you currently use in the household (Pre-connection)?",
-        "new_name": "appliances_count"
-      },
-      {
-        "orignal_name": "How many electronic devices or appliances do you currently use in your household (not including cell phones)?",
-        "new_name": "female_children_headcount"
-      },
-      {
-        "orignal_name": "How many female children?",
-        "new_name": "power_sources_usage"
-      },
-      {
-        "orignal_name": "How many hours a day do you use at lease one source of power you checked above",
-        "new_name": "power_sources_usage"
-      },
-      {
-        "orignal_name": "How many hours a day do you use at least one source of power you checked above?",
-        "new_name": "light_hours_current"
-      },
-      {
-        "orignal_name": "How many hours of light per day do you currently have at home?",
-        "new_name": "light_hours_current"
-      },
-      {
-        "orignal_name": "How many hours of light per day do you currently have at home? (POST mini-grid connection)",
-        "new_name": "light_hours_current"
-      },
-      {
-        "orignal_name": "How many hours of light per day do you currently have at home? (pre mini-grid connection)",
-        "new_name": "kerosene_lamps_count"
-      },
-      {
-        "orignal_name": "How many kerosene lamps do you currently have in your household?",
-        "new_name": "kerosene_lamps_count"
-      },
-      {
-        "orignal_name": "How many kerosene lamps do you currently use in your household? (POST minigrid connection)",
-        "new_name": "kerosene_lamps_count"
-      },
-      {
-        "orignal_name": "How many kerosene lamps do you currently use in your household? (before grid connection)",
-        "new_name": "male_children_headcount"
-      },
-      {
-        "orignal_name": "How many male children?",
-        "new_name": "female_schooling"
-      },
-      {
-        "orignal_name": "How many of your female children attend school?",
-        "new_name": "male_schooling"
-      },
-      {
-        "orignal_name": "How many of your male children attend school?",
-        "new_name": "household_headcount"
-      },
-      {
-        "orignal_name": "How many people live in your household, including yourself?",
-        "new_name": "kerosene_lamps_cost"
-      },
-      {
-        "orignal_name": "How much do you pay monthly for kerosene used only in kerosene lamps?",
-        "new_name": "water_cost"
-      },
-      {
-        "orignal_name": "How much do you pay per month for water?",
-        "new_name": "phone_charge_cost"
-      },
-      {
-        "orignal_name": "How much do you pay per month to charge your mobile phone?",
-        "new_name": "phone_charge_frequency"
-      },
-      {
-        "orignal_name": "How often do you need to charge your mobile phone?",
-        "new_name": "feel_safe_dark"
-      },
-      {
-        "orignal_name": "How safe do you feel outside your home when it is dark?",
-        "new_name": "feel_safe_if_exterior_lights"
-      },
-      {
-        "orignal_name": "How safe would you feel outside your home at nighttime IF you had exterior lights/community lighting?",
-        "new_name": "feel_safe_if_exterior_lights"
-      },
-      {
-        "orignal_name": "How safe would you feel outside your home at nighttime IF you had exterior lights?",
-        "new_name": "connection_period"
-      },
-      {
-        "orignal_name": "If Post-Connection, select how long your have been using the mingrid",
-        "new_name": "female_unschooled_reasons"
-      },
-      {
-        "orignal_name": "If any female children do not attend school FULL TIME, please specify why:",
-        "new_name": "female_unschooled_reasons"
-      },
-      {
-        "orignal_name": "If any female children do not attend school full time, please specifiy why",
-        "new_name": "male_unschooled_reasons"
-      },
-      {
-        "orignal_name": "If any male children do not attend school FULL TIME, please specify why:",
-        "new_name": "male_unschooled_reasons"
-      },
-      {
-        "orignal_name": "If any male children do not attend school full time, please specifiy why",
-        "new_name": "male_unschooled_reasons"
-      },
-      {
-        "orignal_name": "If this business is new, do you consider this new business a result of having access to minigrid power?",
-        "new_name": "business_from_minigrid"
-      },
-      {
-        "orignal_name": "If yes, please explain or list the new occupation:",
-        "new_name": "occupation_change_explain"
-      },
-      {
-        "orignal_name": "If yes, please explain-> or list the new occupation:",
-        "new_name": "occupation_change_explain"
-      },
-      {
-        "orignal_name": "If yes, please explain-> why",
-        "new_name": "houlsehold_income_change_explain"
-      },
-      {
-        "orignal_name": "If yes, please explain-> why/how:",
-        "new_name": "household_headcount_change_explain"
-      },
-      {
-        "orignal_name": "If yes, please explain->:",
-        "new_name": "minigrid_access_life_improvement_explain"
-      },
-      {
-        "orignal_name": "If yes, please explain=",
-        "new_name": "houlsehold_income_change_explain"
-      },
-      {
-        "orignal_name": "If yes, please explain=/how:",
-        "new_name": "household_headcount_change_explain"
-      },
-      {
-        "orignal_name": "If yes, please explain=2",
-        "new_name": "minigrid_access_life_improvement_explain"
-      },
-      {
-        "orignal_name": "If yes, please tell us why or how it has changed:",
-        "new_name": "school_performance_change_explain"
-      },
-      {
-        "orignal_name": "If yes, what type of business is this?",
-        "new_name": "business_type"
-      },
-      {
-        "orignal_name": "If you answered 'yes, they have increased' above, by how many hours have they increased?",
-        "new_name": "hours_increase"
-      },
-      {
-        "orignal_name": "If you answered yes to above, please explain*:",
-        "new_name": "new_prod_serv_add_explain"
-      },
-      {
-        "orignal_name": "If you answered yes to adding new workers, how many new employees are female?",
-        "new_name": "workforce_change_female"
-      },
-      {
-        "orignal_name": "If you answered yes to the question above, please explain*:",
-        "new_name": "workforce_change_explain"
-      },
-      {
-        "orignal_name": "If you are NOT the Primary Provider of Household, what is Occupation of Primary Provider?",
-        "new_name": "primary_provider_occupation"
-      },
-      {
-        "orignal_name": "If you are NOT the Primary Provider of Household, what is the occupation of Primary Provider?",
-        "new_name": "primary_provider_occupation"
-      },
-      {
-        "orignal_name": "If you are NOT the original subscriber to this Renewvia ID, how long have you been using this account for access to Renewvia minigrid power?",
-        "new_name": "connection_period_non_original_subscriber"
-      },
-      {
-        "orignal_name": "If you have closed operations, please explain* why:",
-        "new_name": "closed_operations_reasons"
-      },
-      {
-        "orignal_name": "If you selected 'other electronic device' above, please list what it is:",
-        "new_name": "appliances_addition_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain& (if not, please skip)",
-        "new_name": "power_primary_source_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain& (if not, please skip)1",
-        "new_name": "appliances_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain& (if not, please skip)2",
-        "new_name": "appliances_addition_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain& (if not, please skip)3",
-        "new_name": "cooking_energy_sources_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain& (if not, please skip)4",
-        "new_name": "applicances_charging_sources_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain& (if not, please skip)5",
-        "new_name": "feel_unsafe_reasons_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain& (if not, please skip)6",
-        "new_name": "phone_charge_location_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain&: (if not, please skip)",
-        "new_name": "female_unschooled_reasons_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain&: (if not, please skip)1",
-        "new_name": "male_unschooled_reasons_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain&: (if not, please skip)2",
-        "new_name": "power_current_sources_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain->: (if not, please skip)",
-        "new_name": "female_unschooled_reasons_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain->: (if not, please skip)10",
-        "new_name": "phone_charge_location_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain->: (if not, please skip)2",
-        "new_name": "male_unschooled_reasons_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain->: (if not, please skip)3",
-        "new_name": "power_primary_source_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain->: (if not, please skip)4",
-        "new_name": "power_current_sources_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain->: (if not, please skip)5",
-        "new_name": "appliances_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain->: (if not, please skip)6",
-        "new_name": "appliances_addition_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain->: (if not, please skip)7",
-        "new_name": "cooking_energy_sources_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain->: (if not, please skip)8",
-        "new_name": "applicances_charging_sources_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain->: (if not, please skip)9",
-        "new_name": "feel_unsafe_reasons_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain= (if not, please skip)",
-        "new_name": "female_unschooled_reasons_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain= (if not, please skip)10",
-        "new_name": "phone_charge_location_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain= (if not, please skip)2",
-        "new_name": "male_unschooled_reasons_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain= (if not, please skip)3",
-        "new_name": "power_primary_source_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain= (if not, please skip)4",
-        "new_name": "power_current_sources_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain= (if not, please skip)5",
-        "new_name": "appliances_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain= (if not, please skip)6",
-        "new_name": "appliances_addition_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain= (if not, please skip)7",
-        "new_name": "cooking_energy_sources_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain= (if not, please skip)8",
-        "new_name": "applicances_charging_sources_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain= (if not, please skip)9",
-        "new_name": "feel_unsafe_reasons_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain__: (if not, please skip)",
-        "new_name": "occupation_primary_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain__: (if not, please skip)10",
-        "new_name": "applicances_charging_sources_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain__: (if not, please skip)11",
-        "new_name": "feel_unsafe_reasons_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain__: (if not, please skip)12",
-        "new_name": "phone_charge_location_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain__: (if not, please skip)2",
-        "new_name": "occupation_secondary_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain__: (if not, please skip)3",
-        "new_name": "female_unschooled_reasons_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain__: (if not, please skip)4",
-        "new_name": "male_unschooled_reasons_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain__: (if not, please skip)5",
-        "new_name": "power_current_sources_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain__: (if not, please skip)6",
-        "new_name": "power_primary_source_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain__: (if not, please skip)7",
-        "new_name": "appliances_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain__: (if not, please skip)8",
-        "new_name": "appliances_addition_explain"
-      },
-      {
-        "orignal_name": "If you selected 'other' in the question above, please explain__: (if not, please skip)9",
-        "new_name": "cooking_energy_sources_explain"
-      },
-      {
-        "orignal_name": "In what way has minigrid power impacted your life or the life of your family members?",
-        "new_name": "minigrid_access_life_family_impact"
-      },
-      {
-        "orignal_name": "In what way has minigrid power made you or your family more productive?",
-        "new_name": "minigrid_access_productivity_improvement"
-      },
-      {
-        "orignal_name": "Is this business recent (started after connection to minigrid power?)",
-        "new_name": "business_recent"
-      },
-      {
-        "orignal_name": "Is this business, clinic, school still in operation?",
-        "new_name": "operation_status"
-      },
-      {
-        "orignal_name": "Is this exterior lighting powered by minigrid?",
-        "new_name": "exterior_lights_minigrid"
-      },
-      {
-        "orignal_name": "Kenya Community",
-        "new_name": "kenya_community"
-      },
-      {
-        "orignal_name": "Kenya community",
-        "new_name": "nigeria_community"
-      },
-      {
-        "orignal_name": "Last Name",
-        "new_name": "last_name"
-      },
-      {
-        "orignal_name": "Location/Neighborhood Name",
-        "new_name": "location"
-      },
-      {
-        "orignal_name": "Nigeria Community",
-        "new_name": "nigeria_community"
-      },
-      {
-        "orignal_name": "Occupation of Secondary Income Provider of Household",
-        "new_name": "occupation_secondary_provider"
-      },
-      {
-        "orignal_name": "Please describe any benefits youve seen from having connection to Renewvia minigrid",
-        "new_name": "minigrid_benefits"
-      },
-      {
-        "orignal_name": "Please describe any problems youve experienced from having connection to Renewvia minigrid",
-        "new_name": "minigrid_problems"
-      },
-      {
-        "orignal_name": "Please select how long your have been using the mingrid.",
-        "new_name": "connection_period"
-      },
-      {
-        "orignal_name": "Please select your business type",
-        "new_name": "business_type"
-      },
-      {
-        "orignal_name": "Select your Minigrid Connection Status",
-        "new_name": "status"
-      },
-      {
-        "orignal_name": "Since connection to Renewvia mingrid, have you had any change in number of workers/employees at your place of work?",
-        "new_name": "workforce_change"
-      },
-      {
-        "orignal_name": "Since connection to Renewvia minigrid, has the amount of use of diesel changed?",
-        "new_name": "diesel_usage_change"
-      },
-      {
-        "orignal_name": "Since connection to Renewvia minigrid, has the amount of use of kerosene lanterns changed?",
-        "new_name": "kerosene_usage_change"
-      },
-      {
-        "orignal_name": "Since connection to Renewvia minigrid, has your access to clean drinking water changed at all?",
-        "new_name": "clean_drinking_water_access"
-      },
-      {
-        "orignal_name": "Since connection to Renewvia minigrid, have your hours of operation changed at all?",
-        "new_name": "operations_hours_change"
-      },
-      {
-        "orignal_name": "Since connection to Renewvia minigrid, what appliances have you added to your business operations?",
-        "new_name": "appliances_addition"
-      },
-      {
-        "orignal_name": "Start Time",
-        "new_name": "start"
-      },
-      {
-        "orignal_name": "Start time",
-        "new_name": "start"
-      },
-      {
-        "orignal_name": "Type of employment for Primary Provider",
-        "new_name": "employement_type"
-      },
-      {
-        "orignal_name": "Types of Electronic Devices or Appliances in Household (POST mini-grid connection) Select all that apply",
-        "new_name": "appliances_type"
-      },
-      {
-        "orignal_name": "Types of Electronic Devices or Appliances in Household (pre-mini-grid connection) Select all that apply",
-        "new_name": "appliances_type"
-      },
-      {
-        "orignal_name": "Types of Electronic Devices or Appliances in Household: Select all that apply",
-        "new_name": "appliances_type"
-      },
-      {
-        "orignal_name": "What are some of the benefits you have experienced because of your access to minigrid?",
-        "new_name": "minigrid_benefits"
-      },
-      {
-        "orignal_name": "What are the ages of your female children?",
-        "new_name": "female_children_age"
-      },
-      {
-        "orignal_name": "What are the ages of your male children?",
-        "new_name": "male_children_age"
-      },
-      {
-        "orignal_name": "What are your current main sources of light?",
-        "new_name": "light_primary_sources"
-      },
-      {
-        "orignal_name": "What are your main sources of energy for charging appliances (eg phones)? POST - CONNECTION",
-        "new_name": "applicances_charging_sources"
-      },
-      {
-        "orignal_name": "What are your main sources of energy for charging appliances (eg phones)? PRE - CONNECTION",
-        "new_name": "applicances_charging_sources"
-      },
-      {
-        "orignal_name": "What are your main sources of energy for charging appliances (example phones)?",
-        "new_name": "applicances_charging_sources"
-      },
-      {
-        "orignal_name": "What are your main sources of energy for cooking?",
-        "new_name": "cooking_energy_sources"
-      },
-      {
-        "orignal_name": "What hours is the Health Center / Clinic open?",
-        "new_name": "clinic_open_hours"
-      },
-      {
-        "orignal_name": "What is approximate monthly cost of energy used strictly for charging appliances?",
-        "new_name": "applicances_charging_cost"
-      },
-      {
-        "orignal_name": "What is the Clinic / Hospital able to offer or provide due to connection to Renewvia minigrid that it wasnt able to offer before?",
-        "new_name": "clinic_offering_unable_prior_minigrid"
-      },
-      {
-        "orignal_name": "What is the MAIN reason for signing up for connection to mini-grid?",
-        "new_name": "minigrid_signup_primary_reason"
-      },
-      {
-        "orignal_name": "What is the MAIN reason for signing up for connection to minigrid?",
-        "new_name": "minigrid_signup_primary_reason"
-      },
-      {
-        "orignal_name": "What is the SECOND MAIN reason for signing up for connection to mini-grid?",
-        "new_name": "minigrid_signup_secondary_reason"
-      },
-      {
-        "orignal_name": "What is the SECOND MAIN reason for signing up for connection to minigrid?",
-        "new_name": "minigrid_signup_secondary_reason"
-      },
-      {
-        "orignal_name": "What is the approximate monthly cost of energy used strictly for charging appliances?",
-        "new_name": "applicances_charging_cost"
-      },
-      {
-        "orignal_name": "What is the approximate monthly cost of energy used strictly for cooking?",
-        "new_name": "cooking_energy_cost"
-      },
-      {
-        "orignal_name": "What is the average age of the person in charge of water collection?",
-        "new_name": "avg_person_age_water_collection"
-      },
-      {
-        "orignal_name": "What is the name of your business/school/clinic/religious institution?",
-        "new_name": "institution_name"
-      },
-      {
-        "orignal_name": "What is the source for clean drinking water?",
-        "new_name": "clean_drinking_water_source"
-      },
-      {
-        "orignal_name": "What is your Current MAIN Source of Power",
-        "new_name": "power_sources_primary"
-      },
-      {
-        "orignal_name": "What is your Current MAIN Source of Power?",
-        "new_name": "power_sources_primary"
-      },
-      {
-        "orignal_name": "What is your Kenya or Nigeria ID Number?",
-        "new_name": "country_id"
-      },
-      {
-        "orignal_name": "What is your Renewvia ID Number?",
-        "new_name": "renewvia_id"
-      },
-      {
-        "orignal_name": "What is your Renewvia Minigrid account number?",
-        "new_name": "renewvia_id"
-      },
-      {
-        "orignal_name": "What is your average monthly household income:",
-        "new_name": "avg_household_income"
-      },
-      {
-        "orignal_name": "What is your clean community water source?",
-        "new_name": "community_clean_water_source"
-      },
-      {
-        "orignal_name": "What is your clean water source?",
-        "new_name": "clean_water_source"
-      },
-      {
-        "orignal_name": "What is your first name?",
-        "new_name": "first_name"
-      },
-      {
-        "orignal_name": "What is your last name?",
-        "new_name": "last_name"
-      },
-      {
-        "orignal_name": "What is your main source of energy for cooking?",
-        "new_name": "cooking_energy_sources"
-      },
-      {
-        "orignal_name": "What is your occupation?",
-        "new_name": "occupation"
-      },
-      {
-        "orignal_name": "What is your school able to offer / accomplish by having electricity that wasnt possible before?",
-        "new_name": "school_offering_unable_prior_minigrid"
-      },
-      {
-        "orignal_name": "What is your source of water?",
-        "new_name": "water_source"
-      },
-      {
-        "orignal_name": "What makes you feel the most unsafe?",
-        "new_name": "feel_unsafe_reasons"
-      },
-      {
-        "orignal_name": "What services are you able to offer/sell/provide due to connection to Renewvia minigrid that you werent able to offer prior to connection?",
-        "new_name": "ci_new_offering"
-      },
-      {
-        "orignal_name": "What types of Electronic Devices or Appliances would you like to add to your Household (pre-mini-grid connection) Select all that apply",
-        "new_name": "appliances_addition"
-      },
-      {
-        "orignal_name": "What types of Electronic Devices or Appliances would you like to add to your household? Select all that apply",
-        "new_name": "appliances_addition"
-      },
-      {
-        "orignal_name": "Where do you typically charge your mobile phone?",
-        "new_name": "phone_charge_location"
-      },
-      {
-        "orignal_name": "Who is mainly responsible for cooking fuel collection on a daily basis? Select all that apply",
-        "new_name": "cooking_fuel_responsible"
-      },
-      {
-        "orignal_name": "Who is mainly responsible for water collection on a daily basis?",
-        "new_name": "water_collection_responsible"
-      },
-      {
-        "orignal_name": "Would you say that having access to minigrid power has improved your quality of life?",
-        "new_name": "minigrid_access_life_improvement"
-      }
-    ]
-  }
+  "col_rename": [
+    {
+      "orignal_name": "Age",
+      "new_name": "age"
+    },
+    {
+      "orignal_name": "Approximately how many hours a day do you use kerosene lamps?",
+      "new_name": "kerosene_lamp_usage_time"
+    },
+    {
+      "orignal_name": "Are any household members business owners?",
+      "new_name": "household_business_owners"
+    },
+    {
+      "orignal_name": "Are you the original person assigned to this Renewvia ID?",
+      "new_name": "original_person"
+    },
+    {
+      "orignal_name": "Are you the primary provider for your household?",
+      "new_name": "primary_provider"
+    },
+    {
+      "orignal_name": "Are you the primary provider of Household?",
+      "new_name": "primary_provider"
+    },
+    {
+      "orignal_name": "Completed Time",
+      "new_name": "end"
+    },
+    {
+      "orignal_name": "Completed time",
+      "new_name": "end"
+    },
+    {
+      "orignal_name": "Completion time",
+      "new_name": "end"
+    },
+    {
+      "orignal_name": "Country",
+      "new_name": "country"
+    },
+    {
+      "orignal_name": "Current Source(s) of Power (after mini-grid connection) Select all that apply",
+      "new_name": "power_sources"
+    },
+    {
+      "orignal_name": "Current Source(s) of Power (before mini-grid connection) Select all that apply",
+      "new_name": "power_sources"
+    },
+    {
+      "orignal_name": "Current Source(s) of Power (select all that apply)",
+      "new_name": "power_sources"
+    },
+    {
+      "orignal_name": "Do you feel that having access to minigrid power has made you more safe? Please explain",
+      "new_name": "feel_safer_with_minigrid"
+    },
+    {
+      "orignal_name": "Do you feel that having access to minigrid power has made you more safe? Please explain->",
+      "new_name": "feel_safer_with_minigrid"
+    },
+    {
+      "orignal_name": "Do you feel that you have better access to health services because of connection to minigrid?",
+      "new_name": "better_access_health_minigrid"
+    },
+    {
+      "orignal_name": "Do you have a source for clean drinking water?",
+      "new_name": "clean_drinking_water"
+    },
+    {
+      "orignal_name": "Do you have any other sources of electricity other than Renewvia Minigrid?",
+      "new_name": "non_renewvia_electrical_sources"
+    },
+    {
+      "orignal_name": "Does this business use minigrid power?",
+      "new_name": "business_use_minigrid"
+    },
+    {
+      "orignal_name": "Does your Health Center / Clinic have access to refrigeration?",
+      "new_name": "clinic_refrigeration_access"
+    },
+    {
+      "orignal_name": "Does your Health Center have access to electricity?",
+      "new_name": "clinic_electricity_access_"
+    },
+    {
+      "orignal_name": "Does your Health Center have access to minigrid electricity?",
+      "new_name": "clinic_electricity_access_minigrid"
+    },
+    {
+      "orignal_name": "Does your community currently have outdoor community lights?",
+      "new_name": "community_lights"
+    },
+    {
+      "orignal_name": "Does your home have exterior lighting?",
+      "new_name": "home_exterior_lights"
+    },
+    {
+      "orignal_name": "Does your household spend time doing any of the following? Select all that apply",
+      "new_name": "other_household_activities"
+    },
+    {
+      "orignal_name": "First Name",
+      "new_name": "first_name"
+    },
+    {
+      "orignal_name": "For businesses or shop owners only: Since connection to Renewvia minigrid, have you seen any change in your weekly or monthly earnings?",
+      "new_name": "earnings_change"
+    },
+    {
+      "orignal_name": "For clinics or health services only: Since connection to Renewvia minigrid, have your health service offerings changed in any of the following ways: (select all that apply).",
+      "new_name": "health_offering_change"
+    },
+    {
+      "orignal_name": "For schools only: Since connection to Renewvia minigrid, have you seen a change in overall attendance at school?",
+      "new_name": "school_attendance_change"
+    },
+    {
+      "orignal_name": "Gender",
+      "new_name": "gender"
+    },
+    {
+      "orignal_name": "Has school performance changed since connection to minigrid?",
+      "new_name": "school_performance_change"
+    },
+    {
+      "orignal_name": "Has the number of electronic devices or appliances increased since connection to minigrid?",
+      "new_name": "electronics_count_change"
+    },
+    {
+      "orignal_name": "Has the number of kerosene lamps in your household changed since connection to minigrid?",
+      "new_name": "kerosene_lamp_usage_change"
+    },
+    {
+      "orignal_name": "Has the number of people living in your household changed since connection to minigrid power?",
+      "new_name": "household_headcount_change"
+    },
+    {
+      "orignal_name": "Has there been a change in the number of females in your household who attend school full time since connection to minigrid power?",
+      "new_name": "female_schooling_change"
+    },
+    {
+      "orignal_name": "Has there been a change in the number of males in your household who attend school FULL TIME since connection to minigrid power?",
+      "new_name": "male_schooling_change"
+    },
+    {
+      "orignal_name": "Has your (or your spouses) occupation changed since youve been connected to minigrid power?",
+      "new_name": "occupation_change"
+    },
+    {
+      "orignal_name": "Has your household income changed since your connection to minigrid power?",
+      "new_name": "houlsehold_income_change"
+    },
+    {
+      "orignal_name": "Have you added any new products or services since connection to Renewvia minigrid?",
+      "new_name": "ci_offering_change"
+    },
+    {
+      "orignal_name": "Have you added any of the following Electronic Devices or Appliances after you were connected to minigrid (POST connection) Select all that apply",
+      "new_name": "appliances_count_addition"
+    },
+    {
+      "orignal_name": "Have you been interviewed by Renewvia before?",
+      "new_name": "interviewed_before"
+    },
+    {
+      "orignal_name": "Have you seen a change in overall school performance?",
+      "new_name": "school_attendance_performance"
+    },
+    {
+      "orignal_name": "How close is the nearest Health Center / Clinic",
+      "new_name": "clinic_travel_distance"
+    },
+    {
+      "orignal_name": "How close is the nearest Health Center/Clinic?",
+      "new_name": "clinic_travel_distance"
+    },
+    {
+      "orignal_name": "How far must you travel to charge your mobile phone?",
+      "new_name": "phone_charge_travel_distance"
+    },
+    {
+      "orignal_name": "How far must you travel to obtain your water supply?",
+      "new_name": "water_collection_travel_distance"
+    },
+    {
+      "orignal_name": "How has minigrid power affected the females in your household?",
+      "new_name": "minigrid_effect_on_household_female"
+    },
+    {
+      "orignal_name": "How long does the cooking fuel collection process take on a daily basis?",
+      "new_name": "cooking_fuel_collection_time"
+    },
+    {
+      "orignal_name": "How long does the water collection process take on a daily basis?",
+      "new_name": "water_collection_time"
+    },
+    {
+      "orignal_name": "How long have you been connected to the Renewvia Minigrid?",
+      "new_name": "connection_period"
+    },
+    {
+      "orignal_name": "How many adults?",
+      "new_name": "adult_headcount"
+    },
+    {
+      "orignal_name": "How many cell phones does your household have?",
+      "new_name": "cellphones_count"
+    },
+    {
+      "orignal_name": "How many electronic devices or appliances do you currently use in the household (POST-connection)?",
+      "new_name": "appliances_count"
+    },
+    {
+      "orignal_name": "How many electronic devices or appliances do you currently use in the household (Pre-connection)?",
+      "new_name": "appliances_count"
+    },
+    {
+      "orignal_name": "How many electronic devices or appliances do you currently use in your household (not including cell phones)?",
+      "new_name": "appliances_count"
+    },
+    {
+      "orignal_name": "How many female children?",
+      "new_name": "female_children_headcount"
+    },
+    {
+      "orignal_name": "How many hours a day do you use at lease one source of power you checked above",
+      "new_name": "power_sources_usage"
+    },
+    {
+      "orignal_name": "How many hours a day do you use at least one source of power you checked above?",
+      "new_name": "power_sources_usage"
+    },
+    {
+      "orignal_name": "How many hours of light per day do you currently have at home?",
+      "new_name": "light_hours_current"
+    },
+    {
+      "orignal_name": "How many hours of light per day do you currently have at home? (POST mini-grid connection)",
+      "new_name": "light_hours_current"
+    },
+    {
+      "orignal_name": "How many hours of light per day do you currently have at home? (pre mini-grid connection)",
+      "new_name": "light_hours_current"
+    },
+    {
+      "orignal_name": "How many kerosene lamps do you currently have in your household?",
+      "new_name": "kerosene_lamps_count"
+    },
+    {
+      "orignal_name": "How many kerosene lamps do you currently use in your household? (POST minigrid connection)",
+      "new_name": "kerosene_lamps_count"
+    },
+    {
+      "orignal_name": "How many kerosene lamps do you currently use in your household? (before grid connection)",
+      "new_name": "kerosene_lamps_count"
+    },
+    {
+      "orignal_name": "How many male children?",
+      "new_name": "male_children_headcount"
+    },
+    {
+      "orignal_name": "How many of your female children attend school?",
+      "new_name": "female_schooling"
+    },
+    {
+      "orignal_name": "How many of your male children attend school?",
+      "new_name": "male_schooling"
+    },
+    {
+      "orignal_name": "How many people live in your household, including yourself?",
+      "new_name": "household_headcount"
+    },
+    {
+      "orignal_name": "How much do you pay monthly for kerosene used only in kerosene lamps?",
+      "new_name": "kerosene_lamps_cost"
+    },
+    {
+      "orignal_name": "How much do you pay per month for water?",
+      "new_name": "water_cost"
+    },
+    {
+      "orignal_name": "How much do you pay per month to charge your mobile phone?",
+      "new_name": "phone_charge_cost"
+    },
+    {
+      "orignal_name": "How often do you need to charge your mobile phone?",
+      "new_name": "phone_charge_frequency"
+    },
+    {
+      "orignal_name": "How safe do you feel outside your home when it is dark?",
+      "new_name": "feel_safe_dark"
+    },
+    {
+      "orignal_name": "How safe would you feel outside your home at nighttime IF you had exterior lights/community lighting?",
+      "new_name": "feel_safe_if_exterior_lights"
+    },
+    {
+      "orignal_name": "How safe would you feel outside your home at nighttime IF you had exterior lights?",
+      "new_name": "feel_safe_if_exterior_lights"
+    },
+    {
+      "orignal_name": "If Post-Connection, select how long your have been using the mingrid",
+      "new_name": "connection_period"
+    },
+    {
+      "orignal_name": "If any female children do not attend school FULL TIME, please specify why:",
+      "new_name": "female_unschooled_reasons"
+    },
+    {
+      "orignal_name": "If any female children do not attend school full time, please specifiy why",
+      "new_name": "female_unschooled_reasons"
+    },
+    {
+      "orignal_name": "If any male children do not attend school FULL TIME, please specify why:",
+      "new_name": "male_unschooled_reasons"
+    },
+    {
+      "orignal_name": "If any male children do not attend school full time, please specifiy why",
+      "new_name": "male_unschooled_reasons"
+    },
+    {
+      "orignal_name": "If this business is new, do you consider this new business a result of having access to minigrid power?",
+      "new_name": "business_from_minigrid"
+    },
+    {
+      "orignal_name": "If yes, please explain or list the new occupation:",
+      "new_name": "occupation_change_explain"
+    },
+    {
+      "orignal_name": "If yes, please explain-> or list the new occupation:",
+      "new_name": "occupation_change_explain"
+    },
+    {
+      "orignal_name": "If yes, please explain-> why",
+      "new_name": "houlsehold_income_change_explain"
+    },
+    {
+      "orignal_name": "If yes, please explain-> why/how:",
+      "new_name": "household_headcount_change_explain"
+    },
+    {
+      "orignal_name": "If yes, please explain->:",
+      "new_name": "minigrid_access_life_improvement_explain"
+    },
+    {
+      "orignal_name": "If yes, please explain=",
+      "new_name": "houlsehold_income_change_explain"
+    },
+    {
+      "orignal_name": "If yes, please explain=/how:",
+      "new_name": "household_headcount_change_explain"
+    },
+    {
+      "orignal_name": "If yes, please explain=2",
+      "new_name": "minigrid_access_life_improvement_explain"
+    },
+    {
+      "orignal_name": "If yes, please tell us why or how it has changed:",
+      "new_name": "school_performance_change_explain"
+    },
+    {
+      "orignal_name": "If yes, what type of business is this?",
+      "new_name": "business_type"
+    },
+    {
+      "orignal_name": "If you answered 'yes, they have increased' above, by how many hours have they increased?",
+      "new_name": "hours_increase"
+    },
+    {
+      "orignal_name": "If you answered yes to above, please explain*:",
+      "new_name": "new_prod_serv_add_explain"
+    },
+    {
+      "orignal_name": "If you answered yes to adding new workers, how many new employees are female?",
+      "new_name": "workforce_change_female"
+    },
+    {
+      "orignal_name": "If you answered yes to the question above, please explain*:",
+      "new_name": "workforce_change_explain"
+    },
+    {
+      "orignal_name": "If you are NOT the Primary Provider of Household, what is Occupation of Primary Provider?",
+      "new_name": "primary_provider_occupation"
+    },
+    {
+      "orignal_name": "If you are NOT the Primary Provider of Household, what is the occupation of Primary Provider?",
+      "new_name": "primary_provider_occupation"
+    },
+    {
+      "orignal_name": "If you are NOT the original subscriber to this Renewvia ID, how long have you been using this account for access to Renewvia minigrid power?",
+      "new_name": "connection_period_non_original_subscriber"
+    },
+    {
+      "orignal_name": "If you have closed operations, please explain* why:",
+      "new_name": "closed_operations_reasons"
+    },
+    {
+      "orignal_name": "If you selected 'other electronic device' above, please list what it is:",
+      "new_name": "appliances_addition_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain& (if not, please skip)",
+      "new_name": "power_primary_source_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain& (if not, please skip)1",
+      "new_name": "appliances_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain& (if not, please skip)2",
+      "new_name": "appliances_addition_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain& (if not, please skip)3",
+      "new_name": "cooking_energy_sources_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain& (if not, please skip)4",
+      "new_name": "applicances_charging_sources_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain& (if not, please skip)5",
+      "new_name": "feel_unsafe_reasons_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain& (if not, please skip)6",
+      "new_name": "phone_charge_location_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain&: (if not, please skip)",
+      "new_name": "female_unschooled_reasons_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain&: (if not, please skip)1",
+      "new_name": "male_unschooled_reasons_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain&: (if not, please skip)2",
+      "new_name": "power_current_sources_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain->: (if not, please skip)",
+      "new_name": "female_unschooled_reasons_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain->: (if not, please skip)10",
+      "new_name": "phone_charge_location_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain->: (if not, please skip)2",
+      "new_name": "male_unschooled_reasons_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain->: (if not, please skip)3",
+      "new_name": "power_primary_source_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain->: (if not, please skip)4",
+      "new_name": "power_current_sources_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain->: (if not, please skip)5",
+      "new_name": "appliances_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain->: (if not, please skip)6",
+      "new_name": "appliances_addition_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain->: (if not, please skip)7",
+      "new_name": "cooking_energy_sources_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain->: (if not, please skip)8",
+      "new_name": "applicances_charging_sources_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain->: (if not, please skip)9",
+      "new_name": "feel_unsafe_reasons_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain= (if not, please skip)",
+      "new_name": "female_unschooled_reasons_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain= (if not, please skip)10",
+      "new_name": "phone_charge_location_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain= (if not, please skip)2",
+      "new_name": "male_unschooled_reasons_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain= (if not, please skip)3",
+      "new_name": "power_primary_source_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain= (if not, please skip)4",
+      "new_name": "power_current_sources_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain= (if not, please skip)5",
+      "new_name": "appliances_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain= (if not, please skip)6",
+      "new_name": "appliances_addition_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain= (if not, please skip)7",
+      "new_name": "cooking_energy_sources_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain= (if not, please skip)8",
+      "new_name": "applicances_charging_sources_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain= (if not, please skip)9",
+      "new_name": "feel_unsafe_reasons_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain__: (if not, please skip)",
+      "new_name": "occupation_primary_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain__: (if not, please skip)10",
+      "new_name": "applicances_charging_sources_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain__: (if not, please skip)11",
+      "new_name": "feel_unsafe_reasons_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain__: (if not, please skip)12",
+      "new_name": "phone_charge_location_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain__: (if not, please skip)2",
+      "new_name": "occupation_secondary_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain__: (if not, please skip)3",
+      "new_name": "female_unschooled_reasons_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain__: (if not, please skip)4",
+      "new_name": "male_unschooled_reasons_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain__: (if not, please skip)5",
+      "new_name": "power_current_sources_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain__: (if not, please skip)6",
+      "new_name": "power_primary_source_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain__: (if not, please skip)7",
+      "new_name": "appliances_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain__: (if not, please skip)8",
+      "new_name": "appliances_addition_explain"
+    },
+    {
+      "orignal_name": "If you selected 'other' in the question above, please explain__: (if not, please skip)9",
+      "new_name": "cooking_energy_sources_explain"
+    },
+    {
+      "orignal_name": "In what way has minigrid power impacted your life or the life of your family members?",
+      "new_name": "minigrid_access_life_family_impact"
+    },
+    {
+      "orignal_name": "In what way has minigrid power made you or your family more productive?",
+      "new_name": "minigrid_access_productivity_improvement"
+    },
+    {
+      "orignal_name": "Is this business recent (started after connection to minigrid power?)",
+      "new_name": "business_recent"
+    },
+    {
+      "orignal_name": "Is this business, clinic, school still in operation?",
+      "new_name": "operation_status"
+    },
+    {
+      "orignal_name": "Is this exterior lighting powered by minigrid?",
+      "new_name": "exterior_lights_minigrid"
+    },
+    {
+      "orignal_name": "Kenya Community",
+      "new_name": "kenya_community"
+    },
+    {
+      "orignal_name": "Kenya community",
+      "new_name": "nigeria_community"
+    },
+    {
+      "orignal_name": "Last Name",
+      "new_name": "last_name"
+    },
+    {
+      "orignal_name": "Location/Neighborhood Name",
+      "new_name": "location"
+    },
+    {
+      "orignal_name": "Nigeria Community",
+      "new_name": "nigeria_community"
+    },
+    {
+      "orignal_name": "Occupation of Secondary Income Provider of Household",
+      "new_name": "occupation_secondary_provider"
+    },
+    {
+      "orignal_name": "Please describe any benefits youve seen from having connection to Renewvia minigrid,",
+      "new_name": "minigrid_benefits"
+    },
+    {
+      "orignal_name": "Please describe any problems youve experienced from having connection to Renewvia minigrid",
+      "new_name": "minigrid_problems"
+    },
+    {
+      "orignal_name": "Please select how long your have been using the mingrid.",
+      "new_name": "connection_period"
+    },
+    {
+      "orignal_name": "Please select your business type",
+      "new_name": "business_type"
+    },
+    {
+      "orignal_name": "Select your Minigrid Connection Status",
+      "new_name": "status"
+    },
+    {
+      "orignal_name": "Since connection to Renewvia mingrid, have you had any change in number of workers/employees at your place of work?",
+      "new_name": "workforce_change"
+    },
+    {
+      "orignal_name": "Since connection to Renewvia minigrid, has the amount of use of diesel changed?",
+      "new_name": "diesel_usage_change"
+    },
+    {
+      "orignal_name": "Since connection to Renewvia minigrid, has the amount of use of kerosene lanterns changed?",
+      "new_name": "kerosene_usage_change"
+    },
+    {
+      "orignal_name": "Since connection to Renewvia minigrid, has your access to clean drinking water changed at all?",
+      "new_name": "clean_drinking_water_access"
+    },
+    {
+      "orignal_name": "Since connection to Renewvia minigrid, have your hours of operation changed at all?",
+      "new_name": "operations_hours_change"
+    },
+    {
+      "orignal_name": "Since connection to Renewvia minigrid, what appliances have you added to your business operations?",
+      "new_name": "appliances_addition"
+    },
+    {
+      "orignal_name": "Start Time",
+      "new_name": "start"
+    },
+    {
+      "orignal_name": "Start time",
+      "new_name": "start"
+    },
+    {
+      "orignal_name": "Type of employment for Primary Provider",
+      "new_name": "employement_type"
+    },
+    {
+      "orignal_name": "Types of Electronic Devices or Appliances in Household (POST mini-grid connection) Select all that apply",
+      "new_name": "appliances_type"
+    },
+    {
+      "orignal_name": "Types of Electronic Devices or Appliances in Household (pre-mini-grid connection) Select all that apply",
+      "new_name": "appliances_type"
+    },
+    {
+      "orignal_name": "Types of Electronic Devices or Appliances in Household: Select all that apply",
+      "new_name": "appliances_type"
+    },
+    {
+      "orignal_name": "What are some of the benefits you have experienced because of your access to minigrid?",
+      "new_name": "minigrid_benefits"
+    },
+    {
+      "orignal_name": "What are the ages of your female children?",
+      "new_name": "female_children_age"
+    },
+    {
+      "orignal_name": "What are the ages of your male children?",
+      "new_name": "male_children_age"
+    },
+    {
+      "orignal_name": "What are your current main sources of light?",
+      "new_name": "light_primary_sources"
+    },
+    {
+      "orignal_name": "What are your main sources of energy for charging appliances (eg phones)? POST - CONNECTION",
+      "new_name": "applicances_charging_sources"
+    },
+    {
+      "orignal_name": "What are your main sources of energy for charging appliances (eg phones)? PRE - CONNECTION",
+      "new_name": "applicances_charging_sources"
+    },
+    {
+      "orignal_name": "What are your main sources of energy for charging appliances (example phones)?",
+      "new_name": "applicances_charging_sources"
+    },
+    {
+      "orignal_name": "What are your main sources of energy for cooking?",
+      "new_name": "cooking_energy_sources"
+    },
+    {
+      "orignal_name": "What hours is the Health Center / Clinic open?",
+      "new_name": "clinic_open_hours"
+    },
+    {
+      "orignal_name": "What is approximate monthly cost of energy used strictly for charging appliances?",
+      "new_name": "applicances_charging_cost"
+    },
+    {
+      "orignal_name": "What is the Clinic / Hospital able to offer or provide due to connection to Renewvia minigrid that it wasnt able to offer before?",
+      "new_name": "clinic_offering_unable_prior_minigrid"
+    },
+    {
+      "orignal_name": "What is the MAIN reason for signing up for connection to mini-grid?",
+      "new_name": "minigrid_signup_primary_reason"
+    },
+    {
+      "orignal_name": "What is the MAIN reason for signing up for connection to minigrid?",
+      "new_name": "minigrid_signup_primary_reason"
+    },
+    {
+      "orignal_name": "What is the SECOND MAIN reason for signing up for connection to mini-grid?",
+      "new_name": "minigrid_signup_secondary_reason"
+    },
+    {
+      "orignal_name": "What is the SECOND MAIN reason for signing up for connection to minigrid?",
+      "new_name": "minigrid_signup_secondary_reason"
+    },
+    {
+      "orignal_name": "What is the approximate monthly cost of energy used strictly for charging appliances?",
+      "new_name": "applicances_charging_cost"
+    },
+    {
+      "orignal_name": "What is the approximate monthly cost of energy used strictly for cooking?",
+      "new_name": "cooking_energy_cost"
+    },
+    {
+      "orignal_name": "What is the average age of the person in charge of water collection?",
+      "new_name": "avg_person_age_water_collection"
+    },
+    {
+      "orignal_name": "What is the name of your business/school/clinic/religious institution?",
+      "new_name": "institution_name"
+    },
+    {
+      "orignal_name": "What is the source for clean drinking water?",
+      "new_name": "clean_drinking_water_source"
+    },
+    {
+      "orignal_name": "What is your Current MAIN Source of Power",
+      "new_name": "power_sources_primary"
+    },
+    {
+      "orignal_name": "What is your Current MAIN Source of Power?",
+      "new_name": "power_sources_primary"
+    },
+    {
+      "orignal_name": "What is your Kenya or Nigeria ID Number?",
+      "new_name": "country_id"
+    },
+    {
+      "orignal_name": "What is your Renewvia ID Number?",
+      "new_name": "renewvia_id"
+    },
+    {
+      "orignal_name": "What is your Renewvia Minigrid account number?",
+      "new_name": "renewvia_id"
+    },
+    {
+      "orignal_name": "What is your average monthly household income:",
+      "new_name": "avg_household_income"
+    },
+    {
+      "orignal_name": "What is your clean community water source?",
+      "new_name": "community_clean_water_source"
+    },
+    {
+      "orignal_name": "What is your clean water source?",
+      "new_name": "clean_water_source"
+    },
+    {
+      "orignal_name": "What is your first name?",
+      "new_name": "first_name"
+    },
+    {
+      "orignal_name": "What is your last name?",
+      "new_name": "last_name"
+    },
+    {
+      "orignal_name": "What is your main source of energy for cooking?",
+      "new_name": "cooking_energy_sources"
+    },
+    {
+      "orignal_name": "What is your occupation?",
+      "new_name": "occupation"
+    },
+    {
+      "orignal_name": "What is your school able to offer / accomplish by having electricity that wasnt possible before?",
+      "new_name": "school_offering_unable_prior_minigrid"
+    },
+    {
+      "orignal_name": "What is your source of water?",
+      "new_name": "water_source"
+    },
+    {
+      "orignal_name": "What makes you feel the most unsafe?",
+      "new_name": "feel_unsafe_reasons"
+    },
+    {
+      "orignal_name": "What services are you able to offer/sell/provide due to connection to Renewvia minigrid that you werent able to offer prior to connection?",
+      "new_name": "ci_new_offering"
+    },
+    {
+      "orignal_name": "What types of Electronic Devices or Appliances would you like to add to your Household (pre-mini-grid connection) Select all that apply",
+      "new_name": "appliances_addition"
+    },
+    {
+      "orignal_name": "What types of Electronic Devices or Appliances would you like to add to your household? Select all that apply",
+      "new_name": "appliances_addition"
+    },
+    {
+      "orignal_name": "Where do you typically charge your mobile phone?",
+      "new_name": "phone_charge_location"
+    },
+    {
+      "orignal_name": "Who is mainly responsible for cooking fuel collection on a daily basis? Select all that apply",
+      "new_name": "cooking_fuel_responsible"
+    },
+    {
+      "orignal_name": "Who is mainly responsible for water collection on a daily basis?",
+      "new_name": "water_collection_responsible"
+    },
+    {
+      "orignal_name": "Would you say that having access to minigrid power has improved your quality of life?",
+      "new_name": "minigrid_access_life_improvement"
+    }
+  ]
+}
