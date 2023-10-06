@@ -576,6 +576,18 @@
       }
     },
     {
+      "old_name": "If Post-Connection, select how long your have been using the mingrid",
+      "new_name": "connection_period",
+      "mapping": {
+        "months": "0-3 months",
+        "3-6_months": "3-6 months",
+        "choice5": "6-12 months",
+        "choice6": "12-24 months",
+        "copy-2-of-months": "24-36 months",
+        "over_36_months": "over 36 months"
+      }
+    },
+    {
       "old_name": "Please select how long your have been using the mingrid.",
       "new_name": "connection_period",
       "mapping": {
@@ -589,7 +601,6 @@
       "old_name": "Please select how long your have been using the mingrid.",
       "new_name": "connection_period",
       "mapping": {
-        "1_3 months": "0-3 months",
         "months": "0-3 months",
         "copy-1-of-months": "3-6 months",
         "copy-2-of-months": "6-12 months",
