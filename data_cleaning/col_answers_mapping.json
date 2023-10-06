@@ -276,14 +276,16 @@
         "copy-1-of-years_old": "10-12 years old",
         "copy-2-of-years_old": "12-15 years old",
         "copy-3-of-years_old": "15 -18 years old",
-        "copy-3-of-years_old": "15 -18 years old",
         "or_older": "18 or older"
       }
     },
     {
       "old_name": "Do you feel that you have better access to health services because of connection to minigrid?",
       "new_name": "better_access_health_minigrid",
-      "mapping": {}
+      "mapping": {
+        "yes": "yes",
+        "no": "no"
+      }
     },
     {
       "old_name": "What are the ages of your male children?",
@@ -305,7 +307,7 @@
         "choice76": "14",
         "choice78": "15",
         "choice81": "16",
-        "older_than_16": "Older than 16"
+        "older_than_16": "Older_than_16"
       }
     },
     {
@@ -517,7 +519,6 @@
       "new_name": "clinic_travel_distance",
       "mapping": {
         "less_than_1km": "less than 1 km",
-        "less_than_1_km": "less than 1 km",
         "between_1-2_km": "between 1-2 km",
         "between_2-3_km": "between 2-3 km",
         "between_3-5_km": "between 3-5 km",
@@ -529,7 +530,6 @@
       "new_name": "clinic_travel_distance",
       "mapping": {
         "less_than_1km": "less than 1 km",
-        "less_than_1_km": "less than 1 km",
         "between_1-2_km": "between 1-2 km",
         "between_2-3_km": "between 2-3 km",
         "between_3-5_km": "between 3-5 km",
@@ -567,17 +567,7 @@
     },
     {
       "old_name": "If Post-Connection, select how long your have been using the mingrid",
-      "new_name": "connection_period",
-      "mapping": {
-        "less_than_6_months": "Less than 6 months",
-        "months": "6-12 months",
-        "years": "1-2 years",
-        "longer_than_2_years": "longer than 2 years"
-      }
-    },
-    {
-      "old_name": "If Post-Connection, select how long your have been using the mingrid",
-      "new_name": "connection_period",
+      "new_name": "connection_period_initial",
       "mapping": {
         "months": "0-3 months",
         "3-6_months": "3-6 months",
@@ -587,6 +577,8 @@
         "over_36_months": "over 36 months"
       }
     },
+
+   
     {
       "old_name": "Please select how long your have been using the mingrid.",
       "new_name": "connection_period",
@@ -810,6 +802,7 @@
       "mapping": {
         "potential_theft": "Potential theft",
         "unsafe_travel_to_obtain_water_supplies_or_charging_phones": "Unsafe travel to obtain, water, supplies or charging phones",
+        "unsafe_travel_to_obtain_water_supplies_and_charging_phones": "Unsafe travel to obtain, water, supplies and charging phones",
         "lack_of_community_lighting": "Lack of community lighting",
         "other": "Other",
         "i_dont_feel_unsafe": "I don't feel unsafe"
@@ -873,7 +866,7 @@
         "choice37": "14",
         "choice40": "15",
         "choice43": "16",
-        "older_than_16": "Older than 16"
+        "older_than_16": "Older_than_16"
       }
     },
     {
@@ -972,12 +965,12 @@
       }
     },
     {
-      "old_name": "Has your household income changed since your  connection to minigrid power?",
+      "old_name": "Has your household income changed since your connection to minigrid power?",
       "new_name": "household_income_change",
       "mapping": {
-        "yes_its_increased": "Yes, it's increased",
-        "yes_its_decreased": "Yes, it's decreased",
-        "no_it_is_the_same": "No, it is the same"
+        "yes_it_has_increased": "Yes, it has increased",
+        "yes_it_has_decreased": "Yes, it has decreased",
+        "no_it_has_stayed_the_same": "No, it has the same"
       }
     },
     {
@@ -1803,7 +1796,7 @@
       "old_name": "How much do you pay per month for water?",
       "new_name": "water_cost",
       "mapping": {
-        "i_dont_pay_its_free": "I don't pay; it's free",
+        "i_dont_pay_its_free": "I don't pay, it's free",
         "nkes": "0-500 N/KES",
         "copy-1-of-nkes": "500-3000 N/KES",
         "copy-2-of-nkes": "3000-5000 N/KES",
