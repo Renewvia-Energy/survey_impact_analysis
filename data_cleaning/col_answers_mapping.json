@@ -276,6 +276,7 @@
         "copy-1-of-years_old": "10-12 years old",
         "copy-2-of-years_old": "12-15 years old",
         "copy-3-of-years_old": "15 -18 years old",
+        "copy-3-of-years_old": "15 -18 years old",
         "or_older": "18 or older"
       }
     },
@@ -515,22 +516,24 @@
       "old_name": "How close is the nearest Health Center / Clinic",
       "new_name": "clinic_travel_distance",
       "mapping": {
+        "less_than_1km": "less than 1 km",
         "less_than_1_km": "less than 1 km",
         "between_1-2_km": "between 1-2 km",
         "between_2-3_km": "between 2-3 km",
         "between_3-5_km": "between 3-5 km",
-        "greater_than_5_km": "greater than 5 km "
+        "greater_than_5_km": "greater than 5 km"
       }
     },
     {
       "old_name": "How close is the nearest Health Center/Clinic?",
       "new_name": "clinic_travel_distance",
       "mapping": {
+        "less_than_1km": "less than 1 km",
         "less_than_1_km": "less than 1 km",
         "between_1-2_km": "between 1-2 km",
         "between_2-3_km": "between 2-3 km",
         "between_3-5_km": "between 3-5 km",
-        "greater_than_5_km": "greater than 5 km "
+        "greater_than_5_km": "greater than 5 km"
       }
     },
     {
@@ -586,6 +589,7 @@
       "old_name": "Please select how long your have been using the mingrid.",
       "new_name": "connection_period",
       "mapping": {
+        "1_3 months": "0-3 months",
         "months": "0-3 months",
         "copy-1-of-months": "3-6 months",
         "copy-2-of-months": "6-12 months",
@@ -618,7 +622,7 @@
     },
     {
       "old_name": "What is your main source of energy for cooking?",
-      "new_name": "cooking_energy_source",
+      "new_name": "cooking_energy_sources",
       "mapping": {
         "charcoal": "Charcoal",
         "kerosene": "Kerosene",
@@ -631,7 +635,14 @@
     {
       "old_name": "What are your main sources of energy for cooking?",
       "new_name": "cooking_energy_sources",
-      "mapping": {}
+      "mapping": {
+        "charcoal": "Charcoal",
+        "kerosene": "Kerosene",
+        "firewood": "Firewood",
+        "biomass": "Biomass",
+        "minigrid_electricity_renewvia": "Minigrid Electricity (Renewvia)",
+        "other": "Other"
+      }
     },
     {
       "old_name": "If you selected 'other' in the question above, please explain& (if not, please skip)3",
@@ -1475,6 +1486,7 @@
       "old_name": "How far must you travel to charge your mobile phone?",
       "new_name": "phone_charge_travel_distance",
       "mapping": {
+        "less_than_1km": "less than 1 km",
         "less_than_1_km": "less than 1 km",
         "km": "1-2 km",
         "copy-1-of-km": "2-5 km",
@@ -1605,8 +1617,8 @@
       "new_name": "power_sources_usage",
       "mapping": {
         "less_than_2_hours": "Less than 2 hours",
-        "between_2-5_hours": "Between 2-5 hours",
-        "between_5-8_hours": "Between 5-8 hours",
+        "between_2_and_5_hours": "Between 2 and 5 hours",
+        "between_5_and_8_hours": "Between 5 and 8 hours",
         "more_than_8_hours": "More than 8 hours"
       }
     },
@@ -1782,7 +1794,7 @@
       "mapping": {
         "i_dont_pay_its_free": "I don't pay; it's free",
         "nkes": "0-500 N/KES",
-        "copy-1-of-nkes": "500-3000 N/KES ",
+        "copy-1-of-nkes": "500-3000 N/KES",
         "copy-2-of-nkes": "3000-5000 N/KES",
         "nkes_and_above": "5000 N/KES and above"
       }

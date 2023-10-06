@@ -1,0 +1,90 @@
+---
+title: "Renewvia - Survey Impact Analysis"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneth the code.
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*.
+
+```{r}
+library(dataMaid) 
+# library(DataExplorer)
+# library(SmartEDA)
+```
+
+```{r}
+# Loading the paired data
+df <- read.csv("data_cleaning/datasets_encoded/hs_subset_paired_data.csv")
+makeDataReport(df,
+               output = "html",
+               replace = TRUE)
+# create_report(df)
+# ExpReport(df, op_file = 'SmartEDA_df.html')
+```
+
+# Economic Activity
+
+## 1. Average Household Income
+
+**Statistical Test**: Two-sample Paired t-Test
+
+**Hypothesis Testing**:
+
+-   $H_{0}$: There were no changes in the average household income before and after Renewvia's mini-grid installation
+
+```{=html}
+<!-- -->
+```
+-   $H_{1}$: There were a change in the average household income before and after Renewvia's mini-grid installation
+
+```{r}
+hist(df$avg_household_income_pre)
+hist(df$avg_household_income_post)
+```
+
+```{r}
+# Paired t-test
+income_before <- df$avg_household_income_pre
+income_after <- df$avg_household_income_post
+t.test(x = income_before, y = income_after, 
+       paired = TRUE)
+```
+
+## 2. Light Hours
+
+**Statistical Test**: Two-sample Paired t-Test
+
+**Hypothesis Testing**:
+
+-   $H_{0}$: There were no changes in the number of light hours before and after Renewvia's mini-grid installation
+
+```{=html}
+<!-- -->
+```
+-   $H_{1}$: There were a change in the number of light hours before and after Renewvia's mini-grid installation
+
+```{r}
+# Paired t-test
+light_hours_before <- df$light_hours_current_pre
+light_hours_after <- df$light_hours_current_post
+t.test(x = light_hours_before, 
+       y = light_hours_after, 
+       paired = TRUE)
+```
+
+## 3. Business Owners
+
+**Statistical Test**: Two-sample Paired t-Test
+
+**Hypothesis Testing**:
+
+-   $H_{0}$: There were no changes in the number of business owners
+
+```{=html}
+<!-- -->
+```
+-   $H_{1}$: There were a change in the average household income before and after Renewvia's mini-grid installation
