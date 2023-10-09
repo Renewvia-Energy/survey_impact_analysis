@@ -1,14 +1,15 @@
 ---
 title: "Renewvia - Survey Impact Analysis"
 output:
+  pdf_document: default
   html_document:
     df_print: paged
-  pdf_document: default
 ---
 
 # Importing the libraries and datsets
 
 ```{r}
+# tinytex::install_tinytex()
 library(dataMaid) 
 library(ggplot2)
 library(dplyr)
@@ -22,9 +23,9 @@ library(exact2x2)
 # Loading the paired data
 initial_clean <- read.csv("data_cleaning/datasets_clean/initial_clean.csv")
 initial_enc <- read.csv("data_cleaning/datasets_encoded/initial_encoded.csv")
-makeDataReport(initial_clean,
-               output = "html",
-               replace = TRUE)
+# makeDataReport(initial_clean,
+#                output = "html",
+#                replace = TRUE)
 # create_report(df)
 # ExpReport(df, op_file = 'SmartEDA_df.html')
 ```
@@ -32,17 +33,17 @@ makeDataReport(initial_clean,
 ```{r}
 hs_post_clean <- read.csv("data_cleaning/datasets_clean/hs_post_clean.csv")
 hs_post_enc <- read.csv("data_cleaning/datasets_encoded/hs_post_encoded.csv")
-makeDataReport(hs_post_clean,
-               output = "html",
-               replace = TRUE)
+# makeDataReport(hs_post_clean,
+#                output = "html",
+#                replace = TRUE)
 ```
 
 ```{r}
 ci_post_clean <- read.csv("data_cleaning/datasets_clean/ci_post_clean.csv")
 ci_post_enc <- read.csv("data_cleaning/datasets_encoded/ci_post_encoded.csv")
-makeDataReport(ci_post_clean,
-               output = "html",
-               replace = TRUE)
+# makeDataReport(ci_post_clean,
+#                output = "html",
+#                replace = TRUE)
 ```
 
 ```{r}
@@ -55,6 +56,7 @@ hs_post_clean_id <- hs_post_clean %>%
 ci_post_clean_id <- ci_post_clean %>% 
                     filter(renewvia_id != "") %>% 
                     filter(renewvia_id != "no_meter")
+
 clean_paired <- merge(initial_clean_id, hs_post_clean_id, 
                       suffix = c("_pre", "_post"),
                       by= 'renewvia_id')
@@ -74,6 +76,7 @@ enc_paired <- merge(initial_enc_id, hs_post_enc_id,
                     suffix = c("_pre", "_post"),
                     by= 'renewvia_id')
 
+household_paired <- enc_paired %>% filter(tariff_pre == "residential")
 ```
 
 # 1- GENDER EQUALITY
@@ -92,14 +95,16 @@ enc_paired <- merge(initial_enc_id, hs_post_enc_id,
 
 ```{r}
 # Breakdown of observed change
-PieChart(girls_schooling_change, hole = 0, values = "%", 
-         data = hs_post_clean,
+data_test <- hs_post_clean_id %>% filter(girls_schooling_change != "") 
+data_test$girls_schooling_change <- factor(data_test$girls_schooling_change)
+PieChart(girls_schooling_change, hole = 0, values = "%",
+         data = data_test,
          main = "")
 
-
-girls_enrolled <- factor(hs_post_enc$girls_schooling_change)
-girls_enrolled_table <-table(girls_enrolled)
-chisq.test(girls_enrolled_table,p=rep(1/3,3))
+# 
+# girls_enrolled <- factor(hs_post_enc$girls_schooling_change)
+# girls_enrolled_table <-table(girls_enrolled)
+# chisq.test(girls_enrolled_table,p=rep(1/3,3))
 ```
 
 #### Question 1-b: Has there been a change in the number of males in your household who attend school FULL TIME since connection to mini-grid power?
@@ -183,14 +188,14 @@ mcnemar.exact(Performance)
 **Hypothesis Testing**: $H_{0}$: No change in the average light hours for household; $H_{1}$: A change in the average income for household
 
 ```{r}
-household <- enc_paired %>% filter(tariff_pre == "residential")
+
 # commercial <- enc_paired %>% filter(tariff_pre == "commercial")
 
 # For household
 hs_light_hours_pre <- household$light_hours_current_pre
-hist(light_hours_pre)
+hist(hs_light_hours_pre)
 hs_light_hours_post <- household$light_hours_current_post
-hist(light_hours_post)
+hist(hs_light_hours_post)
 t.test(hs_light_hours_pre, hs_light_hours_post, 
        paired = TRUE, alternative = "two.sided")
 
