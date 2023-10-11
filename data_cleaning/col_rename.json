@@ -82,7 +82,7 @@
     },
     {
       "orignal_name": "Does your Health Center have access to electricity?",
-      "new_name": "clinic_electricity_access_"
+      "new_name": "clinic_electricity_access"
     },
     {
       "orignal_name": "Does your Health Center have access to minigrid electricity?",
