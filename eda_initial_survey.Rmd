@@ -1,0 +1,58 @@
+---
+title: "Renewvia - Survey Impact Analysis"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+# Importing libraries
+
+```{r}
+# tinytex::install_tinytex()
+library(dataMaid) 
+library(ggplot2)
+library(dplyr)
+library(lessR)
+library(tidyr)
+library(ggpubr)
+library(exact2x2)
+library(stringr)
+```
+
+# Loading the data
+
+```{r}
+## Locading the cleaned data sets
+# Intial Survey
+initial_clean <- read.csv("data_cleaning/datasets_clean/initial_clean.csv")
+head(initial_clean)
+```
+
+```{r}
+# Household Post-Survey
+hs_post_clean <- read.csv("data_cleaning/datasets_clean/hs_post_clean.csv")
+head(hs_post_clean)
+```
+
+```{r}
+# Commercial & Insitution Post-Survey
+ci_post_clean <- read.csv("data_cleaning/datasets_clean/ci_post_clean.csv")
+head(ci_post_clean)
+```
+
+# 1- Demographics
+
+```{r}
+# Age
+initial_clean$age = as.numeric(initial_clean$age) 
+age_initial = (initial_clean %>% filter(age < 100))$age
+hist(age_initial)
+
+hs_post_clean$age = as.numeric(initial_clean$age) 
+age_initial = (initial_clean %>% filter(age < 100))$age
+hist(age_initial)
+# Gender
+# Country
+# Settlement
+```
