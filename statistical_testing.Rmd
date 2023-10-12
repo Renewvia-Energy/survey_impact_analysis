@@ -10,19 +10,23 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-# initial_clean_id <- initial_clean %>% 
-#                     filter(renewvia_id != "") %>% 
-#                     filter(renewvia_id != "no_meter")
-# hs_post_clean_id <- hs_post_clean %>% 
-#                     filter(renewvia_id != "") %>% 
-#                     filter(renewvia_id != "no_meter")
-# ci_post_clean_id <- ci_post_clean %>% 
-#                     filter(renewvia_id != "") %>% 
-#                     filter(renewvia_id != "no_meter")
-# 
-# clean_paired <- merge(initial_clean_id, hs_post_clean_id, 
-#                       suffix = c("_pre", "_post"),
-#                       by= 'renewvia_id')
+
+ci_post_clean_id <- ci_post_clean %>%
+                    filter(renewvia_id != "") %>%
+                    filter(renewvia_id != "no_meter")
+
+pre_connect <- initial_clean %>%
+                    filter(renewvia_id != "") %>%
+                    filter(renewvia_id != "no_meter")%>%
+                    filter(status == "pre_connection")
+post_connect <- hs_post_clean %>%
+                    filter(renewvia_id != "") %>%
+                    filter(renewvia_id != "no_meter")
+
+clean_paired <- merge(pre_connect, hs_post_clean_id,
+                      suffix = c("_pre", "_post"),
+                      by= 'renewvia_id')
+head(clean_paired)
 ```
 
 ## R Markdown

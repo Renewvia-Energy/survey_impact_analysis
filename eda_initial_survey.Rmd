@@ -44,15 +44,38 @@ head(ci_post_clean)
 # 1- Demographics
 
 ```{r}
-# Age
-initial_clean$age = as.numeric(initial_clean$age) 
-age_initial = (initial_clean %>% filter(age < 100))$age
-hist(age_initial)
+# Age & Gender
+par(mfrow = c(1, 2))
+hs_pre <- initial_clean %>%
+                    filter(status == "pre_connection")
 
-hs_post_clean$age = as.numeric(initial_clean$age) 
-age_initial = (initial_clean %>% filter(age < 100))$age
-hist(age_initial)
-# Gender
-# Country
-# Settlement
+# Transforming the vvariables
+hs_pre$age <- as.numeric(hs_pre$age) 
+hs_pre$gender <- as.factor(hs_pre$gender)
+
+# Age
+age_hist <- ggplot(hs_pre %>% filter(age < 100), aes(x=age)) + 
+              geom_histogram(color="black", fill="white") # Save histogram data
+
+
+# Pie Chart
+# Data transformation
+pie_data <- hs_pre %>% 
+            group_by(gender) %>% # Variable to be transformed
+            count() %>% 
+            ungroup() %>% 
+            mutate(perc = n / sum(n)) %>% 
+            arrange(perc) %>%
+            mutate(labels = scales::percent(perc))
+
+gender_pie <- ggplot(pie_data, aes(x = "", y = perc, fill = gender)) +
+                  geom_col() +
+                  geom_text(aes(label = labels),
+                            # position = position_stack(vjust = 0.5)
+                            ) +
+                  coord_polar(theta = "y")
+
+ggarrange(age_hist, gender_pie,
+          labels = c("Age", "Gender"),
+          ncol = 2, nrow = 1)
 ```
