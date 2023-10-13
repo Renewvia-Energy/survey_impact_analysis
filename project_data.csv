@@ -1,4 +1,4 @@
-﻿Project Name,name,Country,PV Size (kW),Battery Size (kWh),Battery Type,Phase Count,Customer Count,CAPEX (USD)
+﻿project_name,community,country,pv_size_kwh,battery_size,battery_type,phase_count,customer_count,capex_usd
 Kalobeyei Settlement,kalobeyei_settlement,Kenya,541.4,1105,Lithium,3,2755,"$967,872 "
 Ndeda,ndeda,Kenya,23.4,44.4,Lithium,1,405,"$197,853 "
 Emereoke,emereoke,Nigeria,28.08,44.4,Lithium,3,401,"$336,197 "
