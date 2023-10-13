@@ -1,0 +1,177 @@
+---
+title: "Renewvia - Survey Impact Analysis"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+# Importing libraries
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(lessR)
+library(tidyr)
+library(ggpubr)
+library(exact2x2)
+library(stringr)
+library(janitor)
+library(epiDisplay)
+```
+
+# Loading the data
+
+```{r}
+## Locading the project data
+projects <- read.csv("project_data.csv")
+head(projects)
+```
+
+```{r}
+## Locading the cleaned data sets
+# Intial Survey
+initial_clean <- read.csv("data_cleaning/datasets_clean/initial_clean.csv")%>%
+                    filter(renewvia_id != "") %>%
+                    filter(renewvia_id != "no_meter")
+
+# Pre-connection
+intial_hs_pre <- initial_clean %>%
+                    filter(status == "pre_connection")%>%
+                    filter(tariff == "residential")
+
+# Pre-connection
+intial_hs_post <- initial_clean %>%
+                    filter(status == "post_connection")%>%
+                    filter(tariff == "residential")
+
+head(initial_clean)
+head(intial_hs_pre)
+head(intial_hs_post)
+
+# Household Post-Survey
+post_clean <- read.csv("data_cleaning/datasets_clean/hs_post_clean.csv")%>%
+                    filter(renewvia_id != "") %>%
+                    filter(renewvia_id != "no_meter")
+# Post-Connection
+post_hs <- post_clean %>% filter(tariff == "residential")
+head(post_clean)
+head(post_hs)
+
+# Commercial & Insitution Post-Survey
+ci_clean <- read.csv("data_cleaning/datasets_clean/ci_post_clean.csv") %>%
+                    filter(renewvia_id != "") %>%
+                    filter(renewvia_id != "no_meter") %>% 
+                    filter(tariff == "commercial")
+head(ci_clean)
+```
+
+```{r}
+## Locading the encoded data sets
+# Intial Survey
+initial_enc <- read.csv("data_cleaning/datasets_encoded/initial_encoded.csv")%>%
+                    filter(renewvia_id != "") %>%
+                    filter(renewvia_id != "no_meter")
+
+# Pre-connection
+intial_hs_pre_enc <- initial_enc %>%
+                    filter(status == 1)%>%
+                    filter(tariff == "residential")
+
+# Pre-connection
+intial_hs_post_enc <- initial_enc %>%
+                    filter(status == 2)%>%
+                    filter(tariff == "residential")
+
+head(initial_enc)
+head(intial_hs_pre_enc)
+head(intial_hs_post_enc)
+
+# Household Post-Survey
+post_enc <- read.csv("data_cleaning/datasets_encoded/hs_post_encoded.csv")%>%
+                    filter(renewvia_id != "") %>%
+                    filter(renewvia_id != "no_meter")
+# Post-Connection
+post_hs_enc <- post_enc %>% filter(tariff == "residential")
+head(post_enc)
+head(post_hs_enc)
+
+# Commercial & Insitution Post-Survey
+ci_enc <- read.csv("data_cleaning/datasets_encoded/ci_post_encoded.csv") %>%
+                    filter(renewvia_id != "") %>%
+                    filter(renewvia_id != "no_meter") %>% 
+                    filter(tariff == "commercial")
+head(ci_enc)
+```
+
+# Pairing Household data
+
+```{r}
+paired_clean <- merge(intial_hs_pre, post_hs,
+                      suffix = c("_pre", "_post"),
+                      by= 'renewvia_id')
+head(paired_clean)
+
+paired_enc <- merge(intial_hs_pre_enc, post_hs_enc,
+                      suffix = c("_pre", "_post"),
+                      by= 'renewvia_id')
+head(paired_enc)
+```
+
+# 1- Gender Equality
+
+**Question**: Has there been a change in the number of females in your household who attend school full time since connection to mini-grid power?
+
+**Data Source**: Household Post-Survey
+
+**Value (Encoding if applied)**: "Yes, it's increased" = 1 "Yes, it's decreased" = -1, "No, it's the same" = 0
+
+```{r}
+# Breakdown by response type
+hs_post_clean <- post_clean %>% filter(tariff == "residential")
+hs_post_enc <- post_enc %>% filter(tariff == "residential")
+head(hs_post_clean)
+head(hs_post_enc)
+```
+
+```{r}
+girls_enrollment <- hs_post_clean$girls_schooling_change[hs_post_clean$girls_schooling_change != ""]
+
+tab1(girls_enrollment, 
+     sort.group = "decreasing", cum.percent = TRUE)
+```
+
+```{r}
+# Breakdown by response type
+# Increase 
+# positive_change <- post_enc %>% 
+#                         filter(tariff == "residential") %>% 
+#                         filter(girls_schooling_change != -1)
+
+prop.table(table(hs_post_enc$community, 
+                 hs_post_enc$girls_schooling_change), margin = 1)
+
+# Decrease
+# positive_change <- post_clean %>% 
+#                         filter(tariff == "residential") %>% 
+#                         filter(girls_schooling_change != "yes_its_increased")
+
+```
+
+## TODO
+
+-   How long does the water collection process take on a daily basis?
+
+-   How long does the cooking fuel collection process take on a daily basis?
+
+-   If you answered yes to adding new workers, how many new employees are female?
+
+-   Are any household members business owners?
+
+# 2- Productivity
+
+# 3- Health
+
+# 4- SAFETY
+
+# 5- SAFETY
