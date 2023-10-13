@@ -6,6 +6,16 @@ output:
     df_print: paged
 ---
 
+# OVERVIEW: HYPOTHESIS TESTING
+
+**Strategy**:
+
+-   For the paired data set, we will use the Paired t-Test, Wilcoxon Signed Rank Test, Sign Test, and McNemar's Test whenever applicable
+
+-   Our independent variables will be the following: PV Size (kWh), No. of Customers, CAPEX (USD) and Consumption (Community & Customer).
+
+-   For each dependent variables, we will run a uni-variate regression tests with each of independent variable. When applicable, we will have a Linear regression t-Test or Logistic regression Wald test
+
 # Importing libraries
 
 ```{r}
@@ -18,9 +28,12 @@ library(exact2x2)
 library(stringr)
 library(janitor)
 library(epiDisplay)
+library(nonpar)
+library(tibble)
+library(ggExtra)
 ```
 
-# Loading the data
+# Loading the data sets
 
 ```{r}
 ## Locading the project data
@@ -118,29 +131,25 @@ paired_enc <- merge(intial_hs_pre_enc, post_hs_enc,
 head(paired_enc)
 ```
 
-# HYPOTHESIS TESTING
-
-**Strategy**:
-
--   For the paired data set, we will use the Paired t-Test, Wilcoxon Signed Rank Test, Sign Test, and McNemar's Test whenever applicable
-
--   Our independent variables will be the following: PV Size (kWh), No. of Customers, CAPEX (USD) and Consumption (Community & Customer).
-
--   For each dependent variables, we will run a uni-variate regression tests with each of independent variable. When applicable, we will have a Linear regression t-Test or Logistic regression Wald test
-
-## 1- GENDER EQUALITY
+# 1- Gender Equality
 
 **Question**: Has there been a change in the number of females in your household who attend school full time since connection to mini-grid power?
 
 **Data Source**: Household Post-Survey
 
-**Value (Encoding if applied)**: "Yes, it's increased" = 1 "Yes, it's decreased" = -1, "No, it's the same" = 0
+**Value (Encoding if applied)**:
+
+-   Yes, it's decreased = -1
+
+-   No, it's the same" = 0
+
+-   Yes, it's increased = 1
 
 **Hypothesis Testing:**
 
-${H_0}$ = No relationship between and increase in girls enrollment
+-   ${H_0}$ = No relationship between and increase in girls enrollment
 
-${H_1}$ = ndefined PV Size (kwH) and increase in girls enrollment
+-   ${H_1}$ = A relationship PV Size (kwH) and increase in girls enrollment
 
 ```{r}
 # Breakdown by response type
@@ -151,6 +160,7 @@ head(hs_post_enc)
 ```
 
 ```{r}
+# Isolate the dependent variable
 var <- hs_post_clean$girls_schooling_change
 girls_enrollment <- var[var != ""]
 
@@ -166,19 +176,75 @@ girls_enrollment <- rownames_to_column(as.data.frame.matrix(
                                                   )
                                       , var = "community")
 community_girls_enrollment <- merge(x=projects, y=girls_enrollment, by="community")
-community_girls_enrollment
+df <- community_girls_enrollment
+df_no_outlier <- community_girls_enrollment %>% 
+                            filter(community != "kalobeyei_settlement")
 ```
 
-```{r}
-### Linear Regression t-Test
+**a) PV Size (kwH)**
 
-## PV Size (kwH)
+```{r}
+### PV Size (kwH)
+
+## Linear Regression t-Test with outlier: kalobeyei_settlement
 
 # Visualizing the relationship with reported increase
-df <- community_girls_enrollment 
-              # %>% filter(community != "kalobeyei_settlement")
-pv_size_scatter <- ggplot(df, 
+scatter <- ggplot(df, 
                     aes(pv_size_kwh, yes_its_increased)) + 
+                    geom_point() + 
+                    theme_classic()
+ggMarginal(scatter, type = "histogram")
+
+# Fitting the model with reported increase
+pv_size_lm <- lm(yes_its_increased ~ pv_size_kwh, data=df)
+summary(pv_size_lm)
+
+# Visualizing the relationship with reported decrease
+scatter <- ggplot(df, 
+                    aes(pv_size_kwh, yes_its_decreased)) + 
+                    geom_point() + 
+                    theme_classic()
+ggMarginal(scatter, type = "histogram")
+
+# Fitting the model with reported decrease
+pv_size_lm <- lm(yes_its_decreased ~ pv_size_kwh, data=df)
+summary(pv_size_lm)
+
+## Linear Regression t-Test without outlier: kalobeyei_settlement
+
+# Visualizing the relationship with reported increase
+scatter_no_outlier <- ggplot(df_no_outlier, 
+                    aes(pv_size_kwh, yes_its_increased)) + 
+                    geom_point() + 
+                    theme_classic()
+ggMarginal(scatter_no_outlier, type = "histogram")
+
+# Fitting the model with reported increase
+pv_size_lm <- lm(yes_its_increased ~ pv_size_kwh, data=df_no_outlier)
+summary(pv_size_lm)
+
+# Visualizing the relationship with reported decrease
+scatter_no_outlier <- ggplot(df_no_outlier, 
+                    aes(pv_size_kwh, yes_its_decreased)) + 
+                    geom_point() + 
+                    theme_classic()
+ggMarginal(scatter_no_outlier, type = "histogram")
+
+# Fitting the model with reported decrease
+pv_size_lm <- lm(yes_its_decreased ~ pv_size_kwh, data=df_no_outlier)
+summary(pv_size_lm)
+```
+
+**b) No. of Customers**
+
+```{r}
+### No. of Customers
+
+## Linear Regression t-Test with outlier: kalobeyei_settlement
+
+# Visualizing the relationship with reported increase
+scatter <- ggplot(df, 
+                    aes(customer_count, yes_its_increased)) + 
                     geom_point() + 
                     theme_classic()
 ggMarginal(pv_size_scatter, type = "histogram")
@@ -197,24 +263,128 @@ ggMarginal(pv_size_scatter, type = "histogram")
 # Fitting the model with reported decrease
 pv_size_lm <- lm(yes_its_decreased ~ pv_size_kwh, data=df)
 summary(pv_size_lm)
+
+```
+
+**Question**: How long does the water collection process take on a daily basis?
+
+**Data Source**: Paired Household Surveys (Pre & Post)
+
+**Value (Encoding if applied)**:
+
+-   less than 1 hour = 1
+
+-   1-2 hours = 2
+
+-   2-3 hours = 3
+
+-   3-4 hours = 4
+
+-   greater than 4 hours = 5
+
+**Hypothesis Testing:**
+
+-   ${H_0}$ = No difference between pre and post scores assigned to water collection time
+
+-   ${H_1}$ = A significant difference between pre and post scores assigned to water collection time
+
+```{r}
+## Wilcoxon Signed Rank Test
+# Scores
+# paired_enc <- paired_enc %>% filter(if_all(c(water_collection_time_pre,
+#                                             water_collection_time_post), 
+#                                            ~ !is.na(.)))
+pre_scores <- paired_enc$water_collection_time_pre
+post_scores <- paired_enc$water_collection_time_post
+
+# scores.long <- paired_enc %>% gather(key = "group", 
+#                                     value = "water_collection_time", 
+#                                     water_collection_time_pre,
+#                                     water_collection_time_post)
+
+# Running the test
+wilcox.test(pre_scores, post_scores, paired=TRUE)
+
+# Visualize distribution of score differences
+diff <- post_scores - pre_scores
+hist(diff)
+```
+
+**Question**: How long does the cooking fuel collection process take on a daily basis?
+
+**Data Source**: Paired Household Surveys (Pre & Post)
+
+**Value (Encoding if applied)**:
+
+-   No need to collect fuel = 1
+
+-   less than 1 hour = 2
+
+-   1-2 hours =3
+
+-   3-5 hours = 4
+
+-   greater than 4 hours = 5
+
+**Hypothesis Testing:**
+
+-   ${H_0}$ = No difference between pre and post scores assigned to cooking fuel collection time
+
+-   ${H_1}$ = A significant difference between pre and post scores assigned to cooking fuel collection time
+
+```{r}
+## Sign Test
+# Calculating differences
+pre_scores <- paired_enc$cooking_fuel_collection_time_pre
+post_scores <- paired_enc$cooking_fuel_collection_time_post
+diff <- post_scores - pre_scores
+
+# Running the test
+# wilcox.test(pre_scores, post_scores, paired=TRUE)
+# SIGN.test(x = pre_scores, y = post_scores,
+#           alternative = "two.sided",
+#           conf.level = 0.95)
+signtest(diff, m=0, conf.level=0.95, exact=FALSE)
+
+# Visualize distribution of score differences
+hist(diff)
+```
+
+**Question**: Are any household members business owners?
+
+**Data Source**: Paired Household Surveys (Pre & Post)
+
+**Value (Encoding if applied)**:
+
+-   No need to collect fuel = 1
+
+-   less than 1 hour = 2
+
+-   1-2 hours =3
+
+-   3-5 hours = 4
+
+-   greater than 4 hours = 5
+
+**Hypothesis Testing:**
+
+-   ${H_0}$ = No difference between pre and post number of local business owners
+
+-   ${H_1}$ = A significant difference between pre and post number of local business owners
+
+```{r}
+## McNemar's Paire Test
+# Cross tabulation of changes between business ownership
+cross_tab <- table(paired_enc$business_owners_binary_pre,
+                   paired_enc$business_owners_binary_post)
+cross_tab
+# Running the test
+mcnemar.test(cross_tab)
 ```
 
 ## TODO
 
-```{r}
-### Linear Regression t-Test
-diff <- paired_enc$water_collection_time_post -   paired_enc$water_collection_time_pre
-hist(diff)
-# wilcox.test(immer$Y1, immer$Y2, paired=TRUE) 
-```
-
--   How long does the water collection process take on a daily basis?
-
--   How long does the cooking fuel collection process take on a daily basis?
-
 -   If you answered yes to adding new workers, how many new employees are female?
-
--   Are any household members business owners?
 
 ## 2- PRODUCTIVITY
 

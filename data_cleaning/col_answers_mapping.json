@@ -671,6 +671,7 @@
       "old_name": "How long does the cooking fuel collection process take on a daily basis?",
       "new_name": "cooking_fuel_collection_time",
       "mapping": {
+        "no_need_to_collect_fuel": "No need to collect fuel",
         "less_than_1_hour": "Less than 1 hour",
         "hours": "1-2 hours",
         "copy-1-of-hours": "3-5 hours",
@@ -1082,6 +1083,7 @@
       "old_name": "Approximately how many hours a day do you use kerosene lamps?",
       "new_name": "kerosene_lamp_usage_time",
       "mapping": {
+        "we_dont_have_a_kerosene_lamp": "We don't have a kerosene lamp",
         "less_than_one_hour": "Less than one hour",
         "hours": "1-2 hours",
         "copy-1-of-hours": "3-5 hours",
@@ -1092,6 +1094,7 @@
       "old_name": "How much do you pay monthly for kerosene used only in kerosene lamps?",
       "new_name": "kerosene_lamps_cost",
       "mapping": {
+        "nothing": "Nothing",
         "nkes": "0-200 N/KES",
         "copy-1-of-nkes": "200-600 N/KES",
         "copy-2-of-nkes": "600-1000 N/KES",
