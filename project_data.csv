@@ -1,23 +1,23 @@
-﻿project_name,community,country,pv_size_kwh,battery_size,battery_type,phase_count,customer_count,capex_usd
-Kalobeyei Settlement,kalobeyei_settlement,Kenya,541.4,1105,Lithium,3,2755,"$967,872 "
-Ndeda,ndeda,Kenya,23.4,44.4,Lithium,1,405,"$197,853 "
-Emereoke,emereoke,Nigeria,28.08,44.4,Lithium,3,401,"$336,197 "
-Akipelai,akipelai,Nigeria,67.32,90,Lithium,3,355,"$323,701 "
-Locheremoit,locheremoit,Kenya,37,81,Lithium,3,329,"$311,220 "
-Oloibiri,oloibiri,Nigeria,67.32,90,Lithium,3,321,"$346,464 "
-Ringiti,ringiti,Kenya,20.45,44.4,Lithium,1,291,"$142,561 "
-Ozuzu,ozuzu,Nigeria,18.72,51.8,Lithium,3,265,"$183,502 "
-Bendeghe-Afi,bendeghe_afi,Nigeria,18.72,29.6,Lithium,3,246,"$218,907 "
-Opu,opu,Nigeria,14.04,22.2,Lithium,3,227,"$198,777 "
-Nakukulas,nakukulas,Kenya,37,74,Lithium,3,214,"$313,590 "
-Kapelbok,kapelbok,Kenya,36.9,74,Lithium,1,198,"$225,445 "
-Ngurunit,ngurunit,Kenya,27.6,144,Lead,1,195,"$234,403 "
-Balep,balep,Nigeria,9.36,14.8,Lithium,3,190,"$171,150 "
-Ekong Anaku,ekong_anaku,Nigeria,12.48,22.2,Lithium,3,190,"$187,441 "
-Oyamo,oyamo,Kenya,12.48,22.2,Lithium,1,145,"$108,742 "
-Kalobeyei Town,kalobeyei_town,Kenya,20.12,60,Lithium,3,137,"$181,324 "
-Katiko,katiko,Kenya,51.3,96.2,Lithium,1,119,"$316,887 "
-Kangitan Kori,kagintankori,Kenya,22,44,Lithium,1,118,"$172,366 "
-Lomekwi,lomekwi,Kenya,22.5,44.4,Lithium,1,73,"$153,918 "
-Olkiramatian,olkiramatian,Kenya,6.24,14.8,Lithium,1,72,"$64,136 "
-Lorengelup,lorengelup,Kenya,17,37,Lithium,1,63,"$156,168 "
+﻿project_name,community,country,pv_size_kwh,customer_count,capex_usd
+Kalobeyei Settlement,kalobeyei_settlement,Kenya,541.4,2755,967872
+Ndeda,ndeda,Kenya,23.4,405,197853
+Emereoke,emereoke,Nigeria,28.08,401,336197
+Akipelai,akipelai,Nigeria,67.32,355,323701
+Locheremoit,locheremoit,Kenya,37,329,311220
+Oloibiri,oloibiri,Nigeria,67.32,321,346464
+Ringiti,ringiti,Kenya,20.45,291,142561
+Ozuzu,ozuzu,Nigeria,18.72,265,183502
+Bendeghe-Afi,bendeghe_afi,Nigeria,18.72,246,218907
+Opu,opu,Nigeria,14.04,227,198777
+Nakukulas,nakukulas,Kenya,37,214,313590
+Kapelbok,kapelbok,Kenya,36.9,198,225445
+Ngurunit,ngurunit,Kenya,27.6,195,234403
+Balep,balep,Nigeria,9.36,190,171150
+Ekong Anaku,ekong_anaku,Nigeria,12.48,190,187441
+Oyamo,oyamo,Kenya,12.48,145,108742
+Kalobeyei Town,kalobeyei_town,Kenya,20.12,137,181324
+Katiko,katiko,Kenya,51.3,119,316887
+Kangitan Kori,kagintankori,Kenya,22,118,172366
+Lomekwi,lomekwi,Kenya,22.5,73,153918
+Olkiramatian,olkiramatian,Kenya,6.24,72,64136
+Lorengelup,lorengelup,Kenya,17,63,156168
