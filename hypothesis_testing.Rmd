@@ -1,9 +1,9 @@
 ---
 title: "Renewvia - Survey Impact Analysis"
 output:
-  pdf_document: default
   html_document:
     df_print: paged
+  pdf_document: default
 ---
 
 # OVERVIEW: HYPOTHESIS TESTING
@@ -147,7 +147,7 @@ head(paired_enc)
 
 ```{r}
 # Isolate the dependent variable
-var <- hs_post_clean$girls_schooling_change
+var <- post_hs$girls_schooling_change
 girls_enrollment <- var[var != ""]
 
 tab1(girls_enrollment, 
@@ -156,13 +156,12 @@ tab1(girls_enrollment,
 # Breakdown by response type and Community
 dep_var_mat <- rownames_to_column(as.data.frame.matrix(
                                       prop.table(table(
-                                          hs_post_clean$community, 
-                                          hs_post_clean$girls_schooling_change),
+                                          post_hs$community, 
+                                          post_hs$girls_schooling_change),
                                          margin = 1)
                                                   )
                                       , var = "community")
-community_data <- merge(x=projects, 
-                                    y=dep_var_mat, by="community")
+community_data <- merge(x=projects, y=dep_var_mat, by="community")
 reg_df <- community_data
 # reg_df <- community_data %>% filter(community != "kalobeyei_settlement")
 
@@ -937,7 +936,7 @@ t.test(kerosene_pre, kerosene_post,
 
 ```{r}
 # Isolate the dependent variable
-var <- hs_post_clean$kerosene_lamp_usage_change
+var <- post_hs$kerosene_lamp_usage_change
 kerosene_usage <- var[var != ""]
 
 tab1(kerosene_usage, 
@@ -945,8 +944,8 @@ tab1(kerosene_usage,
 
 # Breakdown by response type and Community
 dep_var_mat <- rownames_to_column(
-  as.data.frame.matrix(prop.table(table(hs_post_clean$community, 
-                                   hs_post_clean$kerosene_lamp_usage_change),
+  as.data.frame.matrix(prop.table(table(post_hs$community, 
+                                   post_hs$kerosene_lamp_usage_change),
                                          margin = 1)
                                                   )
                                       , var = "community")
@@ -1072,7 +1071,7 @@ t.test(income_pre, income_post,
 
 ```{r}
 # Isolate the dependent variable
-var <- hs_post_clean$household_income_change
+var <- post_hs$household_income_change
 income_change <- var[var != ""]
 
 tab1(income_change, 
@@ -1080,8 +1079,8 @@ tab1(income_change,
 
 # Breakdown by response type and Community
 dep_var_mat <- rownames_to_column(
-  as.data.frame.matrix(prop.table(table(hs_post_clean$community, 
-                                   hs_post_clean$household_income_change),
+  as.data.frame.matrix(prop.table(table(post_hs$community, 
+                                   post_hs$household_income_change),
                                          margin = 1)
                                                   )
                                       , var = "community")
