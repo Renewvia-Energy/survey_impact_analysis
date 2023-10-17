@@ -48,14 +48,14 @@ initial_clean <- read.csv("data_cleaning/datasets_clean/initial_clean.csv")%>%
                     filter(renewvia_id != "") %>%
                     filter(renewvia_id != "no_meter")
 
-# Pre-connection
+# Household Pre-connection
 intial_hs_pre <- initial_clean %>%
                     filter(status == "pre_connection")%>%
                     filter(tariff == "residential")
 
 # Pre-connection
 intial_hs_post <- initial_clean %>%
-                    filter(status == "post_connection")%>%
+                    filter(status == "post_connection") %>%
                     filter(tariff == "residential")
 
 head(initial_clean)
@@ -75,7 +75,7 @@ head(post_hs)
 ci_clean <- read.csv("data_cleaning/datasets_clean/ci_post_clean.csv") %>%
                     filter(renewvia_id != "") %>%
                     filter(renewvia_id != "no_meter") %>% 
-                    filter(tariff == "commercial")
+                    filter(tariff != "residential")
 head(ci_clean)
 ```
 
@@ -113,7 +113,7 @@ head(post_hs_enc)
 ci_enc <- read.csv("data_cleaning/datasets_encoded/ci_post_encoded.csv") %>%
                     filter(renewvia_id != "") %>%
                     filter(renewvia_id != "no_meter") %>% 
-                    filter(tariff == "commercial")
+                    filter(tariff != "residential")
 head(ci_enc)
 ```
 
@@ -122,12 +122,12 @@ head(ci_enc)
 ```{r}
 paired_clean <- merge(intial_hs_pre, post_hs,
                       suffix = c("_pre", "_post"),
-                      by= 'renewvia_id')
+                      by= 'customerAccountNumber')
 head(paired_clean)
 
 paired_enc <- merge(intial_hs_pre_enc, post_hs_enc,
                       suffix = c("_pre", "_post"),
-                      by= 'renewvia_id')
+                      by= 'customerAccountNumber')
 head(paired_enc)
 ```
 
