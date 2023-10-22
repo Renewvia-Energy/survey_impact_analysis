@@ -1,0 +1,244 @@
+---
+title: "paired_ratio_data"
+author: "Akoua Orsot"
+date: "2023-10-19"
+output: html_document
+---
+
+# INVESTIGATION
+
+1.  Check for a similar Simpson's paradox situations in all of the paired t-testing.
+
+2.  Plot histograms for the pre-connection income, post-connection income, and paired differences.
+
+3.  Ask Ken and Sam to help us identify what is going on with the negative-paired-difference people. Let's do this together. I have a theory that, before electrification, some community members make themselves wealthy by providing services to people that they can get more cheaply after electrification. For example, before we built the Kalobeyei Settlement mini-grid, a few dozen community members paid one guy with a diesel generator for electricity using little more than an extension cord between the genset and their homes.
+
+# Importing Libraries
+
+```{r}
+# Importing libraries
+library(data.table)
+library(ggplot2)
+library(dplyr)
+library(lessR)
+library(tidyr)
+library(ggpubr)
+library(tibble)
+library(psych)
+library(stringr)
+library(writexl)
+library(data.table)
+```
+
+# Data
+
+```{r cars}
+## Locading the cleaned data sets
+initial_cols <- c("renewvia_id","status", 
+                "country", "gender", "community",
+                "avg_household_income", "appliances_count", 
+                "cellphones_count", "light_hours_current",
+                "kerosene_lamps_count")
+post_cols <- c("renewvia_id",
+          "country", "gender", "community",
+                "avg_household_income", "appliances_count", 
+                "cellphones_count", "light_hours_current",
+                "kerosene_lamps_count")
+
+# Intial Survey
+initial_path <- "data_cleaning/datasets_clean/initial_clean.csv"
+initial_clean <- read.csv(initial_path)[, initial_cols]
+initial_clean$light_hours_current <- replace(initial_clean$light_hours_current,
+  initial_clean$light_hours_current > 24, NA)
+
+# Pre-connection
+initial_pre <- (initial_clean %>% 
+                  filter(status == "pre_connection"))
+# Post-connection
+initial_post <- (initial_clean %>% 
+                   filter(status == "post_connection"))
+
+# Household Post-Survey
+post_path <- "data_cleaning/datasets_clean/post_clean.csv"
+post_clean <- read.csv(post_path)[, post_cols]
+
+## Pairing pre and post responses
+paired_clean <- merge(initial_pre, post_clean,
+                      suffix = c("_pre", "_post"),
+                      by= 'renewvia_id')
+
+# head(initial_pre)
+# head(post_clean)
+# head(paired_clean)
+```
+
+# Descriptive Stats
+
+```{r}
+# Function
+get_stats <- function(data, ct, var_name,data_source, 
+                      remove_outliers = FALSE, 
+                      exclude_zeros = FALSE) {
+  if (grepl("_pre", var_name, fixed = TRUE)){
+    country_data <- data %>% filter(country_pre == ct)
+  } else if (grepl("_post", var_name, fixed = TRUE)){
+    country_data <- data %>% filter(country_post == ct)
+  } else {country_data <- data %>% filter(country == ct)}
+    
+  if (remove_outliers == TRUE) {
+    print("Excluding outliers")
+    quartiles <- quantile(country_data[, var_name], 
+                        probs=c(.25, .75), na.rm = TRUE)
+  
+    IQR <- IQR(country_data[, var_name], na.rm = TRUE)
+    
+    Lower <- quartiles[1] - 1.5*IQR
+    Upper <- quartiles[2] + 1.5*IQR 
+    
+    country_data <- subset(country_data, 
+                              country_data[, var_name] > Lower &
+                              country_data[, var_name] < Upper)
+  } 
+  
+  var <- country_data[, var_name]
+  
+  if (exclude_zeros == TRUE) {
+    print("Removing Zeros")
+    var <- var[var != 0]
+  } 
+  
+  stats <- t(describe(var, IQR=TRUE, quant=c(.1,.25,.5,.75,.90),))
+  print(t.test(var, conf.level = 0.95))
+  hist_title <- paste(filt_ct, data_source, " : ", var_name)
+  print(stats)
+  return(hist(var, main=hist_title))
+}
+
+
+# Running the paired t-test
+paire_t_test <- function(df, ct, title, var_name) {
+  df_country <- df %>% filter(country_pre == ct)
+  pre_name <- paste(var_name, "post", sep="_")
+  post_name <- paste(var_name, "pre", sep="_")
+  df_country$diff <- as.numeric(df_country[, post_name] - df_country[, pre_name])
+  # df_new <- df_country %>% filter(diff > -20)
+  var_pre <- df_country[, paste(var_name, "pre", sep="_")]
+  var_post <- df_country[, paste(var_name, "post", sep="_")]
+ # diff <- var_post - var_pre
+  
+  hist_title <- paste(ct, " - ", 
+                      title, "Difference")
+  print(var_name)
+  print(t.test(var_pre, var_post,
+         paired = TRUE, alternative = "two.sided"),
+        detailed = TRUE)
+  return(hist(df_country$diff, main = hist_title))
+}
+```
+
+```{r}
+filt_ct <- "nigeria"
+col_name <- "avg_household_income"
+paire_t_test(paired_clean, filt_ct, col_name, title="Light Hours")
+col_name_pre <- paste(col_name, "pre", sep="_")
+col_name_post <- paste(col_name, "post", sep="_")
+# Initial Pre-Connection
+get_stats(initial_pre, filt_ct, col_name, data_source="intial_pre",
+          exclude_zeros = TRUE)
+# Post-Connection Survey
+get_stats(post_clean, filt_ct, col_name,data_source="post",
+          exclude_zeros = TRUE)
+## Paired Data
+# Pre-Connection
+get_stats(paired_clean, filt_ct, col_name_pre, data_source="paired",
+          exclude_zeros = TRUE)
+# Post-Connection
+get_stats(paired_clean, filt_ct, col_name_post, data_source="paired",
+          exclude_zeros = TRUE)
+```
+
+```{r}
+filt_ct <- "kenya"
+
+countries <- c("nigeria", "kenya")
+col_name <- "avg_household_income"
+num_vars <- c("avg_household_income", "appliances_count", 
+                "cellphones_count", "light_hours_current",
+                "kerosene_lamps_count")
+dfs <- c(initial_pre, post_clean, paired_clean)
+dfs_names <- c("intial_pre", "post")
+var_names <- c(col_name, 
+              paste(col_name, "pre", sep="_"), 
+              paste(col_name, "post", sep="_"))
+
+paire_t_test(paired_clean, filt_ct, col_name, title="Light Hours")
+
+# Initial Pre-Connection
+get_stats(initial_pre, filt_ct, col_name, data_source="intial_pre",
+          exclude_zeros = TRUE)
+# Post-Connection Survey
+get_stats(post_clean, filt_ct, col_name,data_source="post",
+          exclude_zeros = TRUE)
+## Paired Data
+# Pre-Connection
+get_stats(paired_clean, filt_ct, col_name_pre, data_source="paired",
+          exclude_zeros = TRUE)
+# Post-Connection
+get_stats(paired_clean, filt_ct, col_name_post, data_source="paired",
+          exclude_zeros = TRUE)
+```
+
+# Hypothesis Testing
+
+```{r}
+
+
+
+# neg_diff <- (paired_clean %>% filter(diff < 0))[, c("renewvia_id", 
+#                                                    "country_pre",
+#                                                  "light_hours_current_pre",
+#                                                  "light_hours_current_post",
+#                                                  "diff")
+#              ]
+
+```
+
+```{r}
+col_names <- c("avg_household_income", "appliances_count", 
+                "cellphones_count", "light_hours_current",
+                "kerosene_lamps_count")
+diff_cols <- c("renewvia_id")
+for (col_name in col_names) {
+  new_col <- paste("diff", col_name, sep="_")
+  diff_cols <- c(diff_cols, new_col)
+  pre_name <- paste(col_name, "pre", sep="_")
+  post_name <- paste(col_name, "post", sep="_")
+  paired_clean[, new_col] <- as.numeric(paired_clean[, post_name] - 
+                                   paired_clean[, pre_name])
+  # sprintf("%s: Sum of difference = %.2f, Mean of difference = %.2f", 
+  #       col_name, sum(paired_clean[, new_col],na.rm = TRUE), 
+  #       mean(paired_clean[, new_col],na.rm = TRUE))
+}
+```
+
+```{r}
+diffs <- paired_clean[, diff_cols]
+# diffs[, sapply(diffs, FUN = function(x) !any(x < 0))]
+diffs[which(apply(diffs, 1, function(row) any(row < 0))),]
+```
+
+```{r}
+tariffs <- read.csv("data_cleaning/customers_tariffs.csv")
+neg_diff_customers <- merge(neg_diff, tariffs,
+                            by.x='renewvia_id',
+                            by.y="customerAccountNumber",
+                            all.x=TRUE)
+kenya_neg_diff <- neg_diff_customers %>% filter(country_pre == "kenya")
+nigeria_neg_diff <- neg_diff_customers %>% filter(country_pre == "nigeria")
+write_xlsx(kenya_neg_diff,"kenya_customers_income_diff.xlsx")
+write_xlsx(nigeria_neg_diff,"nigeria_customers_income_diff.xlsx")
+```
+
+```{r}
+post_clean[duplicated(post_clean$renewvia_id), ]
+```

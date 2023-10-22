@@ -16,9 +16,10 @@ output:
 
 -   For each dependent variables, we will run a uni-variate regression tests with each of independent variable. When applicable, we will have a Linear regression t-Test or Logistic regression Wald test
 
-# Importing libraries
+# Input Data
 
 ```{r}
+# Importing libraries
 library(ggplot2)
 library(dplyr)
 library(lessR)
@@ -31,107 +32,182 @@ library(epiDisplay)
 library(nonpar)
 library(tibble)
 library(ggExtra)
+library(vtree)
+library(CGPfunctions)
+library(psych)
+library(scales)
 ```
 
-# Loading the data sets
-
 ```{r}
-## Locading the project data
+## Locading the project& consumption data
 projects <- read.csv("project_data.csv")
+consumption <- read.csv("customer_consumption.csv")
 head(projects)
+head(consumption)
 ```
 
 ```{r}
 ## Locading the cleaned data sets
 # Intial Survey
-initial_clean <- read.csv("data_cleaning/datasets_clean/initial_clean.csv")%>%
-                    filter(renewvia_id != "") %>%
-                    filter(renewvia_id != "no_meter")
-
-# Household Pre-connection
-intial_hs_pre <- initial_clean %>%
-                    filter(status == "pre_connection")%>%
-                    filter(tariff == "residential")
+initial_clean <- read.csv("data_cleaning/datasets_clean/initial_clean.csv")
 
 # Pre-connection
-intial_hs_post <- initial_clean %>%
-                    filter(status == "post_connection") %>%
-                    filter(tariff == "residential")
+initial_pre <- initial_clean %>%
+                    filter(status == "pre_connection")
+
+# Post-connection
+initial_post <- initial_clean %>%
+                    filter(status == "post_connection") 
 
 head(initial_clean)
-head(intial_hs_pre)
-head(intial_hs_post)
+head(initial_pre)
+head(initial_post)
 
 # Household Post-Survey
-post_clean <- read.csv("data_cleaning/datasets_clean/hs_post_clean.csv")%>%
-                    filter(renewvia_id != "") %>%
-                    filter(renewvia_id != "no_meter")
-# Post-Connection
-post_hs <- post_clean %>% filter(tariff == "residential")
+post_clean <- read.csv("data_cleaning/datasets_clean/post_clean.csv")
 head(post_clean)
-head(post_hs)
 
 # Commercial & Insitution Post-Survey
-ci_clean <- read.csv("data_cleaning/datasets_clean/ci_post_clean.csv") %>%
-                    filter(renewvia_id != "") %>%
-                    filter(renewvia_id != "no_meter") %>% 
-                    filter(tariff != "residential")
+ci_clean <- read.csv("data_cleaning/datasets_clean/ci_post_clean.csv")
 head(ci_clean)
+
+```
+
+```{r}
+colnames(initial_clean)
 ```
 
 ```{r}
 ## Locading the encoded data sets
 # Intial Survey
-initial_enc <- read.csv("data_cleaning/datasets_encoded/initial_encoded.csv")%>%
-                    filter(renewvia_id != "") %>%
-                    filter(renewvia_id != "no_meter")
+initial_enc <- read.csv("data_cleaning/datasets_encoded/initial_encoded.csv")
 
 # Pre-connection
-intial_hs_pre_enc <- initial_enc %>%
-                    filter(status == 1)%>%
-                    filter(tariff == "residential")
-
+initial_pre_enc <- initial_enc %>%
+                    filter(status == 1)
 # Pre-connection
-intial_hs_post_enc <- initial_enc %>%
-                    filter(status == 2)%>%
-                    filter(tariff == "residential")
+initial_post_enc <- initial_enc %>%
+                    filter(status == 2)
 
 head(initial_enc)
-head(intial_hs_pre_enc)
-head(intial_hs_post_enc)
+head(initial_pre_enc)
+head(initial_post_enc)
 
 # Household Post-Survey
-post_enc <- read.csv("data_cleaning/datasets_encoded/hs_post_encoded.csv")%>%
-                    filter(renewvia_id != "") %>%
-                    filter(renewvia_id != "no_meter")
+post_enc <- read.csv("data_cleaning/datasets_encoded/post_encoded.csv")
 # Post-Connection
-post_hs_enc <- post_enc %>% filter(tariff == "residential")
+# post_clean_enc <- post_enc %>% filter(tariff == "residential")
 head(post_enc)
-head(post_hs_enc)
+# head(post_clean_enc)
 
 # Commercial & Insitution Post-Survey
-ci_enc <- read.csv("data_cleaning/datasets_encoded/ci_post_encoded.csv") %>%
-                    filter(renewvia_id != "") %>%
-                    filter(renewvia_id != "no_meter") %>% 
-                    filter(tariff != "residential")
+ci_enc <- read.csv("data_cleaning/datasets_encoded/ci_post_encoded.csv") 
 head(ci_enc)
 ```
 
-# Pairing Household data
-
 ```{r}
-paired_clean <- merge(intial_hs_pre, post_hs,
+## Pairing pre and post responses
+paired_clean <- merge(initial_pre, post_clean,
                       suffix = c("_pre", "_post"),
-                      by= 'customerAccountNumber')
+                      by= 'renewvia_id')
 head(paired_clean)
 
-paired_enc <- merge(intial_hs_pre_enc, post_hs_enc,
+paired_enc <- merge(initial_pre_enc, post_enc,
                       suffix = c("_pre", "_post"),
-                      by= 'customerAccountNumber')
+                      by= 'renewvia_id')
 head(paired_enc)
 ```
 
 # 1- Gender Equality
+
+## A) EDA
+
+### What was the gender breakdown of survey respondents, pre and post?
+
+```{r}
+# var <- initial_clean$gender
+# gdr <- var[var != ""]
+plot_pie <- function(df, period) {
+  data <- df %>% 
+            filter(gender != "") %>%
+            group_by(gender) %>% 
+            count() %>% 
+            ungroup() %>% 
+            mutate(per=`n`/sum(`n`)) %>% 
+            arrange(desc(gender))
+  
+  data$label <- scales::percent(data$per)
+  
+  pie_plot <- ggplot(data=data)+
+              geom_bar(aes(x="", y=per, fill=gender), 
+                       stat="identity", width = 1)+
+              coord_polar("y", start=0)+
+              theme_void()+
+              geom_text(aes(x=1, y = cumsum(per) - per/2, label=label)) +
+              labs(title = period)
+  return(pie_plot)
+}
+
+pre_plot <- plot_pie(initial_clean, "Initial")
+post_plot <- plot_pie(post_clean, "Post")
+plot <- ggarrange(pre_plot, post_plot, ncol = 2, 
+                  nrow = 1, common.legend = TRUE,legend="right")
+annotate_figure(plot, top = text_grob("Renewvia Survey - Gender Breakdown", 
+               color = "black", face = "bold", size = 20))
+```
+
+### What was school enrollment by gender pre-connection?
+
+```{r}
+girls <- sum(initial_pre$girls_headcount,na.rm = TRUE)
+girls_in_school <- sum(initial_pre$girls_schooling,na.rm = TRUE)
+enrollment_rate <- (girls_in_school/girls)*100
+sprintf("In the intial survey, respondents reported %d girls of which %d girls attending school, thus placing the enrollment rate at: %.2f%%", girls, girls_in_school, enrollment_rate)
+```
+
+### Was there a change in enrollment by gender afterwards?
+
+```{r}
+tab_tree <- function(df, var, var_title) {
+  var_filt <- var[var != ""]
+
+  tree <- vtree(df, var, vp=TRUE, 
+                title = var_title, horiz = FALSE)
+  return(tree)
+}
+  
+tab_tree(post_clean, "girls_schooling_change", "Post-Survey Respondents")
+```
+
+### For those un-enrolled, what was the driving factor? Did the reason change post-survey?
+
+```{r}
+group_tab <- function(var, title){
+  var <- var[var != ""]
+  change_tab <- tab1(var,
+                   sort.group = "decreasing",
+                   main=title, cum.percent = FALSE,
+                   horiz=FALSE, cex.axis=0.8, 
+                   cex.lab=0.8, cex.name=0.8)
+  return(change_tab)
+}
+
+group_tab(initial_pre$girls_unschooled_reasons,
+          "Pre-Connection - Reasons For Un-schooled Girls")
+
+group_tab(post_clean$girls_unschooled_reasons,
+          "Post-Connection - Reasons For Un-schooled Girls")
+```
+
+### How many new women-led businesses were created?
+
+### How did women-led businesses' performance change?
+
+### How were household chores distributed among male and female within households?
+
+### In respondent's own words, how were women affected from the mini-grid?
+
+## B) Hypothesis Testing
 
 ### Has there been a change in the number of females in your household who attend school full time since connection to mini-grid power?
 
@@ -146,8 +222,16 @@ head(paired_enc)
 -   ${H_1}$ = A relationship between any independent variable (as described above) and increase in girls enrollment
 
 ```{r}
+var <- post_clean$girls_schooling_change
+girls_enrollment <- var[var != ""]
+
+tab1(girls_enrollment, 
+     sort.group = "decreasing", cum.percent = TRUE)
+```
+
+```{r}
 # Isolate the dependent variable
-var <- post_hs$girls_schooling_change
+var <- post_clean$girls_schooling_change
 girls_enrollment <- var[var != ""]
 
 tab1(girls_enrollment, 
@@ -156,14 +240,14 @@ tab1(girls_enrollment,
 # Breakdown by response type and Community
 dep_var_mat <- rownames_to_column(as.data.frame.matrix(
                                       prop.table(table(
-                                          post_hs$community, 
-                                          post_hs$girls_schooling_change),
+                                          post_clean$community, 
+                                          post_clean$girls_schooling_change),
                                          margin = 1)
                                                   )
                                       , var = "community")
 community_data <- merge(x=projects, y=dep_var_mat, by="community")
 reg_df <- community_data
-# reg_df <- community_data %>% filter(community != "kalobeyei_settlement")
+reg_df <- community_data %>% filter(community != "kalobeyei_settlement")
 
 dep_vars <- reg_df[c(9:10)]
 ind_vars <- reg_df[c(4:6)]
@@ -299,6 +383,7 @@ dep_var_mat <- rownames_to_column(as.data.frame.matrix(
                                       , var = "community")
 community_data <- merge(x=projects, y=dep_var_mat, by="community")
 reg_df <- community_data
+reg_df <- community_data %>% filter(community != "kalobeyei_settlement")
 names(reg_df)[7] <- "var_decrease"
 names(reg_df)[8] <- "var_neutral"
 names(reg_df)[9] <- "var_increase"
@@ -527,7 +612,7 @@ sapply(ind_vars, reg)
 
 ```{r}
 # Isolate the dependent variable
-var <- post_hs$school_performance_change
+var <- post_clean$school_performance_change
 hs_school_performance <- var[var != ""]
 
 tab1(hs_school_performance, 
@@ -537,8 +622,8 @@ tab1(hs_school_performance,
 # Breakdown by response type and Community
 dep_var_mat <- rownames_to_column(as.data.frame.matrix(
                                       prop.table(table(
-                                          post_hs$community, 
-                                          post_hs$school_performance_change),
+                                          post_clean$community, 
+                                          post_clean$school_performance_change),
                                          margin = 1)
                                                   )
                                       , var = "community")
@@ -610,7 +695,7 @@ dep_var_mat <- ci_clean %>%
 
 community_data <- merge(x=projects, y=dep_var_mat, by="community")
 reg_df <- community_data %>% replace(is.na(.), 0)
-
+# reg_df <- community_data %>% filter(community != "kalobeyei_settlement")
 ind_vars <- reg_df[c(4:6)]
 
 ## Linear Regression t-Test
@@ -670,6 +755,7 @@ dep_var_mat <- rownames_to_column(as.data.frame.matrix(
                                       , var = "community")
 community_data <- merge(x=projects, y=dep_var_mat, by="community")
 reg_df <- community_data
+reg_df <- community_data %>% filter(community != "kalobeyei_settlement")
 names(reg_df)[7] <- "var_decrease"
 names(reg_df)[8] <- "var_neutral"
 names(reg_df)[9] <- "var_increase"
@@ -739,7 +825,7 @@ dep_var_mat <- rownames_to_column(as.data.frame.matrix(
                                       , var = "community")
 community_data <- merge(x=projects, y=dep_var_mat, by="community")
 reg_df <- community_data %>% replace(is.na(.), 0)
-
+reg_df <- community_data %>% filter(community != "kalobeyei_settlement")
 ind_vars <- reg_df[c(4:6)]
 
 ## Linear Regression t-Test
@@ -799,6 +885,7 @@ dep_var_mat <- rownames_to_column(as.data.frame.matrix(
                                       , var = "community")
 community_data <- merge(x=projects, y=dep_var_mat, by="community")
 reg_df <- community_data
+reg_df <- community_data %>% filter(community != "kalobeyei_settlement")
 names(reg_df)[7] <- "var_decrease"
 names(reg_df)[8] <- "var_neutral"
 names(reg_df)[9] <- "var_increase"
@@ -877,7 +964,7 @@ dep_var_mat <- rownames_to_column(as.data.frame.matrix(
 
 community_data <- merge(x=projects, y=dep_var_mat, by="community")
 reg_df <- community_data
-# reg_df <- community_data %>% filter(community != "kalobeyei_settlement")
+reg_df <- community_data %>% filter(community != "kalobeyei_settlement")
 ind_vars <- reg_df[c(4:6)]
 
 ## Linear Regression t-Test with outlier: kalobeyei_settlement
@@ -936,7 +1023,7 @@ t.test(kerosene_pre, kerosene_post,
 
 ```{r}
 # Isolate the dependent variable
-var <- post_hs$kerosene_lamp_usage_change
+var <- post_clean$kerosene_lamp_usage_change
 kerosene_usage <- var[var != ""]
 
 tab1(kerosene_usage, 
@@ -944,15 +1031,15 @@ tab1(kerosene_usage,
 
 # Breakdown by response type and Community
 dep_var_mat <- rownames_to_column(
-  as.data.frame.matrix(prop.table(table(post_hs$community, 
-                                   post_hs$kerosene_lamp_usage_change),
+  as.data.frame.matrix(prop.table(table(post_clean$community, 
+                                   post_clean$kerosene_lamp_usage_change),
                                          margin = 1)
                                                   )
                                       , var = "community")
 community_data <- merge(x=projects, 
                                     y=dep_var_mat, by="community")
 reg_df <- community_data
-# reg_df <- community_data %>% filter(community != "kalobeyei_settlement")
+reg_df <- community_data %>% filter(community != "kalobeyei_settlement")
 
 ind_vars <- reg_df[c(4:6)]
 
@@ -1000,7 +1087,33 @@ sapply(ind_vars, reg_decrease)
 
 -   Does your Health Center have access to electricity?
 
-## 4- Safety
+# 4- Safety
+
+## A) EDA
+
+### How did the feeling of safety change? For everyone? By Gender? By country? By Community?
+
+```{r}
+# Average scores for everyone and split between men and women
+women_initial_pre <- (initial_pre_enc %>% filter(gender == 1))$feel_safe_dark
+women_initial_post <- (initial_post_enc %>% filter(gender == 1))$feel_safe_dark
+women_post_survey <- (post_enc %>% filter(gender == 1))$feel_safe_dark
+women_post_all <- c(women_intial_post, women_post_survey)
+avg_scores <- c(mean(women_initial_pre, na.rm = TRUE), 
+                mean(women_initial_post, na.rm = TRUE),
+                mean(women_post_survey, na.rm = TRUE),
+                mean(women_post_all, na.rm = TRUE))
+
+# safety_scores <- paired_women[ , c("renewvia_id", 
+#                                    "feel_safe_dark_pre",
+#                                    "feel_safe_dark_post")]
+# safety_scores_long <- melt(safety_scores, id = "renewvia_id")
+# ggplot(safety_scores_long, 
+#        aes(x = variable, y = value)) +  # ggplot function
+#   geom_boxplot()
+```
+
+## B) Hypothesis Testing
 
 ### How safe do you feel outside your home when it is dark?
 
@@ -1037,6 +1150,16 @@ hist(diff)
 
 ## 5- Economic Activity
 
+## A) EDA
+
+### What was the distribution of respondents' income levels?
+
+1.  Report the mean, standard deviation, and quartiles of our surveyed sample, broken down by pre- and post-connection.
+
+2.  Report the expectation with 95% confidence interval of the population mean using the t-statistic.
+
+3.  Repeat the above excluding zeros from the data.
+
 ### What is your average monthly household income?
 
 **Data Source**: Paired Household Surveys (Pre & Post)
@@ -1051,8 +1174,21 @@ hist(diff)
 
 ```{r}
 # Running the paired t-test
-income_pre <- paired_clean$avg_household_income_pre
-income_post <- paired_clean$avg_household_income_post
+ct <- "nigeria"
+ct
+df <- paired_clean %>% filter(country_post == ct)
+income_pre <- df$avg_household_income_pre
+income_post <- df$avg_household_income_post
+t.test(income_pre, income_post,
+       paired = TRUE, alternative = "two.sided")
+```
+
+```{r}
+ct <- "kenya"
+ct
+df <- paired_clean %>% filter(country_post == ct)
+income_pre <- df$avg_household_income_pre
+income_post <- df$avg_household_income_post
 t.test(income_pre, income_post,
        paired = TRUE, alternative = "two.sided")
 ```
@@ -1071,7 +1207,7 @@ t.test(income_pre, income_post,
 
 ```{r}
 # Isolate the dependent variable
-var <- post_hs$household_income_change
+var <- post_clean$household_income_change
 income_change <- var[var != ""]
 
 tab1(income_change, 
@@ -1079,8 +1215,8 @@ tab1(income_change,
 
 # Breakdown by response type and Community
 dep_var_mat <- rownames_to_column(
-  as.data.frame.matrix(prop.table(table(post_hs$community, 
-                                   post_hs$household_income_change),
+  as.data.frame.matrix(prop.table(table(post_clean$community, 
+                                   post_clean$household_income_change),
                                          margin = 1)
                                                   )
                                       , var = "community")
