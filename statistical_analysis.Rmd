@@ -6,50 +6,68 @@ output:
   pdf_document: default
 ---
 
-# OVERVIEW: HYPOTHESIS TESTING
+# OVERVIEW
 
-**Strategy**:
+## Exploratory Data Analysis (Descriptive)
 
--   For the paired data set, we will use the Paired t-Test, Wilcoxon Signed Rank Test, Sign Test, and McNemar's Test whenever applicable
+-   Generating summary statistics
+
+-   Plotting graphs/charts
+
+## **Inferential**:
+
+-   For the paired data set, we will use the following
+
+    -   Paired t-Test for ratio
+
+    -   Wilcoxon Signed Rank Test (Sign Test if asymmetric) for ordinal variables
+
+    -   McNemar's Test for binary responses
 
 -   Our independent variables will be the following: PV Size (kWh), No. of Customers, CAPEX (USD) and Consumption (Community & Customer).
 
 -   For each dependent variables, we will run a uni-variate regression tests with each of independent variable. When applicable, we will have a Linear regression t-Test or Logistic regression Wald test
 
-# Input Data
+# Libraries
 
 ```{r}
 # Importing libraries
 library(ggplot2)
+
 library(dplyr)
 library(lessR)
 library(tidyr)
 library(ggpubr)
 library(exact2x2)
 library(stringr)
-library(janitor)
 library(epiDisplay)
-library(nonpar)
 library(tibble)
 library(ggExtra)
 library(vtree)
 library(CGPfunctions)
 library(psych)
 library(scales)
+library(tidyverse)
+library(ggrepel)
+library(data.table)
+library(forcats)
+library(glue)
 ```
+
+# Input Data
 
 ```{r}
 ## Locading the project& consumption data
 projects <- read.csv("project_data.csv")
 consumption <- read.csv("customer_consumption.csv")
-head(projects)
-head(consumption)
+customers_info <- read.csv("customers_info.csv")
 ```
 
 ```{r}
 ## Locading the cleaned data sets
 # Intial Survey
-initial_clean <- read.csv("data_cleaning/datasets_clean/initial_clean.csv")
+initial_clean <- read.csv("data_cleaning/datasets_clean/initial_clean.csv",
+                          na.strings=c("","NA"))
 
 # Pre-connection
 initial_pre <- initial_clean %>%
@@ -64,24 +82,27 @@ head(initial_pre)
 head(initial_post)
 
 # Household Post-Survey
-post_clean <- read.csv("data_cleaning/datasets_clean/post_clean.csv")
+post_clean <- read.csv("data_cleaning/datasets_clean/post_clean.csv",
+                          na.strings=c("","NA"))
+post_clean <- merge(post_clean, consumption,
+                       by.x = 'renewvia_id', 
+                       by.y = 'Account.Number')
 head(post_clean)
 
 # Commercial & Insitution Post-Survey
-ci_clean <- read.csv("data_cleaning/datasets_clean/ci_post_clean.csv")
+ci_clean <- read.csv("data_cleaning/datasets_clean/ci_post_clean.csv",
+                          na.strings=c("","NA"))
+ci_clean <- merge(ci_clean, consumption,
+                       by.x = 'renewvia_id', 
+                       by.y = 'Account.Number')
 head(ci_clean)
-
-```
-
-```{r}
-colnames(initial_clean)
 ```
 
 ```{r}
 ## Locading the encoded data sets
 # Intial Survey
-initial_enc <- read.csv("data_cleaning/datasets_encoded/initial_encoded.csv")
-
+initial_enc <- read.csv("data_cleaning/datasets_encoded/initial_encoded.csv",
+                          na.strings=c("","NA"))
 # Pre-connection
 initial_pre_enc <- initial_enc %>%
                     filter(status == 1)
@@ -94,132 +115,242 @@ head(initial_pre_enc)
 head(initial_post_enc)
 
 # Household Post-Survey
-post_enc <- read.csv("data_cleaning/datasets_encoded/post_encoded.csv")
+post_enc <- read.csv("data_cleaning/datasets_encoded/post_encoded.csv",
+                          na.strings=c("","NA"))
+post_enc <- merge(post_enc, consumption,
+                       by.x = 'renewvia_id', 
+                       by.y = 'Account.Number')
 # Post-Connection
 # post_clean_enc <- post_enc %>% filter(tariff == "residential")
 head(post_enc)
 # head(post_clean_enc)
 
 # Commercial & Insitution Post-Survey
-ci_enc <- read.csv("data_cleaning/datasets_encoded/ci_post_encoded.csv") 
+ci_enc <- read.csv("data_cleaning/datasets_encoded/ci_post_encoded.csv",
+                          na.strings=c("","NA")) 
+ci_enc <- merge(ci_enc, consumption,
+                 by.x = 'renewvia_id', 
+                 by.y = 'Account.Number')
 head(ci_enc)
 ```
 
 ```{r}
 ## Pairing pre and post responses
-paired_clean <- merge(initial_pre, post_clean,
+paired_temp <- merge(initial_pre, post_clean,
                       suffix = c("_pre", "_post"),
                       by= 'renewvia_id')
+paired_clean <- merge(paired_temp, consumption,
+                       by.x = 'renewvia_id', 
+                       by.y = 'Account.Number')
 head(paired_clean)
 
-paired_enc <- merge(initial_pre_enc, post_enc,
+
+paired_temp_enc <- merge(initial_pre_enc, post_enc,
                       suffix = c("_pre", "_post"),
                       by= 'renewvia_id')
+paired_enc <- merge(paired_temp_enc, consumption,
+                       by.x = 'renewvia_id', 
+                       by.y = 'Account.Number')
 head(paired_enc)
+```
+
+# Initial Descriptive
+
+```{r}
+# No. of observations by datasets
+# % Missing Values for each variables
+# No. of duplicates
+```
+
+# Utility Functions
+
+## Data Visualization
+
+```{r}
+# For pie and bar charts
+group_plot <- function(df, var_name, plot_title, plot_type) {
+  var <- df[, var_name]
+  var <- var[var != ""]
+  
+  data <- as.data.frame(t(table(var)))[,2:3] 
+  setnames(data, 
+           old = c('var','Freq'), 
+           new = c('labels','counts'))
+
+  
+  if (plot_type == 'pie') {
+      data_tab <- data %>% mutate(csum = rev(cumsum(rev(counts))),
+                             pos = counts/2 + lead(csum, 1),
+                             pos = if_else(is.na(pos), counts/2, pos),
+                             percentage = counts/sum(counts))
+      data_tab$labels <- as.factor(data_tab$labels)
+      plot <- data_tab %>% ggplot(aes(x = "", y = counts, fill = labels)) +
+                          geom_col(width = 1, color = 1) +
+                          geom_label_repel(
+                            aes(y = pos,
+                                label = glue("{counts} ({percent(percentage)})"),
+                                 fill = labels),
+                                show.legend = FALSE) +
+                          labs(fill = var_name, title=plot_title) +
+                          coord_polar(theta = "y") +
+                          theme_void()
+  } else if (plot_type == "bar") {
+      plot <- data %>% ggplot(aes(y=counts, 
+                                  x=reorder(labels, counts), 
+                                  fill=labels)) + 
+                        geom_col(width = 0.7) +
+                        geom_text(aes(label=counts), vjust=-0.3, size=3)+
+                        labs(fill = var_name, title=plot_title) + 
+                        coord_flip()
+  }
+  ## Histogram
+  ## boxplot
+  return(plot)
+}
+
+```
+
+```{r}
+compare_btw_dfs <- function(var_name, plot_type, subplot_type, title) {
+  if(plot_type == "pre_post") {
+      pre_plot <- group_plot(initial_pre, var_name, "Initial", subplot_type)
+      post_plot <- group_plot(post_clean, var_name, "Post", subplot_type)
+      plot <- ggarrange(pre_plot, post_plot, 
+                        ncol = 2, nrow = 1, 
+                        common.legend = TRUE,
+                        legend="right")
+      
+      return(annotate_figure(plot, top = text_grob(title, 
+                     color = "black", face = "bold", size = 20)))
+  } 
+
+}
+
+compare_wth_df <- function(data, var1, var2, 
+                            var1_title, var2_title, 
+                            subplot_type, plot_title){
+  var1_plot <- group_plot(data, var1, 
+                          var1_title, subplot_type)
+  var2_plot <- group_plot(data, var2, 
+                          var2_title, subplot_type)
+  plot <- ggarrange(var1_plot, var2_plot, 
+                    ncol = 2, nrow = 1, 
+                    common.legend = TRUE,
+                    legend="right")
+  return(annotate_figure(plot, top = text_grob(plot_title, 
+                 color = "black", face = "bold", size = 20)))
+}
+```
+
+## Hypothesis Testing
+
+```{r}
+hyp_testing <- function(data, test_type, var){
+  #McNemar
+
+#Paired t-Test
+
+#Wilcoxon Signed-Rank Test
+
+#Sign Test
+  
+}
+
+```
+
+## Regression Analysis
+
+```{r}
+regression_analysis <- function() {
+  #Logistic 
+
+#Linear
+}
 ```
 
 # 1- Gender Equality
 
-## A) EDA
+## A) Descriptive
 
-### What was the gender breakdown of survey respondents, pre and post?
+### Household
 
 ```{r}
-# var <- initial_clean$gender
-# gdr <- var[var != ""]
-plot_pie <- function(df, period) {
-  data <- df %>% 
-            filter(gender != "") %>%
-            group_by(gender) %>% 
-            count() %>% 
-            ungroup() %>% 
-            mutate(per=`n`/sum(`n`)) %>% 
-            arrange(desc(gender))
-  
-  data$label <- scales::percent(data$per)
-  
-  pie_plot <- ggplot(data=data)+
-              geom_bar(aes(x="", y=per, fill=gender), 
-                       stat="identity", width = 1)+
-              coord_polar("y", start=0)+
-              theme_void()+
-              geom_text(aes(x=1, y = cumsum(per) - per/2, label=label)) +
-              labs(title = period)
-  return(pie_plot)
-}
-
-pre_plot <- plot_pie(initial_clean, "Initial")
-post_plot <- plot_pie(post_clean, "Post")
-plot <- ggarrange(pre_plot, post_plot, ncol = 2, 
-                  nrow = 1, common.legend = TRUE,legend="right")
-annotate_figure(plot, top = text_grob("Renewvia Survey - Gender Breakdown", 
-               color = "black", face = "bold", size = 20))
+# What was the gender breakdown of survey respondents, pre and post?
+compare_btw_dfs(var_name="gender", plot_type="pre_post", 
+        subplot_type="pie", title="Gender Breakdown")
 ```
 
-### What was school enrollment by gender pre-connection?
-
 ```{r}
+# What was school enrollment by gender pre-connection?
 girls <- sum(initial_pre$girls_headcount,na.rm = TRUE)
 girls_in_school <- sum(initial_pre$girls_schooling,na.rm = TRUE)
-enrollment_rate <- (girls_in_school/girls)*100
-sprintf("In the intial survey, respondents reported %d girls of which %d girls attending school, thus placing the enrollment rate at: %.2f%%", girls, girls_in_school, enrollment_rate)
-```
+enrollment_rate <- percent(girls_in_school/girls, accuracy = 0.01)
 
-### Was there a change in enrollment by gender afterwards?
+vals <- c(girls, girls_in_school, enrollment_rate)
+
+# creating matrix
+tab <- as.data.frame(t(as.matrix(vals)))
+setnames(tab, old = c('V1','V2', 'V3'), 
+          new = c("Girls", "Girls.In.School", "Enrollment.Rate"))
+tab
+```
 
 ```{r}
-tab_tree <- function(df, var, var_title) {
-  var_filt <- var[var != ""]
-
-  tree <- vtree(df, var, vp=TRUE, 
-                title = var_title, horiz = FALSE)
-  return(tree)
-}
-  
-tab_tree(post_clean, "girls_schooling_change", "Post-Survey Respondents")
+# Was there a change in enrollment by gender afterwards?
+compare_wth_df(data=post_clean, 
+               var1="girls_schooling_change", 
+               var2="boys_schooling_change", 
+               var1_title="Girls", var2_title="Boys", 
+               subplot_type="pie", plot_title="School Enrollment Change")
 ```
-
-### For those un-enrolled, what was the driving factor? Did the reason change post-survey?
 
 ```{r}
-group_tab <- function(var, title){
-  var <- var[var != ""]
-  change_tab <- tab1(var,
-                   sort.group = "decreasing",
-                   main=title, cum.percent = FALSE,
-                   horiz=FALSE, cex.axis=0.8, 
-                   cex.lab=0.8, cex.name=0.8)
-  return(change_tab)
-}
+# For those un-enrolled, what was the driving factor? Did the reason change post-survey?
+girls_reasons_pre <- group_plot(initial_pre, "girls_unschooled_reasons", "Girls: Pre-Survey", "bar")
+girls_reasons_post <- group_plot(post_clean, "girls_unschooled_reasons", "Girls: Post-Survey", "bar")
+boys_reasons_pre <- group_plot(initial_pre, "boys_unschooled_reasons", "Boys: Pre-Survey", "bar")
+boys_reasons_post <- group_plot(post_clean, "boys_unschooled_reasons", "Boys: Post-Survey", "bar")
 
-group_tab(initial_pre$girls_unschooled_reasons,
-          "Pre-Connection - Reasons For Un-schooled Girls")
+remove_axes <- theme(
+  axis.text.x = element_blank(),
+  axis.ticks.x = element_blank(),
+  axis.title.x = element_blank(),
+  axis.text.y = element_blank(),
+  axis.ticks.y = element_blank(),
+  axis.title.y = element_blank()
+)
 
-group_tab(post_clean$girls_unschooled_reasons,
-          "Post-Connection - Reasons For Un-schooled Girls")
+p <- list(
+  girls_reasons_pre + remove_axes,
+  girls_reasons_post + remove_axes,
+  boys_reasons_pre + remove_axes,
+  boys_reasons_post + remove_axes
+)
+
+plot <- ggarrange(plotlist = p,
+                  ncol = 2,  nrow = 2, 
+                  common.legend = TRUE,legend="bottom")
+annotate_figure(plot,
+                top = text_grob("Renewvia Surveys: Reasons for Unschooled Children",
+               color = "black", face = "bold", size = 15))
+
+# How were household chores distributed among male and female within households?
+# In respondent's own words, how were women affected from the mini-grid?
 ```
 
-### How many new women-led businesses were created?
+### Commercial
 
-### How did women-led businesses' performance change?
+```{r}
+# How many new women-led businesses were created?
 
-### How were household chores distributed among male and female within households?
+# How did women-led businesses' performance change?
+```
 
-### In respondent's own words, how were women affected from the mini-grid?
-
-## B) Hypothesis Testing
-
-### Has there been a change in the number of females in your household who attend school full time since connection to mini-grid power?
+## B) Inferential
 
 **Data Source**: Household Post-Survey
 
 **Value (Encoding if applied)**: "Yes, it's decreased" = -1; "No, it's the same" = 0; "Yes, it's increased" = 1
-
-**Hypothesis Testing:**
-
--   ${H_0}$ = No relationship between any independent variable (as described above) and increase in girls enrollment
-
--   ${H_1}$ = A relationship between any independent variable (as described above) and increase in girls enrollment
 
 ```{r}
 var <- post_clean$girls_schooling_change
@@ -230,6 +361,8 @@ tab1(girls_enrollment,
 ```
 
 ```{r}
+## Girls attending school
+# Has there been a change in the number of females in your household who attend school full time since connection to mini-grid power?
 # Isolate the dependent variable
 var <- post_clean$girls_schooling_change
 girls_enrollment <- var[var != ""]
@@ -292,19 +425,14 @@ sapply(ind_vars, reg_increase)
 sapply(ind_vars, reg_decrease)
 ```
 
-### How long does the water collection process take on a daily basis?
+### Water Collection Time
 
 **Data Source**: Paired Household Surveys (Pre & Post)
 
 **Value (Encoding if applied)**: "less than 1 hour" = 1; "1-2 hours" = 2; "2-3 hours" = 3; "3-4 hours" = 4; "greater than 4 hours" = 5
 
-**Hypothesis Testing:**
-
--   ${H_0}$ = No difference between pre and post scores assigned to water collection time
-
--   ${H_1}$ = A significant difference between pre and post scores assigned to water collection time
-
 ```{r}
+# How long does the water collection process take on a daily basis?
 ## Wilcoxon Signed Rank Test
 # Scores
 # paired_enc <- paired_enc %>% filter(if_all(c(water_collection_time_pre,
@@ -322,19 +450,14 @@ diff <- post_scores - pre_scores
 hist(diff)
 ```
 
-### How long does the cooking fuel collection process take on a daily basis?
+### Cooking Fuel Collection Time
 
 **Data Source**: Paired Household Surveys (Pre & Post)
 
 **Value (Encoding if applied)**: "No need to collect fuel" = 1; "less than 1 hour" = 2; "1-2 hours" =3; "3-5 hours" = 4; "greater than 4 hours" = 5
 
-**Hypothesis Testing:**
-
--   ${H_0}$ = No difference between pre and post scores assigned to cooking fuel collection time
-
--   ${H_1}$ = A significant difference between pre and post scores assigned to cooking fuel collection time
-
 ```{r}
+# How long does the cooking fuel collection process take on a daily basis?
 ## Sign Test
 # Calculating differences
 pre_scores <- paired_enc$cooking_fuel_collection_time_pre
@@ -348,19 +471,14 @@ signtest(diff, m=0, conf.level=0.95, exact=FALSE)
 hist(diff)
 ```
 
-### Are any household members business owners?
+### Women-led Business Ownership
 
 **Data Source**: Paired Household Surveys (Pre & Post)
 
 **Value (Encoding if applied)**: "None" = 0; "Not None" = 1
 
-**Hypothesis Testing:**
-
--   ${H_0}$ = No difference between pre and post number of local female business owners
-
--   ${H_1}$ = A significant difference between pre and post number of local female business owners
-
 ```{r}
+# Are any household members business owners?
 ## McNemar's  Test
 # Cross tabulation of changes of women business ownership
 cross_tab <- table(paired_enc$business_owners_female_pre,
@@ -430,37 +548,80 @@ sapply(ind_vars, reg_increase)
 sapply(ind_vars, reg_decrease)
 ```
 
-### If you answered yes to adding new workers, how many new employees are female?
+### New Female workers
 
 **Data Source**: Commercial & Institution Post Survey
 
 **Value (Encoding if applied)**: Any value
 
-**Hypothesis Testing:**
-
--   ${H_0}$ = No relationship between any independent variable (as described above) and number of new female employees
-
--   ${H_1}$ = A relationship between any independent variable (as described above) and number of new female employees
-
 ```{r}
-
+# If you answered yes to adding new workers, how many new employees are female?
 ```
 
 # 2- Productivity
 
-### How many hours of light per day do you currently have at home?
+## A) Descriptive
+
+### Household
+
+```{r}
+# Has the number of electronic devices or appliances increased since connection to minigrid?
+# 
+# Have you added any of the following Electronic Devices or Appliances after you were connected to minigrid (POST connection) Select all that apply
+# 
+# How far must you travel to charge your mobile phone?
+# 
+# How often do you need to charge your mobile phone?
+# 
+# How much do you pay per month to charge your mobile phone?
+# 
+# How far must you travel to obtain your water supply?
+# 
+# How long does the cooking fuel collection process take on a daily basis?
+# 
+# How long does the water collection process take on a daily basis?
+# 
+# Has your (or your spouses) occupation changed since youve been connected to minigrid power?
+# 
+# Have you added any new products or services since connection to Renewvia minigrid?
+# 
+# If this business is new, do you consider this new business a result of having access to minigrid power?
+# 
+# Is this business recent (started after connection to minigrid power?)
+```
+
+### Commercial
+
+```{r}
+# Is this business, clinic, school still in operation?
+# 
+# Please select your business type
+# 
+# Since connection to Renewvia mingrid, have you had any change in number of workers/employees at your place of work?
+# 
+# Since connection to Renewvia minigrid, have your hours of operation changed at all?
+# 
+# Type of employment for Primary Provider
+# 
+# What is approximate monthly cost of energy used strictly for charging appliances?
+# 
+# What is the approximate monthly cost of energy used strictly for charging appliances?
+# 
+# What is the approximate monthly cost of energy used strictly for cooking?
+# 
+# What is your average monthly household income:
+```
+
+## B) Inferential
+
+### Light Hours
 
 **Data Source**: Paired Household Surveys (Pre & Post)
 
 **Value (Encoding if applied)**: Any numeric value between 0 and 24
 
-**Hypothesis Testing:**
-
--   ${H_0}$ = No difference between pre and post light hours
-
--   ${H_1}$ = A significant difference between pre and post light hours
-
 ```{r}
+## How many hours of light per day do you currently have at home?
 # Running the paired t-test
 light_hours_pre <- paired_clean$light_hours_current_pre
 light_hours_post <- paired_clean$light_hours_current_post
@@ -468,19 +629,14 @@ t.test(light_hours_pre, light_hours_post,
        paired = TRUE, alternative = "two.sided")
 ```
 
-### Since connection to Renewvia mini-grid, have your hours of operation changed at all?
+### Business Operation Hours
 
 **Data Source**: C&I Post-Survey
 
 **Value (Encoding if applied)**: "Yes, they have increased" = 1, "Yes, they have decreased" = -1, "No, it is pretty much the same" = 0
 
-**Hypothesis Testing:**
-
--   ${H_0}$ = No relationship between any independent variable (as described above) and increase in local businesses' hours of operations
-
--   ${H_1}$ = A relationship between any independent variable (as described above) and increase in local businesses' hours of operations
-
 ```{r}
+## Since connection to Renewvia mini-grid, have your hours of operation changed at all?
 # Isolate the dependent variable
 var <- ci_clean$operations_hours_change
 work_hours <- var[var != ""]
@@ -544,19 +700,14 @@ sapply(ind_vars, reg_increase)
 sapply(ind_vars, reg_decrease)
 ```
 
-### Have you seen a change in overall school performance?
+### Schools - Academic Performance
 
 **Data Source**: C&I Post-Survey
 
 **Value (Encoding if applied)**: "Yes, they have increased" = 1, "Yes, they have decreased" = -1, "No, it is pretty much the same" = 0
 
-**Hypothesis Testing:**
-
--   ${H_0}$ = No relationship between any independent variable (as described above) and school performance by schools
-
--   ${H_1}$ = A relationship between any independent variable (as described above) and school performance by schools
-
 ```{r}
+## Have you seen a change in overall school performance?
 # Isolate the dependent variable
 var <- ci_clean$school_performance
 ci_school_performance <- var[var != ""]
@@ -598,17 +749,11 @@ reg <- function(feature) {
 sapply(ind_vars, reg)
 ```
 
-### Has school performance changed since connection to mini-grid?
+### Household - Academic Performance
 
 **Data Source**: Household Post-Survey
 
 **Value (Encoding if applied)**: "Yes, they have increased" = 1, "Yes, they have decreased" = -1, "No, it is pretty much the same" = 0
-
-**Hypothesis Testing:**
-
--   ${H_0}$ = No relationship between any independent variable (as described above) and school performance by households
-
--   ${H_1}$ = A relationship between any independent variable (as described above) and school performance by households
 
 ```{r}
 # Isolate the dependent variable
@@ -674,19 +819,67 @@ sapply(ind_vars, reg_increase)
 
 # 3- Health
 
-### For clinics or health services only: Since connection to Renewvia mini-grid, have your health service offerings changed in any of the following ways: (select all that apply).
+## A) Descriptive
+
+### Household
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+# What is your clean community water source?
+# What is your clean water source?
+# What is your source of water?
+# Do you have a source for clean drinking water?
+# How much do you pay per month for water?
+# What is the source for clean drinking water?
+```
+
+```{r}
+# Has the number of kerosene lamps in your household changed since connection to minigrid?
+# How many kerosene lamps do you currently have in your household?
+# How many kerosene lamps do you currently use in your household? (before grid connection)
+# How many kerosene lamps do you currently use in your household? (POST minigrid connection)
+# How much do you pay monthly for kerosene used only in kerosene lamps?
+```
+
+```{r}
+# What hours is the Health Center / Clinic open?
+# Does your Health Center / Clinic have access to refrigeration?
+# Does your Health Center have access to electricity?
+# Does your Health Center have access to minigrid electricity?
+# How close is the nearest Health Center / Clinic
+# How close is the nearest Health Center/Clinic?
+
+```
+
+```{r}
+# In what way has minigrid power impacted your life or the life of your family members?
+```
+
+### Commercial
+
+```{r}
+# For clinics or health services only: Since connection to Renewvia minigrid, have your health service offerings changed in any of the following ways: (select all that apply).
+# What is the Clinic / Hospital able to offer or provide due to connection to Renewvia minigrid that it wasnt able to offer before?
+# What services are you able to offer/sell/provide due to connection to Renewvia minigrid that you werent able to offer prior to connection?
+```
+
+## B) Inferential
+
+### Health Services Offerings
 
 **Data Source**: Commercial & Institution Post Survey
 
 **Value (Encoding if applied)**: Any value
 
-**Hypothesis Testing:**
-
--   ${H_0}$ = No relationship between any independent variable (as described above) and number of new health services offered
-
--   ${H_1}$ = A relationship between any independent variable (as described above) and number of new health services offered
-
 ```{r}
+## For clinics or health services only: Since connection to Renewvia mini-grid, have your health service offerings changed in any of the following ways: (select all that apply).
 # Breakdown by response type and Community
 dep_var_mat <- ci_clean %>%
                   group_by(community) %>%
@@ -719,19 +912,14 @@ reg <- function(feature) {
 sapply(ind_vars, reg)
 ```
 
-### Does your Health Center / Clinic have access to refrigeration?
+### Clinic Access To Refrigeration
 
 **Data Source**: Paired Household Surveys (Pre & Post)
 
 **Value (Encoding if applied)**: "yes" = 1; "no" = 0
 
-**Hypothesis Testing:**
-
--   ${H_0}$ = No relationship between any independent variable (as described above) and reported clinic access to refrigeration
-
--   ${H_1}$ = A relationship between any independent variable (as described above) and reported clinic access to refrigeration
-
 ```{r}
+## Does your Health Center / Clinic have access to refrigeration?
 ## McNemar's  Test
 # Cross tabulation of changes of women business ownership
 var_pre <- paired_enc$clinic_refrigeration_access_pre
@@ -802,19 +990,14 @@ sapply(ind_vars, reg_increase)
 sapply(ind_vars, reg_decrease)
 ```
 
-### Do you feel that you have better access to health services because of connection to mini-grid?
+### Better access to healthcare
 
 **Data Source**: Household Post-Survey
 
 **Value (Encoding if applied)**: "yes" = 1; "no" = 0
 
-**Hypothesis Testing:**
-
--   ${H_0}$ = No relationship between any independent variable (as described above) and access to better healthcare
-
--   ${H_1}$ = A relationship between any independent variable (as described above) and access to better healthcare
-
 ```{r}
+## Do you feel that you have better access to health services because of connection to mini-grid?
 # Breakdown by response type and Community
 dep_var_mat <- rownames_to_column(as.data.frame.matrix(
                                       prop.table(table(
@@ -849,19 +1032,14 @@ reg <- function(feature) {
 sapply(ind_vars, reg)
 ```
 
-### Do you have a source for clean drinking water?
+### Access to clean drinking water
 
 **Data Source**: Paired Household Surveys (Pre & Post)
 
 **Value (Encoding if applied)**: "yes" = 1; "no" = 0
 
-**Hypothesis Testing:**
-
--   ${H_0}$ = No relationship between any independent variable (as described above) and access to clean water
-
--   ${H_1}$ = A relationship between any independent variable (as described above) and access to clean water
-
 ```{r}
+## Do you have a source for clean drinking water?
 ## McNemar's  Test
 # Cross tabulation of changes of women business ownership
 var_pre <- paired_enc$clean_drinking_water_pre
@@ -932,19 +1110,14 @@ sapply(ind_vars, reg_increase)
 sapply(ind_vars, reg_decrease)
 ```
 
-### Since connection to Renewvia mini-grid, has your access to clean drinking water changed at all?
+### Clean drinking water access - change
 
 **Data Source**: C&I Post Survey
 
 **Value (Encoding if applied)**: "Yes, it's decreased" = -1; "No, it's the same" = 0; "Yes, it's increased" = 1
 
-**Hypothesis Testing:**
-
--   ${H_0}$ = No relationship between any independent variable (as described above) and increase in access to clean drinking water for C&I
-
--   ${H_1}$ = A relationship between any independent variable (as described above) and increase in access to clean drinking water for C&I
-
 ```{r}
+## Since connection to Renewvia mini-grid, has your access to clean drinking water changed at all?
 # Isolate the dependent variable
 var <- ci_clean$clean_drinking_water_access
 hs_school_performance <- var[var != ""]
@@ -988,19 +1161,14 @@ sapply(ind_vars, reg_increase)
 # sapply(ind_vars, reg_decrease)
 ```
 
-### How many kerosene lamps do you currently use in your household?
+### Kerosene Lamps Count
 
 **Data Source**: Paired Household Surveys (Pre & Post)
 
 **Value (Encoding if applied)**: Any numeric value
 
-**Hypothesis Testing:**
-
--   ${H_0}$ = No difference between pre and post number of kerosene lamps used
-
--   ${H_1}$ = A significant difference between pre and post number of kerosene lamps used
-
 ```{r}
+## How many kerosene lamps do you currently use in your household?
 # Running the paired t-test
 kerosene_pre <- paired_clean$kerosene_lamps_count_pre
 kerosene_post <- paired_clean$kerosene_lamps_count_post
@@ -1009,19 +1177,14 @@ t.test(kerosene_pre, kerosene_post,
 
 ```
 
-### Has the number of kerosene lamps in your household changed since connection to mini-grid
+### Kerosene Lamps Count - Change
 
 **Data Source**: Household Post Survey
 
 **Value (Encoding if applied)**: "Yes, it's decreased" = -1; "No, it's the same" = 0; "Yes, it's increased" = 1
 
-**Hypothesis Testing:**
-
--   ${H_0}$ = No relationship between any independent variable (as described above) and decrease in kerosene lamps usage
-
--   ${H_1}$ = A relationship between any independent variable (as described above) and decrease in kerosene lamps usage
-
 ```{r}
+## Has the number of kerosene lamps in your household changed since connection to mini-grid
 # Isolate the dependent variable
 var <- post_clean$kerosene_lamp_usage_change
 kerosene_usage <- var[var != ""]
@@ -1081,19 +1244,35 @@ reg_decrease <- function(feature) {
 
 sapply(ind_vars, reg_increase)
 sapply(ind_vars, reg_decrease)
+
 ```
 
-### TODO
-
--   Does your Health Center have access to electricity?
+```{r}
+# Does your Health Center have access to electricity?
+```
 
 # 4- Safety
 
-## A) EDA
-
-### How did the feeling of safety change? For everyone? By Gender? By country? By Community?
+## A) Descriptive
 
 ```{r}
+# Do you feel that having access to minigrid power has made you more safe? Please explain
+# Do you feel that having access to minigrid power has made you more safe? Please explain->
+# Do you feel that you have better access to health services because of connection to minigrid?
+# What makes you feel the most unsafe?
+# How safe do you feel outside your home when it is dark?
+```
+
+```{r}
+# Does your community currently have outdoor community lights?
+# Does your home have exterior lighting?
+# How safe would you feel outside your home at nighttime IF you had exterior lights/community lighting?
+# How safe would you feel outside your home at nighttime IF you had exterior lights?
+# Is this exterior lighting powered by minigrid?
+```
+
+```{r}
+# How did the feeling of safety change? For everyone? By Gender? By country? By Community?
 # Average scores for everyone and split between men and women
 women_initial_pre <- (initial_pre_enc %>% filter(gender == 1))$feel_safe_dark
 women_initial_post <- (initial_post_enc %>% filter(gender == 1))$feel_safe_dark
@@ -1113,21 +1292,16 @@ avg_scores <- c(mean(women_initial_pre, na.rm = TRUE),
 #   geom_boxplot()
 ```
 
-## B) Hypothesis Testing
+## B) Inferential
 
-### How safe do you feel outside your home when it is dark?
+### Feeling Safe
 
 **Data Source**: Household Post Survey
 
 **Value (Encoding if applied)**: "Very unsafe" = 1; "Somewhat unsafe" = 2; "Neither safe nor unsafe"= 3; "Somewhat safe" = 4; "Very safe" = 5
 
-**Hypothesis Testing:**
-
--   ${H_0}$ = No relationship between any independent variable (as described above) and increase in feeling of safety
-
--   ${H_1}$ = A relationship between any independent variable (as described above) and increase in feeling of safety
-
 ```{r}
+# How safe do you feel outside your home when it is dark?
 pre_scores <- paired_enc$feel_safe_dark_pre
 post_scores <- paired_enc$feel_safe_dark_post
 diff <- post_scores - pre_scores
@@ -1140,39 +1314,68 @@ signtest(diff, m=0, conf.level=0.95, exact=FALSE)
 hist(diff)
 ```
 
-### TODO
+```{r}
+# What makes you feel the most unsafe?
+# 
+# Does your community currently have outdoor community lights?
+# 
+# How safe would you feel outside your home at nighttime IF you had exterior lights?
+```
 
--   What makes you feel the most unsafe?
+# 5- Economic Activity
 
--   Does your community currently have outdoor community lights?
+## A) Descriptive
 
--   How safe would you feel outside your home at nighttime IF you had exterior lights?
+### Household
 
-## 5- Economic Activity
+```{r}
+# Type of employment for Primary Provider
+# What is your average monthly household income:
+# Has your household income changed since your connection to minigrid power?
+# Has your (or your spouses) occupation changed since youve been connected to minigrid power?
+```
 
-## A) EDA
+```{r}
+# What is approximate monthly cost of energy used strictly for charging appliances?
+# 
+# What is the approximate monthly cost of energy used strictly for charging appliances?
+# 
+# What is the approximate monthly cost of energy used strictly for cooking?
 
-### What was the distribution of respondents' income levels?
+```
 
-1.  Report the mean, standard deviation, and quartiles of our surveyed sample, broken down by pre- and post-connection.
+```{r}
+# Are any household members business owners?
+# Is this business recent (started after connection to minigrid power?)
+# If this business is new, do you consider this new business a result of having access to minigrid power?
+# Is this business, clinic, school still in operation?
+# Please select your business type
+```
 
-2.  Report the expectation with 95% confidence interval of the population mean using the t-statistic.
+### Commercial
 
-3.  Repeat the above excluding zeros from the data.
+```{r}
+# Is this business, clinic, school still in operation?
+# 
+# Please select your business type
+# 
+# Since connection to Renewvia mingrid, have you had any change in number of workers/employees at your place of work?
+# 
+# Since connection to Renewvia minigrid, have your hours of operation changed at all?
 
-### What is your average monthly household income?
+# Have you added any new products or services since connection to Renewvia minigrid?
+```
+
+## B) Inferential
+
+### Income
 
 **Data Source**: Paired Household Surveys (Pre & Post)
 
 **Value (Encoding if applied)**: Any numeric value
 
-**Hypothesis Testing:**
-
--   ${H_0}$ = No difference between pre and post average household income
-
--   ${H_1}$ = A significant difference between pre and post average household income
-
 ```{r}
+## What is your average monthly household income?
 # Running the paired t-test
 ct <- "nigeria"
 ct
@@ -1193,19 +1396,14 @@ t.test(income_pre, income_post,
        paired = TRUE, alternative = "two.sided")
 ```
 
-### Has your household income changed since your connection to mini-grid power?
+### Income Change
 
 **Data Source**: Household Post Survey
 
 **Value (Encoding if applied)**: "Yes, it's decreased" = -1; "No, it's the same" = 0; "Yes, it's increased" = 1
 
-**Hypothesis Testing:**
-
--   ${H_0}$ = No relationship between any independent variable (as described above) and decrease in household income change
-
--   ${H_1}$ = A relationship between any independent variable (as described above) and decrease in household income change
-
 ```{r}
+## Has your household income changed since your connection to mini-grid power?
 # Isolate the dependent variable
 var <- post_clean$household_income_change
 income_change <- var[var != ""]
@@ -1266,19 +1464,18 @@ sapply(ind_vars, reg_increase)
 sapply(ind_vars, reg_decrease)
 ```
 
-### Are any household members business owners?
+```{r}
+# For businesses or shop owners only: Since connection to Renewvia mini-grid, have you seen any change in your weekly or monthly earnings?
+```
+
+### Business Ownership
 
 **Data Source**: Paired Household Surveys (Pre & Post)
 
 **Value (Encoding if applied)**: "None" = 0; "Not None" = 1
 
-**Hypothesis Testing:**
-
--   ${H_0}$ = No difference between pre and post presence of new local business owners
-
--   ${H_1}$ = A significant difference between pre and post presence of new local business owners
-
 ```{r}
+# Are any household members business owners?
 ## McNemar's Test
 # Cross tabulation of changes between business ownership
 cross_tab <- table(paired_enc$business_owners_binary_pre,
@@ -1346,8 +1543,8 @@ sapply(ind_vars, reg_increase)
 sapply(ind_vars, reg_decrease)
 ```
 
-### TODO
+### Workplace
 
--   For businesses or shop owners only: Since connection to Renewvia mini-grid, have you seen any change in your weekly or monthly earnings?
-
--   Since connection to Renewvia mini-grid, have you had any change in number of workers/employees at your place of work?
+```{r}
+# Since connection to Renewvia mini-grid, have you had any change in number of workers/employees at your place of work?
+```
