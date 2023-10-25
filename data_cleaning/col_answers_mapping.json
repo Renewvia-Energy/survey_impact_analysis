@@ -490,7 +490,7 @@
     },
     {
       "old_name": "Does your Health Center have access to minigrid electricity?",
-      "new_name": "clinic_electricity_access_minigrid",
+      "new_name": "clinic_electricity_access",
       "mapping": {
         "yes": "Yes",
         "no": "No"

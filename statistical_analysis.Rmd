@@ -6,15 +6,15 @@ output:
   pdf_document: default
 ---
 
-# OVERVIEW
+# Overview
 
-## Exploratory Data Analysis (Descriptive)
+## Descriptive
 
 -   Generating summary statistics
 
 -   Plotting graphs/charts
 
-## **Inferential**:
+## **Inferential**
 
 -   For the paired data set, we will use the following
 
@@ -32,8 +32,8 @@ output:
 
 ```{r}
 # Importing libraries
+options(warn=-1)
 library(ggplot2)
-
 library(dplyr)
 library(lessR)
 library(tidyr)
@@ -46,63 +46,81 @@ library(ggExtra)
 library(vtree)
 library(CGPfunctions)
 library(psych)
+library(nonpar)
 library(scales)
 library(tidyverse)
 library(ggrepel)
 library(data.table)
 library(forcats)
 library(glue)
+library(aod)
 ```
 
 # Input Data
 
 ```{r}
 ## Locading the project& consumption data
-projects <- read.csv("project_data.csv")
 consumption <- read.csv("customer_consumption.csv")
-customers_info <- read.csv("customers_info.csv")
+customer_info <- read.csv("customers_info.csv")
+
+temp <- merge(consumption, customer_info, 
+              by.x = 'Account.Number',
+              by.y = 'customerAccountNumber')  
+temp_group <- temp %>% 
+                    group_by(projectName) %>% 
+                    summarise(consumption = sum(Energy.Consumption, na.rm=TRUE))
+projects <- read.csv("project_data.csv")
+projects <- merge(projects, temp_group, by.x="project_name", by.y="projectName")
 ```
 
 ```{r}
 ## Locading the cleaned data sets
 # Intial Survey
-initial_clean <- read.csv("data_cleaning/datasets_clean/initial_clean.csv",
+initial <- read.csv("data_cleaning/datasets_clean/initial_clean.csv",
                           na.strings=c("","NA"))
-
+initial_clean <- merge(initial, customer_info, 
+                     by.x = 'renewvia_id', 
+                     by.y = 'customerAccountNumber') %>% 
+                    filter(tariff == "Residential")
 # Pre-connection
 initial_pre <- initial_clean %>%
-                    filter(status == "pre_connection")
+                    filter(status == "pre_connection") 
 
 # Post-connection
 initial_post <- initial_clean %>%
                     filter(status == "post_connection") 
 
-head(initial_clean)
-head(initial_pre)
-head(initial_post)
+# head(initial_clean)
+# head(initial_pre)
+# head(initial_post)
 
 # Household Post-Survey
-post_clean <- read.csv("data_cleaning/datasets_clean/post_clean.csv",
+post <- read.csv("data_cleaning/datasets_clean/post_clean.csv",
                           na.strings=c("","NA"))
-post_clean <- merge(post_clean, consumption,
+post_clean <- merge(post, temp,
                        by.x = 'renewvia_id', 
-                       by.y = 'Account.Number')
-head(post_clean)
+                       by.y = 'Account.Number')%>% 
+                    filter(tariff == "Residential")
+# head(post_clean)
 
 # Commercial & Insitution Post-Survey
-ci_clean <- read.csv("data_cleaning/datasets_clean/ci_post_clean.csv",
+ci <- read.csv("data_cleaning/datasets_clean/ci_post_clean.csv",
                           na.strings=c("","NA"))
-ci_clean <- merge(ci_clean, consumption,
+ci_clean <- merge(ci, temp,
                        by.x = 'renewvia_id', 
                        by.y = 'Account.Number')
-head(ci_clean)
+# head(ci_clean)
 ```
 
 ```{r}
 ## Locading the encoded data sets
 # Intial Survey
 initial_enc <- read.csv("data_cleaning/datasets_encoded/initial_encoded.csv",
-                          na.strings=c("","NA"))
+                          na.strings=c("","NA")) 
+initial_enc <- merge(initial_enc, customer_info, 
+                     by.x = 'renewvia_id', 
+                     by.y = 'customerAccountNumber') %>% 
+                    filter(tariff == "Residential")
 # Pre-connection
 initial_pre_enc <- initial_enc %>%
                     filter(status == 1)
@@ -110,47 +128,48 @@ initial_pre_enc <- initial_enc %>%
 initial_post_enc <- initial_enc %>%
                     filter(status == 2)
 
-head(initial_enc)
-head(initial_pre_enc)
-head(initial_post_enc)
+# head(initial_enc)
+# head(initial_pre_enc)
+# head(initial_post_enc)
 
 # Household Post-Survey
-post_enc <- read.csv("data_cleaning/datasets_encoded/post_encoded.csv",
+post <- read.csv("data_cleaning/datasets_encoded/post_encoded.csv",
                           na.strings=c("","NA"))
-post_enc <- merge(post_enc, consumption,
+post_enc <- merge(post, temp,
                        by.x = 'renewvia_id', 
-                       by.y = 'Account.Number')
+                       by.y = 'Account.Number')  %>% 
+                    filter(tariff == "Residential")
 # Post-Connection
-# post_clean_enc <- post_enc %>% filter(tariff == "residential")
-head(post_enc)
+# post_clean_enc <- post_enc 
+# head(post_enc)
 # head(post_clean_enc)
 
 # Commercial & Insitution Post-Survey
-ci_enc <- read.csv("data_cleaning/datasets_encoded/ci_post_encoded.csv",
+ci <- read.csv("data_cleaning/datasets_encoded/ci_post_encoded.csv",
                           na.strings=c("","NA")) 
-ci_enc <- merge(ci_enc, consumption,
+ci_enc <- merge(ci, temp,
                  by.x = 'renewvia_id', 
                  by.y = 'Account.Number')
-head(ci_enc)
+# head(ci_enc)
 ```
 
 ```{r}
 ## Pairing pre and post responses
-paired_temp <- merge(initial_pre, post_clean,
+paired_clean <- merge(initial_pre, post_clean,
                       suffix = c("_pre", "_post"),
                       by= 'renewvia_id')
-paired_clean <- merge(paired_temp, consumption,
-                       by.x = 'renewvia_id', 
-                       by.y = 'Account.Number')
+# paired_clean <- merge(paired_temp, consumption,
+#                        by.x = 'renewvia_id', 
+#                        by.y = 'Account.Number')
 head(paired_clean)
 
 
-paired_temp_enc <- merge(initial_pre_enc, post_enc,
+paired_enc <- merge(initial_pre_enc, post_enc,
                       suffix = c("_pre", "_post"),
                       by= 'renewvia_id')
-paired_enc <- merge(paired_temp_enc, consumption,
-                       by.x = 'renewvia_id', 
-                       by.y = 'Account.Number')
+# paired_enc <- merge(paired_temp_enc, consumption,
+#                        by.x = 'renewvia_id', 
+#                        by.y = 'Account.Number')
 head(paired_enc)
 ```
 
@@ -164,107 +183,301 @@ head(paired_enc)
 
 # Utility Functions
 
+## Descriptive
+
+```{r}
+get_stats <- function(data, ct, var_name,data_source, 
+                      remove_outliers = FALSE, 
+                      exclude_zeros = FALSE) {
+  if (grepl("_pre", var_name, fixed = TRUE)){
+    country_data <- data %>% filter(country_pre == ct)
+  } else if (grepl("_post", var_name, fixed = TRUE)){
+    country_data <- data %>% filter(country_post == ct)
+  } else {country_data <- data %>% filter(country == ct)}
+    
+  if (remove_outliers == TRUE) {
+    print("Excluding outliers")
+    quartiles <- quantile(country_data[, var_name], 
+                        probs=c(.25, .75), na.rm = TRUE)
+  
+    IQR <- IQR(country_data[, var_name], na.rm = TRUE)
+    
+    Lower <- quartiles[1] - 1.5*IQR
+    Upper <- quartiles[2] + 1.5*IQR 
+    
+    country_data <- subset(country_data, 
+                              country_data[, var_name] > Lower &
+                              country_data[, var_name] < Upper)
+  } 
+  
+  var <- country_data[, var_name]
+  
+  if (exclude_zeros == TRUE) {
+    print("Removing Zeros")
+    var <- var[var != 0]
+  } 
+  
+  stats <- t(describe(var, IQR=TRUE, quant=c(.1,.25,.5,.75,.90),))
+  print(t.test(var, conf.level = 0.95))
+  hist_title <- paste(filt_ct, data_source, " : ", var_name)
+  print(stats)
+  return(hist(var, main=hist_title))
+}
+```
+
 ## Data Visualization
 
 ```{r}
 # For pie and bar charts
-group_plot <- function(df, var_name, plot_title, plot_type) {
-  var <- df[, var_name]
-  var <- var[var != ""]
+plot_func <- function(df, var_name, var_type, plot_title, plot_type, chars_remove=NULL) {
   
-  data <- as.data.frame(t(table(var)))[,2:3] 
-  setnames(data, 
-           old = c('var','Freq'), 
-           new = c('labels','counts'))
+  if(var_type == "non_cont") {
+      var <- df[, var_name]
+      var <- var[var != ""]
+      
+      data <- as.data.frame(t(table(var)))[,2:3] 
+      setnames(data, 
+               old = c('var','Freq'), 
+               new = c('labels','counts'))
+    
+      if(is.null(chars_remove) == FALSE) {
+        data <- data[!grepl(chars_remove,data$labels),]
+      }
+      
+      if (plot_type == 'pie') {
+          data_tab <- data %>% mutate(csum = rev(cumsum(rev(counts))),
+                                 pos = counts/2 + lead(csum, 1),
+                                 pos = if_else(is.na(pos), counts/2, pos),
+                                 percentage = counts/sum(counts))
+          data_tab$labels <- as.factor(data_tab$labels)
+          plot <- data_tab %>% ggplot(aes(x = "", y = counts, fill = labels)) +
+                              geom_col(width = 1, color = 1) +
+                              geom_label_repel(
+                                aes(y = pos,
+                                    label = glue("{counts} ({percent(percentage)})"),
+                                     fill = labels),
+                                    show.legend = FALSE) +
+                              labs(fill = var_name, title=plot_title) +
+                              coord_polar(theta = "y") +
+                              theme_void()
+      } else if (plot_type == "bar") {
+          plot <- data %>% ggplot(aes(y=counts, 
+                                      x=reorder(labels, counts), 
+                                      fill=labels)) + 
+                            geom_col(width = 0.7) +
+                            geom_text(aes(label=counts), vjust=-0.3, size=3)+
+                            labs(fill = var_name, title=plot_title) + 
+                            coord_flip()
+      } else if (plot_type == "bar_discrete") {
+          plot <- data %>% ggplot(aes(y=counts, x=labels)) + 
+                            geom_col(width = 0.7) +
+                            labs(title=plot_title, x = var_name) 
+      } 
+  }else if(var_type == "cont") {
+      if(plot_type == "hist_cont") {
+        plot <- ggplot(df, aes(x=var_name)) + 
+                      geom_histogram() +
+                      labs(title=plot_title) +
+                      theme_void()
+      }else if(plot_type == "boxplot") {
+        plot <- ggplot(df, aes(x=var_name)) + 
+                geom_boxplot(outlier.colour="red",
+                              outlier.size=4)+
+                labs(title=plot_title) +
+                theme_void()
+    }
+  }
 
   
-  if (plot_type == 'pie') {
-      data_tab <- data %>% mutate(csum = rev(cumsum(rev(counts))),
-                             pos = counts/2 + lead(csum, 1),
-                             pos = if_else(is.na(pos), counts/2, pos),
-                             percentage = counts/sum(counts))
-      data_tab$labels <- as.factor(data_tab$labels)
-      plot <- data_tab %>% ggplot(aes(x = "", y = counts, fill = labels)) +
-                          geom_col(width = 1, color = 1) +
-                          geom_label_repel(
-                            aes(y = pos,
-                                label = glue("{counts} ({percent(percentage)})"),
-                                 fill = labels),
-                                show.legend = FALSE) +
-                          labs(fill = var_name, title=plot_title) +
-                          coord_polar(theta = "y") +
-                          theme_void()
-  } else if (plot_type == "bar") {
-      plot <- data %>% ggplot(aes(y=counts, 
-                                  x=reorder(labels, counts), 
-                                  fill=labels)) + 
-                        geom_col(width = 0.7) +
-                        geom_text(aes(label=counts), vjust=-0.3, size=3)+
-                        labs(fill = var_name, title=plot_title) + 
-                        coord_flip()
-  }
-  ## Histogram
   ## boxplot
+  plot <- plot + theme(legend.text=element_text(size=6))
   return(plot)
 }
-
 ```
 
 ```{r}
-compare_btw_dfs <- function(var_name, plot_type, subplot_type, title) {
-  if(plot_type == "pre_post") {
-      pre_plot <- group_plot(initial_pre, var_name, "Initial", subplot_type)
-      post_plot <- group_plot(post_clean, var_name, "Post", subplot_type)
-      plot <- ggarrange(pre_plot, post_plot, 
+remove_y <- theme(
+  # axis.text.x = element_blank(),
+  # axis.ticks.x = element_blank(),
+  # axis.title.x = element_blank(),
+  axis.text.y = element_blank(),
+  axis.ticks.y = element_blank(),
+  axis.title.y = element_blank()
+)
+
+compare_pre_post <- function(var_name, var_type, subplot_type, title, 
+                             chars_remove=NULL, shared_legend=TRUE) {
+
+  pre_plot <- plot_func(initial_pre, var_name, var_type,
+                         "Initial", subplot_type, chars_remove)
+  post_plot <- plot_func(post_clean, var_name, var_type,
+                          "Post", subplot_type, chars_remove)
+  if (subplot_type == "bar") {
+        plot <- ggarrange(post_plot + remove_y, pre_plot + remove_y, 
+                          ncol = 2,  nrow = 1, 
+                          common.legend = shared_legend,legend="bottom")
+  } else {
+        plot <- ggarrange(post_plot, pre_plot, 
                         ncol = 2, nrow = 1, 
-                        common.legend = TRUE,
+                        common.legend = shared_legend,
                         legend="right")
+  }
       
-      return(annotate_figure(plot, top = text_grob(title, 
-                     color = "black", face = "bold", size = 20)))
-  } 
+  return(annotate_figure(plot, 
+                         top = text_grob(title, color = "black", 
+                                         face = "bold", size = 12)))
 
 }
 
-compare_wth_df <- function(data, var1, var2, 
+compare_in_df <- function(data, var1, var2, 
                             var1_title, var2_title, 
-                            subplot_type, plot_title){
-  var1_plot <- group_plot(data, var1, 
-                          var1_title, subplot_type)
-  var2_plot <- group_plot(data, var2, 
-                          var2_title, subplot_type)
-  plot <- ggarrange(var1_plot, var2_plot, 
-                    ncol = 2, nrow = 1, 
-                    common.legend = TRUE,
-                    legend="right")
+                            subplot_type, plot_title,
+                          var_type,
+                          chars_remove=NULL){
+  var1_plot <- plot_func(data, var1, var_type,
+                          var1_title, subplot_type, chars_remove)
+  var2_plot <- plot_func(data, var2, var_type,
+                          var2_title, subplot_type, chars_remove)
+  if (subplot_type == "bar") {
+        plot <- ggarrange(var2_plot + remove_y, var1_plot + remove_y, 
+                          ncol = 2,  nrow = 1, 
+                          common.legend = TRUE,legend="bottom")
+  } else {
+        plot <- ggarrange(var2_plot, var1_plot, 
+                        ncol = 2, nrow = 1, 
+                        common.legend = TRUE,
+                        legend="right")
+  }
+      
   return(annotate_figure(plot, top = text_grob(plot_title, 
-                 color = "black", face = "bold", size = 20)))
+                 color = "black", face = "bold", size = 12)))
 }
 ```
 
 ## Hypothesis Testing
 
 ```{r}
-hyp_testing <- function(data, test_type, var){
-  #McNemar
-
-#Paired t-Test
-
-#Wilcoxon Signed-Rank Test
-
-#Sign Test
+# Running the paired t-test
+paired_testing <- function(data, var_name, test_type, 
+                           plot_diff=FALSE, plot_title=NULL, remove_outliers=FALSE) {
+  pre_name <- paste(var_name, "pre", sep="_")
+  post_name <- paste(var_name, "post", sep="_")
+  var_pre <- data[, pre_name]
+  var_post <- data[, post_name]
+  diff <- var_post - var_pre
   
+  # Running the test
+  if(test_type == "wilcoxon"){
+    #Wilcoxon Signed-Rank Test
+    test <- wilcox.test(var_pre, var_post, paired=TRUE)
+  }else if(test_type == "sign") {
+    #Sign Test
+    test <- signtest(diff, m=0, conf.level=0.95, exact=FALSE)
+  } else if (test_type == "ttest") {
+    #Paired t-Test
+    test <- t.test(var_pre, var_post,
+         paired = TRUE, alternative = "two.sided")
+  } else if(test_type == "mcnemar") {
+    cross_tab <- table(var_pre, var_post)
+    print(cross_tab)
+    test <- mcnemar.test(cross_tab)
+  }
+  
+  # Visualize distribution of score differences
+  if(plot_diff == TRUE) {
+      hist(diff, main=plot_title)
+  }
+  return(test)
 }
-
 ```
 
 ## Regression Analysis
 
 ```{r}
-regression_analysis <- function() {
-  #Logistic 
+ind_vars <- c("pv_size_kwh", "customer_count", "capex_usd", "consumption")
 
-#Linear
+community_reg <- function(df, col_name, dep, title, var_type, calc_diff=FALSE) {
+  if (calc_diff == TRUE) {
+      pre_name <- paste(col_name, "pre", sep="_")
+      post_name <- paste(col_name, "post", sep="_")
+      df$col_diff <- df[, post_name] - df[, pre_name]
+      names(df)[names(df) == "community_post"] <- "community"
+  } else {
+      df$col_diff <- df[, col_name]
+  }
+  
+  if(var_type == "categorical") {
+    data <- rownames_to_column(as.data.frame.matrix(
+                                  prop.table(table(
+                                      df[, "community"], 
+                                      df[, "col_diff"]),
+                                     margin = 1)
+                                              )
+                                  , var = "community")
+  } else if(var_type == "ratio") {
+    data <- as.data.frame(rowsum(df[, "col_diff"], 
+                                 df[, "community"], na.rm = TRUE))
+    data$community <- rownames(data)
+    
+    
+  }
+  community_data <- merge(x=projects, y=data, by="community")
+    lst <- list()
+  
+   for(ind in ind_vars) {
+        print(ind)
+          p <- plot_reg(data=community_data, feature=ind,  
+                        dependent=dep, reg_type="linear")
+          lst <- append(lst, list(p))
+          lm <- lm(community_data[,dep] ~ community_data[,ind])
+          details <- summary(lm)
+          result <- as.data.frame(details$coefficients, row.names = c("Intercept", ind))
+          print(result)
+          print(confint(lm, level=0.95))
+      }
+  plot <- ggarrange(plotlist = lst, 
+                    ncol = 2, nrow = 2, 
+                    common.legend = TRUE,
+                    legend="right")
+  annotate_figure(plot, top = text_grob(title, 
+                 color = "black", face = "bold", size = 12))
+}
+
+plot_reg <- function(data, feature, dependent, remove_outliers=TRUE, reg_type) {
+  if(remove_outliers == TRUE) {
+    vars <- c(feature, dependent) 
+    for(var in vars){
+      quartiles <- quantile(data[, var], 
+                        probs=c(.25, .75), na.rm = TRUE)
+  
+      IQR <- IQR(data[, var], na.rm = TRUE)
+      
+      Lower <- quartiles[1] - 1.5*IQR
+      Upper <- quartiles[2] + 1.5*IQR 
+      
+      data <- subset(data, 
+                     data[, var] > Lower &
+                     data[, var] < Upper)
+    }
+    
+  }
+  if(reg_type == "linear") {
+    plot <- ggplot(data,
+                aes(x=.data[[feature]], y=.data[[dependent]])) +
+                geom_point(color='blue') +
+                  geom_smooth(color='red', method = "lm", se = FALSE) +
+                theme_classic()
+  } else if(reg_type == "logistic") {
+     plot <- ggplot(data, 
+                    aes(x=.data[[feature]], y=.data[[dependent]])) + 
+              geom_point(color='blue', alpha=.5) +
+              stat_smooth(method="glm", color="red", se=FALSE, 
+                        method.args = list(family=binomial)) +
+                theme_classic()
+  }
+  
+ 
+  return(plot)
 }
 ```
 
@@ -272,13 +485,15 @@ regression_analysis <- function() {
 
 ## A) Descriptive
 
-### Household
+### Demographics
 
 ```{r}
 # What was the gender breakdown of survey respondents, pre and post?
-compare_btw_dfs(var_name="gender", plot_type="pre_post", 
+compare_pre_post(var_name="gender", var_type="non_cont",
         subplot_type="pie", title="Gender Breakdown")
 ```
+
+### School Enrollment
 
 ```{r}
 # What was school enrollment by gender pre-connection?
@@ -297,7 +512,7 @@ tab
 
 ```{r}
 # Was there a change in enrollment by gender afterwards?
-compare_wth_df(data=post_clean, 
+compare_in_df(data=post_clean, var_type="non_cont",
                var1="girls_schooling_change", 
                var2="boys_schooling_change", 
                var1_title="Girls", var2_title="Boys", 
@@ -305,124 +520,69 @@ compare_wth_df(data=post_clean,
 ```
 
 ```{r}
-# For those un-enrolled, what was the driving factor? Did the reason change post-survey?
-girls_reasons_pre <- group_plot(initial_pre, "girls_unschooled_reasons", "Girls: Pre-Survey", "bar")
-girls_reasons_post <- group_plot(post_clean, "girls_unschooled_reasons", "Girls: Post-Survey", "bar")
-boys_reasons_pre <- group_plot(initial_pre, "boys_unschooled_reasons", "Boys: Pre-Survey", "bar")
-boys_reasons_post <- group_plot(post_clean, "boys_unschooled_reasons", "Boys: Post-Survey", "bar")
-
-remove_axes <- theme(
-  axis.text.x = element_blank(),
-  axis.ticks.x = element_blank(),
-  axis.title.x = element_blank(),
-  axis.text.y = element_blank(),
-  axis.ticks.y = element_blank(),
-  axis.title.y = element_blank()
-)
-
-p <- list(
-  girls_reasons_pre + remove_axes,
-  girls_reasons_post + remove_axes,
-  boys_reasons_pre + remove_axes,
-  boys_reasons_post + remove_axes
-)
-
-plot <- ggarrange(plotlist = p,
-                  ncol = 2,  nrow = 2, 
-                  common.legend = TRUE,legend="bottom")
-annotate_figure(plot,
-                top = text_grob("Renewvia Surveys: Reasons for Unschooled Children",
-               color = "black", face = "bold", size = 15))
-
-# How were household chores distributed among male and female within households?
-# In respondent's own words, how were women affected from the mini-grid?
+# Dirving factor for non-enrollment in school for boys and girls
+# For Girls
+compare_pre_post(var_name="girls_unschooled_reasons", var_type="non_cont", 
+        subplot_type="bar", title="Girls Schooling: Reasons for non-enrollment",
+        chars_remove=c("they_all_attend_school", ""))
 ```
 
-### Commercial
+```{r}
+# For Boys
+compare_pre_post(var_name="boys_unschooled_reasons",  var_type="non_cont",
+        subplot_type="bar", title="Boys Schooling: Reasons for non-enrollment",
+        chars_remove=c("they_all_attend_school", ""))
+```
+
+### Household Chores
+
+```{r}
+# What is the average age of the person in charge of water collection?
+compare_pre_post(var_name="avg_person_age_water_collection", var_type="non_cont",
+        subplot_type="bar", title="Age of Person Responsible for Cooking Fuel Collection") 
+```
+
+### Female Businesses Ownership
 
 ```{r}
 # How many new women-led businesses were created?
+compare_pre_post(var_name="business_owners_female", var_type="non_cont", 
+        subplot_type="pie", title="Women Business Owners")
+```
 
-# How did women-led businesses' performance change?
+### TODO
+
+```{r}
+# In respondent's own words, how were women affected from the mini-grid?
+
+## Requires additional cleaning/annotations
+# Who is mainly responsible for cooking fuel collection on a daily basis? Select all that apply
 ```
 
 ## B) Inferential
+
+### School Enrollment Change 
 
 **Data Source**: Household Post-Survey
 
 **Value (Encoding if applied)**: "Yes, it's decreased" = -1; "No, it's the same" = 0; "Yes, it's increased" = 1
 
-```{r}
-var <- post_clean$girls_schooling_change
-girls_enrollment <- var[var != ""]
+#### Linear Regression - Increase
 
-tab1(girls_enrollment, 
-     sort.group = "decreasing", cum.percent = TRUE)
+```{r}
+# Check for increase
+community_reg(df=post_enc, 
+              col_name="girls_schooling_change", dep="1", var_type="categorical",
+              title="Scatterplots For Increase in School Change by Community")
 ```
 
+#### Linear Regression - Decrease
+
 ```{r}
-## Girls attending school
-# Has there been a change in the number of females in your household who attend school full time since connection to mini-grid power?
-# Isolate the dependent variable
-var <- post_clean$girls_schooling_change
-girls_enrollment <- var[var != ""]
-
-tab1(girls_enrollment, 
-     sort.group = "decreasing", cum.percent = TRUE)
-
-# Breakdown by response type and Community
-dep_var_mat <- rownames_to_column(as.data.frame.matrix(
-                                      prop.table(table(
-                                          post_clean$community, 
-                                          post_clean$girls_schooling_change),
-                                         margin = 1)
-                                                  )
-                                      , var = "community")
-community_data <- merge(x=projects, y=dep_var_mat, by="community")
-reg_df <- community_data
-reg_df <- community_data %>% filter(community != "kalobeyei_settlement")
-
-dep_vars <- reg_df[c(9:10)]
-ind_vars <- reg_df[c(4:6)]
-
-## Linear Regression t-Test 
-# Model with increase
-reg_increase <- function(feature) {
-  ## Fitting the model with reported increase
-  # PV Size (kwH)
-  lm <- lm(yes_its_increased ~ feature, data=reg_df)
-  print(summary(lm))
-  
-  # Visualizing
-  scatter <- ggplot(data = reg_df, 
-                    aes(feature, yes_its_increased)) + 
-                    geom_point(color='blue') +
-                    geom_smooth(color='red', method = "lm", se = FALSE) 
-                    theme_classic()
-  ggMarginal(scatter, type = "histogram",
-             xparams = list(fill = 4),
-             yparams = list(fill = 3))
-}
-
-reg_decrease <- function(feature) {
-  ## Fitting the model with reported increase
-  # PV Size (kwH)
-  lm <- lm(yes_its_decreased ~ feature, data=reg_df)
-  print(summary(lm))
-  
-  # Visualizing
-  scatter <- ggplot(data = reg_df, 
-                    aes(feature, yes_its_decreased)) + 
-                    geom_point(color='blue') +
-                    geom_smooth(color='red', method = "lm", se = FALSE) 
-                    theme_classic()
-  ggMarginal(scatter, type = "histogram",
-             xparams = list(fill = 4),
-             yparams = list(fill = 3))
-}
-
-sapply(ind_vars, reg_increase)
-sapply(ind_vars, reg_decrease)
+# Check for decrease
+community_reg(df=post_enc, 
+              col_name="girls_schooling_change", dep="-1", var_type="categorical",
+              title="Scatterplots For Increase in School Change by Community")
 ```
 
 ### Water Collection Time
@@ -431,23 +591,23 @@ sapply(ind_vars, reg_decrease)
 
 **Value (Encoding if applied)**: "less than 1 hour" = 1; "1-2 hours" = 2; "2-3 hours" = 3; "3-4 hours" = 4; "greater than 4 hours" = 5
 
+#### Pre-Post Comparison
+
+```{r}
+compare_in_df(data=paired_clean, var_type="non_cont", 
+               var1="water_collection_time_pre", 
+               var2="water_collection_time_post", 
+               var1_title="Pre", var2_title="Post", 
+               subplot_type="bar", plot_title="Water Collection Time")
+```
+
+#### Sign-Test
+
 ```{r}
 # How long does the water collection process take on a daily basis?
-## Wilcoxon Signed Rank Test
-# Scores
-# paired_enc <- paired_enc %>% filter(if_all(c(water_collection_time_pre,
-#                                             water_collection_time_post), 
-#                                            ~ !is.na(.)))
-pre_scores <- paired_enc$water_collection_time_pre
-post_scores <- paired_enc$water_collection_time_post
-
-
-# Running the test
-wilcox.test(pre_scores, post_scores, paired=TRUE)
-
-# Visualize distribution of score differences
-diff <- post_scores - pre_scores
-hist(diff)
+paired_testing(paired_enc, var_name="water_collection_time", 
+               test_type = "sign", plot_diff=TRUE, 
+               plot_title="Difference Pre-Post of Water Collection Times")
 ```
 
 ### Cooking Fuel Collection Time
@@ -456,96 +616,35 @@ hist(diff)
 
 **Value (Encoding if applied)**: "No need to collect fuel" = 1; "less than 1 hour" = 2; "1-2 hours" =3; "3-5 hours" = 4; "greater than 4 hours" = 5
 
+#### Pre-Post Comparison
+
+```{r}
+compare_in_df(data=paired_clean, var_type="non_cont",
+               var1="cooking_fuel_collection_time_pre", 
+               var2="cooking_fuel_collection_time_post", 
+               var1_title="Pre", var2_title="Post", 
+               subplot_type="bar", plot_title="Cooking Fuel Collection Time")
+```
+
+#### Wilcoxon Signed-Rank Test
+
 ```{r}
 # How long does the cooking fuel collection process take on a daily basis?
-## Sign Test
-# Calculating differences
-pre_scores <- paired_enc$cooking_fuel_collection_time_pre
-post_scores <- paired_enc$cooking_fuel_collection_time_post
-diff <- post_scores - pre_scores
-
-# Running the test
-signtest(diff, m=0, conf.level=0.95, exact=FALSE)
-
-# Visualize distribution of score differences
-hist(diff)
+paired_testing(paired_enc, var_name="cooking_fuel_collection_time", 
+               test_type = "wilcoxon", plot_diff=TRUE, 
+               plot_title="Difference Pre-Post of Water Collection Times")
 ```
 
 ### Women-led Business Ownership
 
 **Data Source**: Paired Household Surveys (Pre & Post)
 
-**Value (Encoding if applied)**: "None" = 0; "Not None" = 1
+**Value (Encoding if applied)**: Everything else = 0; "adult_female" = 1
 
 ```{r}
 # Are any household members business owners?
-## McNemar's  Test
-# Cross tabulation of changes of women business ownership
-cross_tab <- table(paired_enc$business_owners_female_pre,
-                   paired_enc$business_owners_female_post)
-cross_tab
-
-# Running the test
-mcnemar.test(cross_tab)
-
-# Change
-paired_enc$biz_female_change <- paired_enc$business_owners_female_pre - paired_enc$business_owners_female_post
-
-# Breakdown by response type and Community
-dep_var_mat <- rownames_to_column(as.data.frame.matrix(
-                                      prop.table(table(
-                                          paired_enc$community_post, 
-                                          paired_enc$biz_female_change),
-                                         margin = 1)
-                                                  )
-                                      , var = "community")
-community_data <- merge(x=projects, y=dep_var_mat, by="community")
-reg_df <- community_data
-reg_df <- community_data %>% filter(community != "kalobeyei_settlement")
-names(reg_df)[7] <- "var_decrease"
-names(reg_df)[8] <- "var_neutral"
-names(reg_df)[9] <- "var_increase"
-# 
-ind_vars <- reg_df[c(4:6)]
-
-## Linear Regression t-Test 
-# Model with increase
-reg_increase <- function(feature) {
-  ## Fitting the model with reported increase
-  # PV Size (kwH)
-  lm <- lm(var_increase ~ feature, data=reg_df)
-  print(summary(lm))
-  
-  # Visualizing
-  scatter <- ggplot(data = reg_df, 
-                    aes(feature, var_increase)) + 
-                    geom_point(color='blue') +
-                    geom_smooth(color='red', method = "lm", se = FALSE) 
-                    theme_classic()
-  ggMarginal(scatter, type = "histogram",
-             xparams = list(fill = 4),
-             yparams = list(fill = 3))
-}
-
-reg_decrease <- function(feature) {
-  ## Fitting the model with reported increase
-  # PV Size (kwH)
-  lm <- lm(var_decrease ~ feature, data=reg_df)
-  print(summary(lm))
-  
-  # Visualizing
-  scatter <- ggplot(data = reg_df, 
-                    aes(feature, var_decrease)) + 
-                    geom_point(color='blue') +
-                    geom_smooth(color='red', method = "lm", se = FALSE) 
-                    theme_classic()
-  ggMarginal(scatter, type = "histogram",
-             xparams = list(fill = 4),
-             yparams = list(fill = 3))
-}
-
-sapply(ind_vars, reg_increase)
-sapply(ind_vars, reg_decrease)
+paired_testing(paired_enc, var_name="business_owners_female", 
+               test_type = "mcnemar", plot_diff=FALSE)
 ```
 
 ### New Female workers
@@ -556,60 +655,92 @@ sapply(ind_vars, reg_decrease)
 
 ```{r}
 # If you answered yes to adding new workers, how many new employees are female?
+# Check for increase
+community_reg(df=ci_enc, 
+              col_name="workforce_change_female", dep="V1", 
+              title="New Female Workers Change by Community", 
+              var_type="ratio")
 ```
 
 # 2- Productivity
 
 ## A) Descriptive
 
-### Household
+### Power Source
+
+```{r}
+# What is your primary power source?
+compare_pre_post(var_name="power_sources_primary", var_type="non_cont",
+                 subplot_type="bar", title="Power Source",
+                 chars_remove=NULL)
+```
+
+### No. of Appliances
+
+```{r}
+# How many electronic devices or appliances do you currently use in the household
+compare_pre_post(var_name="appliances_count", var_type="non_cont",
+                 subplot_type="bar_discrete", title="Appliances",
+                 chars_remove=NULL)
+```
 
 ```{r}
 # Has the number of electronic devices or appliances increased since connection to minigrid?
-# 
-# Have you added any of the following Electronic Devices or Appliances after you were connected to minigrid (POST connection) Select all that apply
-# 
-# How far must you travel to charge your mobile phone?
-# 
-# How often do you need to charge your mobile phone?
-# 
-# How much do you pay per month to charge your mobile phone?
-# 
-# How far must you travel to obtain your water supply?
-# 
-# How long does the cooking fuel collection process take on a daily basis?
-# 
-# How long does the water collection process take on a daily basis?
-# 
-# Has your (or your spouses) occupation changed since youve been connected to minigrid power?
-# 
-# Have you added any new products or services since connection to Renewvia minigrid?
-# 
-# If this business is new, do you consider this new business a result of having access to minigrid power?
-# 
-# Is this business recent (started after connection to minigrid power?)
+plot_func(df=post_clean, var_name="appliances_count_change", 
+          var_type="non_cont", plot_title="Change in No. of Appliances", 
+          plot_type="pie", chars_remove=NULL)
 ```
 
-### Commercial
+### Travel Distance - Phone Charge
+
+```{r}
+# How far must you travel to charge your mobile phone?
+compare_pre_post(var_name="phone_charge_travel_distance", var_type="non_cont",
+                 subplot_type="bar", title="Travel Distance to Charge Phone",
+                 chars_remove=NULL)
+```
+
+### Travel Distance - Water Collection
+
+```{r}
+# How far must you travel to obtain your water supply?
+compare_pre_post(var_name="water_collection_travel_distance", var_type="non_cont",
+                 subplot_type="bar", title="Travel Distance for Water Collection",
+                 chars_remove=NULL)
+```
+
+### C&I Profile
 
 ```{r}
 # Is this business, clinic, school still in operation?
-# 
+plot_func(df=ci_clean, var_name="operation_status", 
+          var_type="non_cont", plot_title="C&I - Type", 
+          plot_type="pie", chars_remove=NULL)
+```
+
+```{r}
 # Please select your business type
-# 
-# Since connection to Renewvia mingrid, have you had any change in number of workers/employees at your place of work?
-# 
+plot_func(df=ci_clean, var_name="business_type", 
+          var_type="non_cont", plot_title="C&I - Type", 
+          plot_type="bar", chars_remove=NULL)
+```
+
+### C&I - Operation Hours
+
+```{r}
 # Since connection to Renewvia minigrid, have your hours of operation changed at all?
-# 
-# Type of employment for Primary Provider
-# 
-# What is approximate monthly cost of energy used strictly for charging appliances?
-# 
-# What is the approximate monthly cost of energy used strictly for charging appliances?
-# 
-# What is the approximate monthly cost of energy used strictly for cooking?
-# 
-# What is your average monthly household income:
+plot_func(df=ci_clean, var_name="operations_hours_change", 
+          var_type="non_cont", plot_title="Change in C&I Operation Hours", 
+          plot_type="pie", chars_remove=NULL)
+```
+
+### C&I - Workforce
+
+```{r}
+# Since connection to Renewvia mingrid, have you had any change in number of workers/employees at your place of work?
+plot_func(df=ci_clean, var_name="workforce_change", 
+          var_type="non_cont", plot_title="Change in C&I Workforce", 
+          plot_type="pie", chars_remove=NULL)
 ```
 
 ## B) Inferential
@@ -621,12 +752,16 @@ sapply(ind_vars, reg_decrease)
 **Value (Encoding if applied)**: Any numeric value between 0 and 24
 
 ```{r}
+compare_pre_post(var_name="light_hours_current", var_type="non_cont",
+                 subplot_type="bar_discrete", title="Light Hours",
+                 chars_remove=c(46))
+```
+
+```{r}
 ## How many hours of light per day do you currently have at home?
-# Running the paired t-test
-light_hours_pre <- paired_clean$light_hours_current_pre
-light_hours_post <- paired_clean$light_hours_current_post
-t.test(light_hours_pre, light_hours_post,
-       paired = TRUE, alternative = "two.sided")
+paired_testing(paired_enc, var_name = "light_hours_current", 
+               plot_diff = TRUE, plot_title = "Difference Pre-Post in Light Hours",
+               test_type="ttest")
 ```
 
 ### Business Operation Hours
@@ -636,117 +771,43 @@ t.test(light_hours_pre, light_hours_post,
 **Value (Encoding if applied)**: "Yes, they have increased" = 1, "Yes, they have decreased" = -1, "No, it is pretty much the same" = 0
 
 ```{r}
-## Since connection to Renewvia mini-grid, have your hours of operation changed at all?
-# Isolate the dependent variable
-var <- ci_clean$operations_hours_change
-work_hours <- var[var != ""]
-
-tab1(work_hours, 
-     sort.group = "decreasing", 
-     cum.percent = TRUE)
-
-# Breakdown by response type and Community
-dep_var_mat <- rownames_to_column(as.data.frame.matrix(
-                                      prop.table(table(
-                                          ci_clean$community, 
-                                          ci_clean$operations_hours_change),
-                                         margin = 1)
-                                                  )
-                                      , var = "community")
-
-community_data <- merge(x=projects, y=dep_var_mat, by="community")
-reg_df <- community_data
-# reg_df <- community_data %>% filter(community != "kalobeyei_settlement")
-
-ind_vars <- reg_df[c(4:6)]
-
-## Linear Regression t-Test with outlier: kalobeyei_settlement
-# Model with increase
-reg_increase <- function(feature) {
-  ## Fitting the model with reported increase
-  # PV Size (kwH)
-  lm <- lm(yes_they_have_increased ~ feature, data=reg_df)
-  print(summary(lm))
-  
-  # Visualizing
-  scatter <- ggplot(data = reg_df, 
-                    aes(feature, yes_they_have_increased)) + 
-                    geom_point(color='blue') +
-                    geom_smooth(color='red', method = "lm", se = FALSE) 
-                    theme_classic()
-  ggMarginal(scatter, type = "histogram",
-             xparams = list(fill = 4),
-             yparams = list(fill = 3))
-}
-
-reg_decrease <- function(feature) {
-  ## Fitting the model with reported increase
-  # PV Size (kwH)
-  lm <- lm(yes_they_have_decreased ~ feature, data=reg_df)
-  print(summary(lm))
-  
-  # Visualizing
-  scatter <- ggplot(data = reg_df, 
-                    aes(feature, yes_they_have_decreased)) + 
-                    geom_point(color='blue') +
-                    geom_smooth(color='red', method = "lm", se = FALSE) 
-                    theme_classic()
-  ggMarginal(scatter, type = "histogram",
-             xparams = list(fill = 4),
-             yparams = list(fill = 3))
-}
-
-sapply(ind_vars, reg_increase)
-sapply(ind_vars, reg_decrease)
+plot_func(df=ci_clean, var_name="operations_hours_change", 
+          var_type="non_cont", plot_title="Change in C&I Business Hours", 
+          plot_type="pie", chars_remove=NULL)
 ```
 
-### Schools - Academic Performance
+```{r}
+plot_func(df=ci_clean, var_name="business_hours_increase", 
+          var_type="non_cont", plot_title="Change in C&I Business Hours", 
+          plot_type="pie", chars_remove=NULL)
+```
+
+```{r}
+## Since connection to Renewvia mini-grid, have your hours of operation changed at all?
+# Check for increase
+community_reg(df=ci_enc, 
+              col_name="operations_hours_change", dep="1", var_type="categorical",
+              title="Scatterplots For Increase in Business Hours by Community")
+```
+
+### TODO: Schools - Academic Performance
 
 **Data Source**: C&I Post-Survey
 
 **Value (Encoding if applied)**: "Yes, they have increased" = 1, "Yes, they have decreased" = -1, "No, it is pretty much the same" = 0
 
 ```{r}
+plot_func(df=ci_clean, var_name="school_performance", 
+          var_type="non_cont", plot_title="Schools - Academic Performance", 
+          plot_type="pie", chars_remove=NULL)
+```
+
+```{r}
 ## Have you seen a change in overall school performance?
 # Isolate the dependent variable
-var <- ci_clean$school_performance
-ci_school_performance <- var[var != ""]
-
-tab1(ci_school_performance, 
-     sort.group = "decreasing", 
-     cum.percent = TRUE)
-
-# Breakdown by response type and Community
-dep_var_mat <- rownames_to_column(as.data.frame.matrix(
-                                      prop.table(table(
-                                          ci_clean$community, 
-                                          ci_clean$school_performance),
-                                         margin = 1)
-                                                  )
-                                      , var = "community")
-
-community_data <- merge(x=projects, y=dep_var_mat, by="community")
-reg_df <- community_data
-
-## Linear Regression t-Test
-
-reg <- function(feature) {
-  ## Fitting the model with reported increase
-  lm <- lm(yes_overall_school_performance_is_better ~ feature, data=reg_df)
-  print(summary(lm))
-  
-  # Visualizing
-  scatter <- ggplot(data = reg_df, 
-                    aes(feature, yes_overall_school_performance_is_better)) + 
-                    geom_point(color='blue') +
-                    geom_smooth(color='red', method = "lm", se = FALSE) 
-                    theme_classic()
-  ggMarginal(scatter, type = "histogram",
-             xparams = list(fill = 4),
-             yparams = list(fill = 3))
-}
-
-sapply(ind_vars, reg)
+community_reg(df=ci_enc, 
+              col_name="school_performance", dep="1", var_type="categorical",
+              title="Scatterplots For Increase in School Performace by Community")
 ```
 
 ### Household - Academic Performance
@@ -756,281 +817,90 @@ sapply(ind_vars, reg)
 **Value (Encoding if applied)**: "Yes, they have increased" = 1, "Yes, they have decreased" = -1, "No, it is pretty much the same" = 0
 
 ```{r}
-# Isolate the dependent variable
-var <- post_clean$school_performance_change
-hs_school_performance <- var[var != ""]
+plot_func(df=post_clean, var_name="school_performance_change", 
+          var_type="non_cont", plot_title="Household - Academic Performance", 
+          plot_type="pie", chars_remove=NULL)
+```
 
-tab1(hs_school_performance, 
-     sort.group = "decreasing", 
-     cum.percent = TRUE)
-
-# Breakdown by response type and Community
-dep_var_mat <- rownames_to_column(as.data.frame.matrix(
-                                      prop.table(table(
-                                          post_clean$community, 
-                                          post_clean$school_performance_change),
-                                         margin = 1)
-                                                  )
-                                      , var = "community")
-
-community_data <- merge(x=projects, y=dep_var_mat, by="community")
-reg_df <- community_data
-# reg_df <- community_data %>% filter(community != "kalobeyei_settlement")
-ind_vars <- reg_df[c(4:6)]
-
-## Linear Regression t-Test with outlier: kalobeyei_settlement
-# Model with increase
-reg_increase <- function(feature) {
-  ## Fitting the model with reported increase
-  lm <- lm(yes_its_gotten_better ~ feature, data=reg_df)
-  print(summary(lm))
-  
-  # Visualizing
-  scatter <- ggplot(data = reg_df, 
-                    aes(feature, yes_its_gotten_better)) + 
-                    geom_point(color='blue') +
-                    geom_smooth(color='red', method = "lm", se = FALSE) 
-                    theme_classic()
-  ggMarginal(scatter, type = "histogram",
-             xparams = list(fill = 4),
-             yparams = list(fill = 3))
-}
-
-# reg_decrease <- function(feature) {
-#   ## Fitting the model with reported increase
-#   # PV Size (kwH)
-#   lm <- lm(yes_its_gotten_worse ~ feature, data=reg_df)
-#   print(summary(lm))
-#   
-#   # Visualizing
-#   scatter <- ggplot(data = reg_df, 
-#                     aes(feature, yes_its_gotten_worse)) + 
-#                     geom_point(color='blue') +
-#                     geom_smooth(color='red', method = "lm", se = FALSE) 
-#                     theme_classic()
-#   ggMarginal(scatter, type = "histogram",
-#              xparams = list(fill = 4),
-#              yparams = list(fill = 3))
-# }
-
-sapply(ind_vars, reg_increase)
-# sapply(ind_vars, reg_decrease)
+```{r}
+community_reg(df=post_enc, 
+              col_name="school_performance_change", dep="1", var_type="categorical",
+              title="Scatterplots For Increase in School Performace by Community")
 ```
 
 # 3- Health
 
 ## A) Descriptive
 
-### Household
+### Water Source
 
 ```{r}
-
-```
-
-```{r}
-
-```
-
-```{r}
-# What is your clean community water source?
-# What is your clean water source?
 # What is your source of water?
+compare_pre_post(var_name="water_source", var_type="non_cont",
+                 subplot_type="pie", title="Sources Water")
+```
+
+```{r}
 # Do you have a source for clean drinking water?
-# How much do you pay per month for water?
+compare_pre_post(var_name="clean_drinking_water", var_type="non_cont",
+                 subplot_type="pie", title="Clean Drinking Water")
+```
+
+```{r}
 # What is the source for clean drinking water?
+compare_pre_post(var_name="clean_drinking_water_source", var_type="non_cont",
+                 subplot_type="pie", title="Clean Drinking Water Sources")
+```
+
+### Kerosene Lamps
+
+```{r}
+# How many kerosene lamps do you currently have in your household?
+compare_pre_post(var_name="kerosene_lamps_count", var_type="non_cont",
+                 subplot_type="bar_discrete", title="No. of Kerosene Lamps", 
+                 chars_remove=c(24))
 ```
 
 ```{r}
 # Has the number of kerosene lamps in your household changed since connection to minigrid?
-# How many kerosene lamps do you currently have in your household?
-# How many kerosene lamps do you currently use in your household? (before grid connection)
-# How many kerosene lamps do you currently use in your household? (POST minigrid connection)
-# How much do you pay monthly for kerosene used only in kerosene lamps?
+plot_func(df=post_clean, var_name="kerosene_lamp_usage_change", 
+          var_type="non_cont", plot_title="Kerosene Lamps Usage", 
+          plot_type="pie", chars_remove=NULL)
+```
+
+### TODO: Healthcare
+
+```{r}
+# # Does your Health Center have access to electricity?
+compare_pre_post(var_name="clinic_electricity_access", var_type="non_cont",
+                 subplot_type="pie", title="Clinic Access To Electricity", 
+                 chars_remove=NULL)
 ```
 
 ```{r}
-# What hours is the Health Center / Clinic open?
-# Does your Health Center / Clinic have access to refrigeration?
-# Does your Health Center have access to electricity?
-# Does your Health Center have access to minigrid electricity?
 # How close is the nearest Health Center / Clinic
-# How close is the nearest Health Center/Clinic?
-
+compare_pre_post(var_name="clinic_travel_distance", var_type="non_cont",
+                 subplot_type="bar", title="Clinic Access - Travel Distance", 
+                 chars_remove=NULL)
 ```
 
 ```{r}
-# In what way has minigrid power impacted your life or the life of your family members?
+# Does your Health Center / Clinic have access to refrigeration?
+compare_pre_post(var_name="clinic_refrigeration_access", var_type="non_cont",
+                 subplot_type="pie", title="Clinic Access to Refrigeration")
 ```
 
-### Commercial
+### TODO: New Columns for each type
 
 ```{r}
-# For clinics or health services only: Since connection to Renewvia minigrid, have your health service offerings changed in any of the following ways: (select all that apply).
-# What is the Clinic / Hospital able to offer or provide due to connection to Renewvia minigrid that it wasnt able to offer before?
 # What services are you able to offer/sell/provide due to connection to Renewvia minigrid that you werent able to offer prior to connection?
 ```
 
+```{r}
+# What is the Clinic / Hospital able to offer or provide due to connection to Renewvia minigrid that it wasnt able to offer before?
+```
+
 ## B) Inferential
-
-### Health Services Offerings
-
-**Data Source**: Commercial & Institution Post Survey
-
-**Value (Encoding if applied)**: Any value
-
-```{r}
-## For clinics or health services only: Since connection to Renewvia mini-grid, have your health service offerings changed in any of the following ways: (select all that apply).
-# Breakdown by response type and Community
-dep_var_mat <- ci_clean %>%
-                  group_by(community) %>%
-                  summarise(new_health_services = sum(
-                    health_offering_change_count))
-
-community_data <- merge(x=projects, y=dep_var_mat, by="community")
-reg_df <- community_data %>% replace(is.na(.), 0)
-# reg_df <- community_data %>% filter(community != "kalobeyei_settlement")
-ind_vars <- reg_df[c(4:6)]
-
-## Linear Regression t-Test
-
-reg <- function(feature) {
-  ## Fitting the model with reported increase
-  lm <- lm(new_health_services ~ feature, data=reg_df)
-  print(summary(lm))
-  
-  # Visualizing
-  scatter <- ggplot(data = reg_df, 
-                    aes(feature, new_health_services)) + 
-                    geom_point(color='blue') +
-                    geom_smooth(color='red', method = "lm", se = FALSE) 
-                    theme_classic()
-  ggMarginal(scatter, type = "histogram",
-             xparams = list(fill = 4),
-             yparams = list(fill = 3))
-}
-
-sapply(ind_vars, reg)
-```
-
-### Clinic Access To Refrigeration
-
-**Data Source**: Paired Household Surveys (Pre & Post)
-
-**Value (Encoding if applied)**: "yes" = 1; "no" = 0
-
-```{r}
-## Does your Health Center / Clinic have access to refrigeration?
-## McNemar's  Test
-# Cross tabulation of changes of women business ownership
-var_pre <- paired_enc$clinic_refrigeration_access_pre
-var_post <- paired_enc$clinic_refrigeration_access_post
-cross_tab <- table(var_pre,var_post)
-cross_tab
-
-# Running the test
-mcnemar.test(cross_tab)
-
-# Change
-paired_enc$clinic_electricity_change <- var_pre - var_post
-
-# Breakdown by response type and Community
-dep_var_mat <- rownames_to_column(as.data.frame.matrix(
-                                      prop.table(table(
-                                          paired_enc$community_post, 
-                                          paired_enc$clinic_electricity_change),
-                                         margin = 1)
-                                                  )
-                                      , var = "community")
-community_data <- merge(x=projects, y=dep_var_mat, by="community")
-reg_df <- community_data
-reg_df <- community_data %>% filter(community != "kalobeyei_settlement")
-names(reg_df)[7] <- "var_decrease"
-names(reg_df)[8] <- "var_neutral"
-names(reg_df)[9] <- "var_increase"
-# 
-ind_vars <- reg_df[c(4:6)]
-
-## Linear Regression t-Test 
-# Model with increase
-reg_increase <- function(feature) {
-  ## Fitting the model with reported increase
-  # PV Size (kwH)
-  lm <- lm(var_increase ~ feature, data=reg_df)
-  print(summary(lm))
-  
-  # Visualizing
-  scatter <- ggplot(data = reg_df, 
-                    aes(feature, var_increase)) + 
-                    geom_point(color='blue') +
-                    geom_smooth(color='red', method = "lm", se = FALSE) 
-                    theme_classic()
-  ggMarginal(scatter, type = "histogram",
-             xparams = list(fill = 4),
-             yparams = list(fill = 3))
-}
-
-reg_decrease <- function(feature) {
-  ## Fitting the model with reported increase
-  # PV Size (kwH)
-  lm <- lm(var_decrease ~ feature, data=reg_df)
-  print(summary(lm))
-  
-  # Visualizing
-  scatter <- ggplot(data = reg_df, 
-                    aes(feature, var_decrease)) + 
-                    geom_point(color='blue') +
-                    geom_smooth(color='red', method = "lm", se = FALSE) 
-                    theme_classic()
-  ggMarginal(scatter, type = "histogram",
-             xparams = list(fill = 4),
-             yparams = list(fill = 3))
-}
-
-sapply(ind_vars, reg_increase)
-sapply(ind_vars, reg_decrease)
-```
-
-### Better access to healthcare
-
-**Data Source**: Household Post-Survey
-
-**Value (Encoding if applied)**: "yes" = 1; "no" = 0
-
-```{r}
-## Do you feel that you have better access to health services because of connection to mini-grid?
-# Breakdown by response type and Community
-dep_var_mat <- rownames_to_column(as.data.frame.matrix(
-                                      prop.table(table(
-                                          paired_clean$community_post, 
-                                          paired_clean$better_access_health_minigrid),
-                                         margin = 1)
-                                                  )
-                                      , var = "community")
-community_data <- merge(x=projects, y=dep_var_mat, by="community")
-reg_df <- community_data %>% replace(is.na(.), 0)
-reg_df <- community_data %>% filter(community != "kalobeyei_settlement")
-ind_vars <- reg_df[c(4:6)]
-
-## Linear Regression t-Test
-
-reg <- function(feature) {
-  ## Fitting the model with reported increase
-  lm <- lm(yes ~ feature, data=reg_df)
-  print(summary(lm))
-  
-  # Visualizing
-  scatter <- ggplot(data = reg_df, 
-                    aes(feature, yes)) + 
-                    geom_point(color='blue') +
-                    geom_smooth(color='red', method = "lm", se = FALSE) 
-                    theme_classic()
-  ggMarginal(scatter, type = "histogram",
-             xparams = list(fill = 4),
-             yparams = list(fill = 3))
-}
-
-sapply(ind_vars, reg)
-```
 
 ### Access to clean drinking water
 
@@ -1039,75 +909,7 @@ sapply(ind_vars, reg)
 **Value (Encoding if applied)**: "yes" = 1; "no" = 0
 
 ```{r}
-## Do you have a source for clean drinking water?
-## McNemar's  Test
-# Cross tabulation of changes of women business ownership
-var_pre <- paired_enc$clean_drinking_water_pre
-var_post <- paired_enc$clean_drinking_water_post
-cross_tab <- table(var_pre,var_post)
-cross_tab
-
-# Running the test
-mcnemar.test(cross_tab)
-
-# Change
-paired_enc$clean_water_change <- var_pre - var_post
-
-# Breakdown by response type and Community
-dep_var_mat <- rownames_to_column(as.data.frame.matrix(
-                                      prop.table(table(
-                                          paired_enc$community_post, 
-                                          paired_enc$clean_water_change),
-                                         margin = 1)
-                                                  )
-                                      , var = "community")
-community_data <- merge(x=projects, y=dep_var_mat, by="community")
-reg_df <- community_data
-reg_df <- community_data %>% filter(community != "kalobeyei_settlement")
-names(reg_df)[7] <- "var_decrease"
-names(reg_df)[8] <- "var_neutral"
-names(reg_df)[9] <- "var_increase"
-# 
-ind_vars <- reg_df[c(4:6)]
-
-## Linear Regression t-Test 
-# Model with increase
-reg_increase <- function(feature) {
-  ## Fitting the model with reported increase
-  # PV Size (kwH)
-  lm <- lm(var_increase ~ feature, data=reg_df)
-  print(summary(lm))
-  
-  # Visualizing
-  scatter <- ggplot(data = reg_df, 
-                    aes(feature, var_increase)) + 
-                    geom_point(color='blue') +
-                    geom_smooth(color='red', method = "lm", se = FALSE) 
-                    theme_classic()
-  ggMarginal(scatter, type = "histogram",
-             xparams = list(fill = 4),
-             yparams = list(fill = 3))
-}
-
-reg_decrease <- function(feature) {
-  ## Fitting the model with reported increase
-  # PV Size (kwH)
-  lm <- lm(var_decrease ~ feature, data=reg_df)
-  print(summary(lm))
-  
-  # Visualizing
-  scatter <- ggplot(data = reg_df, 
-                    aes(feature, var_decrease)) + 
-                    geom_point(color='blue') +
-                    geom_smooth(color='red', method = "lm", se = FALSE) 
-                    theme_classic()
-  ggMarginal(scatter, type = "histogram",
-             xparams = list(fill = 4),
-             yparams = list(fill = 3))
-}
-
-sapply(ind_vars, reg_increase)
-sapply(ind_vars, reg_decrease)
+## Do you have a source for clean drinking water? ## McNemar's  Test
 ```
 
 ### Clean drinking water access - change
@@ -1118,47 +920,6 @@ sapply(ind_vars, reg_decrease)
 
 ```{r}
 ## Since connection to Renewvia mini-grid, has your access to clean drinking water changed at all?
-# Isolate the dependent variable
-var <- ci_clean$clean_drinking_water_access
-hs_school_performance <- var[var != ""]
-
-tab1(hs_school_performance, 
-     sort.group = "decreasing", 
-     cum.percent = TRUE)
-
-# Breakdown by response type and Community
-dep_var_mat <- rownames_to_column(as.data.frame.matrix(
-                                      prop.table(table(
-                                          ci_clean$community, 
-                                          ci_clean$clean_drinking_water_access),
-                                         margin = 1)
-                                                  )
-                                      , var = "community")
-
-community_data <- merge(x=projects, y=dep_var_mat, by="community")
-reg_df <- community_data
-reg_df <- community_data %>% filter(community != "kalobeyei_settlement")
-ind_vars <- reg_df[c(4:6)]
-
-## Linear Regression t-Test with outlier: kalobeyei_settlement
-# Model with increase
-reg_increase <- function(feature) {
-  ## Fitting the model with reported increase
-  lm <- lm(yes_it_has_increased ~ feature, data=reg_df)
-  print(summary(lm))
-  
-  # Visualizing
-  scatter <- ggplot(data = reg_df, 
-                    aes(feature, yes_it_has_increased)) + 
-                    geom_point(color='blue') +
-                    geom_smooth(color='red', method = "lm", se = FALSE) 
-                    theme_classic()
-  ggMarginal(scatter, type = "histogram",
-             xparams = list(fill = 4),
-             yparams = list(fill = 3))
-}
-sapply(ind_vars, reg_increase)
-# sapply(ind_vars, reg_decrease)
 ```
 
 ### Kerosene Lamps Count
@@ -1168,99 +929,152 @@ sapply(ind_vars, reg_increase)
 **Value (Encoding if applied)**: Any numeric value
 
 ```{r}
-## How many kerosene lamps do you currently use in your household?
-# Running the paired t-test
-kerosene_pre <- paired_clean$kerosene_lamps_count_pre
-kerosene_post <- paired_clean$kerosene_lamps_count_post
-t.test(kerosene_pre, kerosene_post,
-       paired = TRUE, alternative = "two.sided")
-
+## How many kerosene lamps do you currently use in your household? # Running the paired t-test kerosene_pre <- paired_clean$kerosene_lamps_count_pre kerosene_post <- paired_clean$kerosene_lamps_count_post t.test(kerosene_pre, kerosene_post,        paired = TRUE, alternative = "two.sided") 
 ```
 
-### Kerosene Lamps Count - Change
+### Kerosene Lamps Usage
 
 **Data Source**: Household Post Survey
 
 **Value (Encoding if applied)**: "Yes, it's decreased" = -1; "No, it's the same" = 0; "Yes, it's increased" = 1
 
 ```{r}
-## Has the number of kerosene lamps in your household changed since connection to mini-grid
-# Isolate the dependent variable
-var <- post_clean$kerosene_lamp_usage_change
-kerosene_usage <- var[var != ""]
-
-tab1(kerosene_usage, 
-     sort.group = "decreasing", cum.percent = TRUE)
-
-# Breakdown by response type and Community
-dep_var_mat <- rownames_to_column(
-  as.data.frame.matrix(prop.table(table(post_clean$community, 
-                                   post_clean$kerosene_lamp_usage_change),
-                                         margin = 1)
-                                                  )
-                                      , var = "community")
-community_data <- merge(x=projects, 
-                                    y=dep_var_mat, by="community")
-reg_df <- community_data
-reg_df <- community_data %>% filter(community != "kalobeyei_settlement")
-
-ind_vars <- reg_df[c(4:6)]
-
-## Linear Regression t-Test 
-# Model with increase
-reg_increase <- function(feature) {
-  ## Fitting the model with reported increase
-  # PV Size (kwH)
-  lm <- lm(yes_its_increased ~ feature, data=reg_df)
-  print(summary(lm))
-  
-  # Visualizing
-  scatter <- ggplot(data = reg_df, 
-                    aes(feature, yes_its_increased)) + 
-                    geom_point(color='blue') +
-                    geom_smooth(color='red', method = "lm", se = FALSE) 
-                    theme_classic()
-  ggMarginal(scatter, type = "histogram",
-             xparams = list(fill = 4),
-             yparams = list(fill = 3))
-}
-
-reg_decrease <- function(feature) {
-  ## Fitting the model with reported increase
-  # PV Size (kwH)
-  lm <- lm(yes_its_decreased ~ feature, data=reg_df)
-  print(summary(lm))
-  
-  # Visualizing
-  scatter <- ggplot(data = reg_df, 
-                    aes(feature, yes_its_decreased)) + 
-                    geom_point(color='blue') +
-                    geom_smooth(color='red', method = "lm", se = FALSE) 
-                    theme_classic()
-  ggMarginal(scatter, type = "histogram",
-             xparams = list(fill = 4),
-             yparams = list(fill = 3))
-}
-
-sapply(ind_vars, reg_increase)
-sapply(ind_vars, reg_decrease)
 
 ```
 
+### New Health Services
+
+**Data Source**: Commercial & Institution Post Survey
+
+**Value (Encoding if applied)**: Any value
+
 ```{r}
-# Does your Health Center have access to electricity?
+plot_func(df=ci_clean, var_name="health_offering_change_count", 
+          var_type="non_cont", plot_title="Change in Health Services Offered by Clinics", 
+          plot_type="bar_discrete", chars_remove=NULL)
+```
+
+```{r}
+plot_func(df=ci_clean, var_name="health_offering_change_count", 
+          var_type="non_cont", plot_title="Change in Health Services Offered by Clinics", 
+          plot_type="pie", chars_remove=c(0))
+```
+
+```{r}
+## For clinics or health services only: Since connection to Renewvia mini-grid, have your health service offerings changed in any of the following ways: (select all that apply).
+community_reg(df=ci_enc, 
+              col_name="health_offering_change_count", dep="V1", 
+              title="New Health Services Offered by Community", 
+              var_type="ratio")
+```
+
+### Clinic Access To Electricity
+
+**Data Source**: Paired Household Surveys (Pre & Post)
+
+**Value (Encoding if applied)**: "yes" = 1; "no" = 0
+
+```{r}
+compare_in_df(data=paired_clean, var_type="non_cont",
+               var1="clinic_electricity_access_pre", 
+               var2="clinic_electricity_access_post", 
+               var1_title="Pre - Electricity Access", var2_title="Post - Minigrid Access", 
+               subplot_type="pie", plot_title="Clinic Access To Electricity")
+```
+
+```{r}
+paired_testing(paired_enc, var_name="clinic_electricity_access", 
+               test_type = "mcnemar", plot_diff=FALSE)
+```
+
+```{r}
+community_reg(df=paired_enc, 
+              col_name="clinic_electricity_access", dep="1", 
+              title="Clinic Access To Electricity", 
+              var_type="categorical", calc_diff = TRUE)
+```
+
+### Clinic Access To Refrigeration
+
+**Data Source**: Paired Household Surveys (Pre & Post)
+
+**Value (Encoding if applied)**: "yes" = 1; "no" = 0
+
+```{r}
+compare_in_df(data=paired_clean, var_type="non_cont",
+               var1="clinic_refrigeration_access_pre", 
+               var2="clinic_refrigeration_access_post", 
+               var1_title="Pre", var2_title="Post", 
+               subplot_type="pie", plot_title="Paired - Clinic Access to Refrigeration")
+```
+
+```{r}
+## Does your Health Center / Clinic have access to refrigeration?
+## McNemar's  Test
+paired_testing(paired_enc, var_name="clinic_refrigeration_access", 
+               test_type = "mcnemar", plot_diff=FALSE)
+```
+
+```{r}
+community_reg(df=paired_enc, 
+              col_name="clinic_refrigeration_access", dep="1", 
+              title="Clinic Access To Refrigeration", 
+              var_type="categorical", calc_diff = TRUE)
+```
+
+### Better access to healthcare
+
+**Data Source**: Household Post-Survey
+
+**Value (Encoding if applied)**: "yes" = 1; "no" = 0
+
+```{r}
+## Do you feel that you have better access to health services because of connection to mini-grid?
+plot_func(df=post_clean, var_name="better_access_health_minigrid", 
+          var_type="non_cont", plot_title="Households - Better Access to Healthcare", 
+          plot_type="pie")
+```
+
+```{r}
+community_reg(df=post_enc, 
+              col_name="better_access_health_minigrid", dep="1", var_type="categorical",
+              title="Scatterplots For Better Healthcare Access by Community") 
+```
+
+```{r}
+ind_reg <- function(df, dep, title) {
+  logit <- glm(df[, dep] ~ df$Energy.Consumption, 
+               family=binomial)
+  print(summary(logit))
+  test <- wald.test(Sigma = vcov(logit), b = coef(logit), Terms = 1)
+  print(test)
+  p <- plot_reg(data=df, feature="Energy.Consumption",  
+                   dependent=dep, reg_type="logistic", remove_outliers = FALSE)
+  return(p)
+  
+}
+ind_reg(df = post_enc,
+        dep= "better_access_health_minigrid", 
+        title="Logistic Regression")
 ```
 
 # 4- Safety
 
 ## A) Descriptive
 
+### Feeling Safe
+
+```{r}
+# How safe do you feel outside your home when it is dark?
+compare_pre_post(var_name="feel_safe_dark", var_type="non_cont",
+                 subplot_type="pie", title="Feeling Safe When Dark")
+```
+
 ```{r}
 # Do you feel that having access to minigrid power has made you more safe? Please explain
 # Do you feel that having access to minigrid power has made you more safe? Please explain->
 # Do you feel that you have better access to health services because of connection to minigrid?
 # What makes you feel the most unsafe?
-# How safe do you feel outside your home when it is dark?
 ```
 
 ```{r}
@@ -1341,7 +1155,8 @@ hist(diff)
 # What is the approximate monthly cost of energy used strictly for charging appliances?
 # 
 # What is the approximate monthly cost of energy used strictly for cooking?
-
+# How much do you pay per month to charge your mobile phone?
+# How much do you pay monthly for kerosene used only in kerosene lamps?
 ```
 
 ```{r}
@@ -1405,63 +1220,6 @@ t.test(income_pre, income_post,
 ```{r}
 ## Has your household income changed since your connection to mini-grid power?
 # Isolate the dependent variable
-var <- post_clean$household_income_change
-income_change <- var[var != ""]
-
-tab1(income_change, 
-     sort.group = "decreasing", cum.percent = TRUE)
-
-# Breakdown by response type and Community
-dep_var_mat <- rownames_to_column(
-  as.data.frame.matrix(prop.table(table(post_clean$community, 
-                                   post_clean$household_income_change),
-                                         margin = 1)
-                                                  )
-                                      , var = "community")
-community_data <- merge(x=projects, y=dep_var_mat, by="community")
-reg_df <- community_data
-# reg_df <- community_data %>% filter(community != "kalobeyei_settlement")
-
-ind_vars <- reg_df[c(4:6)]
-
-## Linear Regression t-Test 
-# Model with increase
-reg_increase <- function(feature) {
-  ## Fitting the model with reported increase
-  # PV Size (kwH)
-  lm <- lm(yes_it_has_increased ~ feature, data=reg_df)
-  print(summary(lm))
-  
-  # Visualizing
-  scatter <- ggplot(data = reg_df, 
-                    aes(feature, yes_it_has_increased)) + 
-                    geom_point(color='blue') +
-                    geom_smooth(color='red', method = "lm", se = FALSE) 
-                    theme_classic()
-  ggMarginal(scatter, type = "histogram",
-             xparams = list(fill = 4),
-             yparams = list(fill = 3))
-}
-
-reg_decrease <- function(feature) {
-  ## Fitting the model with reported increase
-  # PV Size (kwH)
-  lm <- lm(yes_it_has_decreased ~ feature, data=reg_df)
-  print(summary(lm))
-  
-  # Visualizing
-  scatter <- ggplot(data = reg_df, 
-                    aes(feature, yes_it_has_decreased)) + 
-                    geom_point(color='blue') +
-                    geom_smooth(color='red', method = "lm", se = FALSE) 
-                    theme_classic()
-  ggMarginal(scatter, type = "histogram",
-             xparams = list(fill = 4),
-             yparams = list(fill = 3))
-}
-
-sapply(ind_vars, reg_increase)
-sapply(ind_vars, reg_decrease)
 ```
 
 ```{r}
@@ -1477,70 +1235,6 @@ sapply(ind_vars, reg_decrease)
 ```{r}
 # Are any household members business owners?
 ## McNemar's Test
-# Cross tabulation of changes between business ownership
-cross_tab <- table(paired_enc$business_owners_binary_pre,
-                   paired_enc$business_owners_binary_post)
-cross_tab
-# Running the test
-mcnemar.test(cross_tab)
-
-# Change
-paired_enc$biz_change <- paired_enc$business_owners_binary_post - paired_enc$business_owners_binary_pre
-
-# Breakdown by response type and Community
-dep_var_mat <- rownames_to_column(as.data.frame.matrix(
-                                      prop.table(table(
-                                          paired_enc$community_post, 
-                                          paired_enc$biz_change),
-                                         margin = 1)
-                                                  )
-                                      , var = "community")
-community_data <- merge(x=projects, y=dep_var_mat, by="community")
-reg_df <- community_data
-names(reg_df)[7] <- "var_decrease"
-names(reg_df)[8] <- "var_neutral"
-names(reg_df)[9] <- "var_increase"
-# 
-ind_vars <- reg_df[c(4:6)]
-
-## Linear Regression t-Test 
-# Model with increase
-reg_increase <- function(feature) {
-  ## Fitting the model with reported increase
-  # PV Size (kwH)
-  lm <- lm(var_increase ~ feature, data=reg_df)
-  print(summary(lm))
-  
-  # Visualizing
-  scatter <- ggplot(data = reg_df, 
-                    aes(feature, var_increase)) + 
-                    geom_point(color='blue') +
-                    geom_smooth(color='red', method = "lm", se = FALSE) 
-                    theme_classic()
-  ggMarginal(scatter, type = "histogram",
-             xparams = list(fill = 4),
-             yparams = list(fill = 3))
-}
-
-reg_decrease <- function(feature) {
-  ## Fitting the model with reported increase
-  # PV Size (kwH)
-  lm <- lm(var_decrease ~ feature, data=reg_df)
-  print(summary(lm))
-  
-  # Visualizing
-  scatter <- ggplot(data = reg_df, 
-                    aes(feature, var_decrease)) + 
-                    geom_point(color='blue') +
-                    geom_smooth(color='red', method = "lm", se = FALSE) 
-                    theme_classic()
-  ggMarginal(scatter, type = "histogram",
-             xparams = list(fill = 4),
-             yparams = list(fill = 3))
-}
-
-sapply(ind_vars, reg_increase)
-sapply(ind_vars, reg_decrease)
 ```
 
 ### Workplace
