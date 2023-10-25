@@ -90,10 +90,6 @@ initial_pre <- initial_clean %>%
 initial_post <- initial_clean %>%
                     filter(status == "post_connection") 
 
-# head(initial_clean)
-# head(initial_pre)
-# head(initial_post)
-
 # Household Post-Survey
 post <- read.csv("data_cleaning/datasets_clean/post_clean.csv",
                           na.strings=c("","NA"))
@@ -101,7 +97,11 @@ post_clean <- merge(post, temp,
                        by.x = 'renewvia_id', 
                        by.y = 'Account.Number')%>% 
                     filter(tariff == "Residential")
-# head(post_clean)
+
+## Pairing pre and post responses
+paired_clean <- merge(initial_pre, post_clean,
+                      suffix = c("_pre", "_post"),
+                      by= 'renewvia_id')
 
 # Commercial & Insitution Post-Survey
 ci <- read.csv("data_cleaning/datasets_clean/ci_post_clean.csv",
@@ -128,10 +128,6 @@ initial_pre_enc <- initial_enc %>%
 initial_post_enc <- initial_enc %>%
                     filter(status == 2)
 
-# head(initial_enc)
-# head(initial_pre_enc)
-# head(initial_post_enc)
-
 # Household Post-Survey
 post <- read.csv("data_cleaning/datasets_encoded/post_encoded.csv",
                           na.strings=c("","NA"))
@@ -139,10 +135,6 @@ post_enc <- merge(post, temp,
                        by.x = 'renewvia_id', 
                        by.y = 'Account.Number')  %>% 
                     filter(tariff == "Residential")
-# Post-Connection
-# post_clean_enc <- post_enc 
-# head(post_enc)
-# head(post_clean_enc)
 
 # Commercial & Insitution Post-Survey
 ci <- read.csv("data_cleaning/datasets_encoded/ci_post_encoded.csv",
@@ -150,27 +142,10 @@ ci <- read.csv("data_cleaning/datasets_encoded/ci_post_encoded.csv",
 ci_enc <- merge(ci, temp,
                  by.x = 'renewvia_id', 
                  by.y = 'Account.Number')
-# head(ci_enc)
-```
-
-```{r}
-## Pairing pre and post responses
-paired_clean <- merge(initial_pre, post_clean,
-                      suffix = c("_pre", "_post"),
-                      by= 'renewvia_id')
-# paired_clean <- merge(paired_temp, consumption,
-#                        by.x = 'renewvia_id', 
-#                        by.y = 'Account.Number')
-head(paired_clean)
-
 
 paired_enc <- merge(initial_pre_enc, post_enc,
                       suffix = c("_pre", "_post"),
                       by= 'renewvia_id')
-# paired_enc <- merge(paired_temp_enc, consumption,
-#                        by.x = 'renewvia_id', 
-#                        by.y = 'Account.Number')
-head(paired_enc)
 ```
 
 # Initial Descriptive
@@ -394,6 +369,45 @@ paired_testing <- function(data, var_name, test_type,
 ## Regression Analysis
 
 ```{r}
+plot_reg <- function(data, feature, dependent, remove_outliers=TRUE, reg_type) {
+  if(remove_outliers == TRUE) {
+    vars <- c(feature, dependent) 
+    for(var in vars){
+      quartiles <- quantile(data[, var], 
+                        probs=c(.25, .75), na.rm = TRUE)
+  
+      IQR <- IQR(data[, var], na.rm = TRUE)
+      
+      Lower <- quartiles[1] - 1.5*IQR
+      Upper <- quartiles[2] + 1.5*IQR 
+      
+      data <- subset(data, 
+                     data[, var] > Lower &
+                     data[, var] < Upper)
+    }
+    
+  }
+  if(reg_type == "linear") {
+    plot <- ggplot(data,
+                aes(x=.data[[feature]], y=.data[[dependent]])) +
+                geom_point(color='blue') +
+                  geom_smooth(color='red', method = "lm", se = FALSE) +
+                theme_classic()
+  } else if(reg_type == "logistic") {
+     plot <- ggplot(data, 
+                    aes(x=.data[[feature]], y=.data[[dependent]])) + 
+              geom_point(color='blue', alpha=.5) +
+              stat_smooth(method="glm", color="red", se=FALSE, 
+                        method.args = list(family=binomial)) +
+                theme_classic()
+  }
+  
+ 
+  return(plot)
+}
+```
+
+```{r}
 ind_vars <- c("pv_size_kwh", "customer_count", "capex_usd", "consumption")
 
 community_reg <- function(df, col_name, dep, title, var_type, calc_diff=FALSE) {
@@ -443,41 +457,31 @@ community_reg <- function(df, col_name, dep, title, var_type, calc_diff=FALSE) {
                  color = "black", face = "bold", size = 12))
 }
 
-plot_reg <- function(data, feature, dependent, remove_outliers=TRUE, reg_type) {
-  if(remove_outliers == TRUE) {
-    vars <- c(feature, dependent) 
-    for(var in vars){
-      quartiles <- quantile(data[, var], 
-                        probs=c(.25, .75), na.rm = TRUE)
-  
-      IQR <- IQR(data[, var], na.rm = TRUE)
-      
-      Lower <- quartiles[1] - 1.5*IQR
-      Upper <- quartiles[2] + 1.5*IQR 
-      
-      data <- subset(data, 
-                     data[, var] > Lower &
-                     data[, var] < Upper)
-    }
-    
-  }
+```
+
+```{r}
+consumption_reg <- function(df, dep, title, reg_type) {
   if(reg_type == "linear") {
-    plot <- ggplot(data,
-                aes(x=.data[[feature]], y=.data[[dependent]])) +
-                geom_point(color='blue') +
-                  geom_smooth(color='red', method = "lm", se = FALSE) +
-                theme_classic()
+    model <- lm(df[,dep] ~ df$Energy.Consumption)
+    p <- plot_reg(data=df, feature="Energy.Consumption",  
+                  dependent=dep, reg_type="linear")
+    
   } else if(reg_type == "logistic") {
-     plot <- ggplot(data, 
-                    aes(x=.data[[feature]], y=.data[[dependent]])) + 
-              geom_point(color='blue', alpha=.5) +
-              stat_smooth(method="glm", color="red", se=FALSE, 
-                        method.args = list(family=binomial)) +
-                theme_classic()
+    model <- glm(df[, dep] ~ df$Energy.Consumption, 
+               family=binomial)
+    p <- plot_reg(data=df, feature="Energy.Consumption",  
+                  dependent=dep, reg_type="logistic", 
+                  remove_outliers = FALSE)
+    test <- wald.test(Sigma = vcov(model), 
+                      b = coef(model), Terms = 1)
+    print(test)
   }
   
- 
-  return(plot)
+  print(summary(model))
+  print(confint(model, level=0.95))
+  
+  return(p)
+  
 }
 ```
 
@@ -561,7 +565,7 @@ compare_pre_post(var_name="business_owners_female", var_type="non_cont",
 
 ## B) Inferential
 
-### School Enrollment Change 
+### School Enrollment Change
 
 **Data Source**: Household Post-Survey
 
@@ -709,7 +713,7 @@ compare_pre_post(var_name="water_collection_travel_distance", var_type="non_cont
                  chars_remove=NULL)
 ```
 
-### C&I Profile
+### C&I - Profile
 
 ```{r}
 # Is this business, clinic, school still in operation?
@@ -804,13 +808,12 @@ plot_func(df=ci_clean, var_name="school_performance",
 
 ```{r}
 ## Have you seen a change in overall school performance?
-# Isolate the dependent variable
-community_reg(df=ci_enc, 
-              col_name="school_performance", dep="1", var_type="categorical",
-              title="Scatterplots For Increase in School Performace by Community")
+consumption_reg(df = ci_enc, reg_type ="logistic",
+                dep= "school_performance", 
+                title="Energy Consumption vs. School Performance")
 ```
 
-### Household - Academic Performance
+### TODO: Household - Academic Performance
 
 **Data Source**: Household Post-Survey
 
@@ -868,7 +871,7 @@ plot_func(df=post_clean, var_name="kerosene_lamp_usage_change",
           plot_type="pie", chars_remove=NULL)
 ```
 
-### TODO: Healthcare
+### Healthcare
 
 ```{r}
 # # Does your Health Center have access to electricity?
@@ -910,6 +913,8 @@ compare_pre_post(var_name="clinic_refrigeration_access", var_type="non_cont",
 
 ```{r}
 ## Do you have a source for clean drinking water? ## McNemar's  Test
+paired_testing(paired_enc, var_name="clean_drinking_water", 
+               test_type = "mcnemar", plot_diff=FALSE)
 ```
 
 ### Clean drinking water access - change
@@ -920,6 +925,9 @@ compare_pre_post(var_name="clinic_refrigeration_access", var_type="non_cont",
 
 ```{r}
 ## Since connection to Renewvia mini-grid, has your access to clean drinking water changed at all?
+community_reg(df=post_enc, 
+              col_name="clean_drinking_water_source", dep="1", var_type="categorical",
+              title="Increase in Access to Clean Drinking Water by Community")
 ```
 
 ### Kerosene Lamps Count
@@ -929,7 +937,9 @@ compare_pre_post(var_name="clinic_refrigeration_access", var_type="non_cont",
 **Value (Encoding if applied)**: Any numeric value
 
 ```{r}
-## How many kerosene lamps do you currently use in your household? # Running the paired t-test kerosene_pre <- paired_clean$kerosene_lamps_count_pre kerosene_post <- paired_clean$kerosene_lamps_count_post t.test(kerosene_pre, kerosene_post,        paired = TRUE, alternative = "two.sided") 
+## How many kerosene lamps do you currently use in your household? 
+paired_testing(paired_enc, var_name="kerosene_lamps_count", 
+               test_type = "ttest", plot_diff=TRUE)
 ```
 
 ### Kerosene Lamps Usage
@@ -939,7 +949,10 @@ compare_pre_post(var_name="clinic_refrigeration_access", var_type="non_cont",
 **Value (Encoding if applied)**: "Yes, it's decreased" = -1; "No, it's the same" = 0; "Yes, it's increased" = 1
 
 ```{r}
-
+community_reg(df=post_enc, 
+              col_name="kerosene_lamp_usage_change", dep="-1", 
+              var_type="categorical",
+              title="Decrease in Lamps Water by Community")
 ```
 
 ### New Health Services
@@ -1042,20 +1055,9 @@ community_reg(df=post_enc,
 ```
 
 ```{r}
-ind_reg <- function(df, dep, title) {
-  logit <- glm(df[, dep] ~ df$Energy.Consumption, 
-               family=binomial)
-  print(summary(logit))
-  test <- wald.test(Sigma = vcov(logit), b = coef(logit), Terms = 1)
-  print(test)
-  p <- plot_reg(data=df, feature="Energy.Consumption",  
-                   dependent=dep, reg_type="logistic", remove_outliers = FALSE)
-  return(p)
-  
-}
-ind_reg(df = post_enc,
-        dep= "better_access_health_minigrid", 
-        title="Logistic Regression")
+consumption_reg(df = post_enc, reg_type ="logistic",
+                dep= "better_access_health_minigrid", 
+                title="Energy Consumption vs. Better Healthcare Access")
 ```
 
 # 4- Safety
@@ -1066,44 +1068,50 @@ ind_reg(df = post_enc,
 
 ```{r}
 # How safe do you feel outside your home when it is dark?
-compare_pre_post(var_name="feel_safe_dark", var_type="non_cont",
-                 subplot_type="pie", title="Feeling Safe When Dark")
+compare_in_df(data=paired_enc, var_type="non_cont",
+               var1="feel_safe_dark_pre", 
+               var2="feel_safe_dark_post", 
+               var1_title="Pre", var2_title="Post", 
+               subplot_type="bar_discrete", plot_title="Feeling Safe When Dark")
 ```
 
+### Reasons for Feeling Unsafe
+
 ```{r}
-# Do you feel that having access to minigrid power has made you more safe? Please explain
-# Do you feel that having access to minigrid power has made you more safe? Please explain->
-# Do you feel that you have better access to health services because of connection to minigrid?
 # What makes you feel the most unsafe?
+compare_pre_post(var_name="feel_unsafe_reasons", var_type="non_cont",
+                 subplot_type="bar", title="Reasons for Feeling unsafe")
 ```
+
+### Presence of Community Lights
 
 ```{r}
 # Does your community currently have outdoor community lights?
-# Does your home have exterior lighting?
+compare_pre_post(var_name="community_lights", var_type="non_cont",
+                 subplot_type="pie", title="Presence of Community Lights")
+
 # How safe would you feel outside your home at nighttime IF you had exterior lights/community lighting?
 # How safe would you feel outside your home at nighttime IF you had exterior lights?
 # Is this exterior lighting powered by minigrid?
+post_clean$home_exterior_lights
+```
+
+### Household - Exterior Lights
+
+```{r}
+# Does your home have exterior lighting?
+plot_func(df=post_clean, var_name="home_exterior_lights", 
+          var_type="non_cont", plot_title="Households - Exterior Lights", 
+          plot_type="pie")
 ```
 
 ```{r}
-# How did the feeling of safety change? For everyone? By Gender? By country? By Community?
-# Average scores for everyone and split between men and women
-women_initial_pre <- (initial_pre_enc %>% filter(gender == 1))$feel_safe_dark
-women_initial_post <- (initial_post_enc %>% filter(gender == 1))$feel_safe_dark
-women_post_survey <- (post_enc %>% filter(gender == 1))$feel_safe_dark
-women_post_all <- c(women_intial_post, women_post_survey)
-avg_scores <- c(mean(women_initial_pre, na.rm = TRUE), 
-                mean(women_initial_post, na.rm = TRUE),
-                mean(women_post_survey, na.rm = TRUE),
-                mean(women_post_all, na.rm = TRUE))
-
-# safety_scores <- paired_women[ , c("renewvia_id", 
-#                                    "feel_safe_dark_pre",
-#                                    "feel_safe_dark_post")]
-# safety_scores_long <- melt(safety_scores, id = "renewvia_id")
-# ggplot(safety_scores_long, 
-#        aes(x = variable, y = value)) +  # ggplot function
-#   geom_boxplot()
+# Is this exterior lighting powered by minigrid?
+compare_in_df(data=post_clean, var_type="non_cont",
+              var1="exterior_lights_minigrid", 
+               var2="home_exterior_lights", 
+               var1_title="Powered by Minigrid?", var2_title="Home With Exterior Light?", 
+               subplot_type="pie", plot_title="Households - Exterior Lights")
 ```
 
 ## B) Inferential
@@ -1115,25 +1123,21 @@ avg_scores <- c(mean(women_initial_pre, na.rm = TRUE),
 **Value (Encoding if applied)**: "Very unsafe" = 1; "Somewhat unsafe" = 2; "Neither safe nor unsafe"= 3; "Somewhat safe" = 4; "Very safe" = 5
 
 ```{r}
-# How safe do you feel outside your home when it is dark?
-pre_scores <- paired_enc$feel_safe_dark_pre
-post_scores <- paired_enc$feel_safe_dark_post
-diff <- post_scores - pre_scores
-
-# Running the test
-# wilcox.test(pre_scores, post_scores, paired=TRUE)
-signtest(diff, m=0, conf.level=0.95, exact=FALSE)
-
-# Visualize distribution of score differences
-hist(diff)
+# # How safe do you feel outside your home when it is dark?
+paired_testing(paired_enc, var_name="feel_safe_dark", 
+               test_type = "wilcoxon", plot_diff=TRUE)
 ```
+
+### Reasons for Feeling Unsafe
 
 ```{r}
 # What makes you feel the most unsafe?
-# 
+```
+
+### Presence of Community Lights
+
+```{r}
 # Does your community currently have outdoor community lights?
-# 
-# How safe would you feel outside your home at nighttime IF you had exterior lights?
 ```
 
 # 5- Economic Activity
