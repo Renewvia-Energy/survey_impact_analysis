@@ -58,6 +58,8 @@ library(aod)
 
 # Input Data
 
+## Community
+
 ```{r}
 ## Locading the project& consumption data
 consumption <- read.csv("customer_consumption.csv")
@@ -72,6 +74,8 @@ temp_group <- temp %>%
 projects <- read.csv("project_data.csv")
 projects <- merge(projects, temp_group, by.x="project_name", by.y="projectName")
 ```
+
+## Surveys - Clean
 
 ```{r}
 ## Locading the cleaned data sets
@@ -112,6 +116,8 @@ ci_clean <- merge(ci, temp,
 # head(ci_clean)
 ```
 
+## Surveys - Encoded
+
 ```{r}
 ## Locading the encoded data sets
 # Intial Survey
@@ -148,20 +154,12 @@ paired_enc <- merge(initial_pre_enc, post_enc,
                       by= 'renewvia_id')
 ```
 
-# Initial Descriptive
-
-```{r}
-# No. of observations by datasets
-# % Missing Values for each variables
-# No. of duplicates
-```
-
 # Utility Functions
 
 ## Descriptive
 
 ```{r}
-get_stats <- function(data, ct, var_name,data_source, 
+get_stats <- function(data, ct, var_name,data_source,
                       remove_outliers = FALSE, 
                       exclude_zeros = FALSE) {
   if (grepl("_pre", var_name, fixed = TRUE)){
@@ -194,18 +192,48 @@ get_stats <- function(data, ct, var_name,data_source,
   
   stats <- t(describe(var, IQR=TRUE, quant=c(.1,.25,.5,.75,.90),))
   print(t.test(var, conf.level = 0.95))
-  hist_title <- paste(filt_ct, data_source, " : ", var_name)
   print(stats)
-  return(hist(var, main=hist_title))
 }
 ```
 
 ## Data Visualization
 
 ```{r}
+remove_y <- theme(
+  # axis.text.x = element_blank(),
+  # axis.ticks.x = element_blank(),
+  # axis.title.x = element_blank(),
+  axis.text.y = element_blank(),
+  axis.ticks.y = element_blank(),
+  axis.title.y = element_blank()
+)
+```
+
+### Plot graphs with ggplot
+
+```{r}
 # For pie and bar charts
-plot_func <- function(df, var_name, var_type, plot_title, plot_type, chars_remove=NULL) {
+plot_func <- function(df, var_name, var_type, 
+                      plot_title, plot_type, char_remove=NULL,
+                      remove_outliers = FALSE) {
+  if(is.null(char_remove) == FALSE) {
+    df <- df %>% filter(.data[[var_name]] != char_remove)
+  }
   
+  if(remove_outliers == TRUE) {
+      print("Removing outliers")
+      quartiles <- quantile(df[, var_name], 
+                        probs=c(.25, .75), na.rm = TRUE)
+  
+      IQR <- IQR(df[, var_name], na.rm = TRUE)
+      
+      Lower <- quartiles[1] - 1.5*IQR
+      Upper <- quartiles[2] + 1.5*IQR 
+      
+      df <- subset(df, 
+                     df[, var_name] > Lower &
+                     df[, var_name]< Upper)
+    }
   if(var_type == "non_cont") {
       var <- df[, var_name]
       var <- var[var != ""]
@@ -215,9 +243,7 @@ plot_func <- function(df, var_name, var_type, plot_title, plot_type, chars_remov
                old = c('var','Freq'), 
                new = c('labels','counts'))
     
-      if(is.null(chars_remove) == FALSE) {
-        data <- data[!grepl(chars_remove,data$labels),]
-      }
+
       
       if (plot_type == 'pie') {
           data_tab <- data %>% mutate(csum = rev(cumsum(rev(counts))),
@@ -234,7 +260,8 @@ plot_func <- function(df, var_name, var_type, plot_title, plot_type, chars_remov
                                     show.legend = FALSE) +
                               labs(fill = var_name, title=plot_title) +
                               coord_polar(theta = "y") +
-                              theme_void()
+                              theme_void() + 
+                              theme(legend.text=element_text(size=6))
       } else if (plot_type == "bar") {
           plot <- data %>% ggplot(aes(y=counts, 
                                       x=reorder(labels, counts), 
@@ -242,51 +269,51 @@ plot_func <- function(df, var_name, var_type, plot_title, plot_type, chars_remov
                             geom_col(width = 0.7) +
                             geom_text(aes(label=counts), vjust=-0.3, size=3)+
                             labs(fill = var_name, title=plot_title) + 
-                            coord_flip()
+                            coord_flip() + 
+                            theme(legend.text=element_text(size=6))
       } else if (plot_type == "bar_discrete") {
           plot <- data %>% ggplot(aes(y=counts, x=labels)) + 
                             geom_col(width = 0.7) +
                             labs(title=plot_title, x = var_name) 
       } 
   }else if(var_type == "cont") {
-      if(plot_type == "hist_cont") {
-        plot <- ggplot(df, aes(x=var_name)) + 
-                      geom_histogram() +
-                      labs(title=plot_title) +
-                      theme_void()
+      if(plot_type == "hist") {
+        plot <- ggplot(df, aes(x=.data[[var_name]])) + 
+                      geom_histogram(stat = "count",
+                                     fill = 'yellow',
+                                     alpha = 0.7,
+                                     col = 'black', bins=10) + 
+                      geom_vline(xintercept = mean(df[,var_name], na.rm=TRUE),
+                                 col="lightblue", lty=1, lwd = 1) +
+                      geom_vline(xintercept = median(df[,var_name], na.rm=TRUE),
+                               col="purple", lty=2, lwd = 1) +
+                      theme_bw() +
+                      labs(title=plot_title) 
       }else if(plot_type == "boxplot") {
-        plot <- ggplot(df, aes(x=var_name)) + 
+        plot <- ggplot(df, aes(x=.data[[var_name]])) + 
                 geom_boxplot(outlier.colour="red",
                               outlier.size=4)+
                 labs(title=plot_title) +
                 theme_void()
     }
   }
-
-  
-  ## boxplot
-  plot <- plot + theme(legend.text=element_text(size=6))
   return(plot)
 }
 ```
 
-```{r}
-remove_y <- theme(
-  # axis.text.x = element_blank(),
-  # axis.ticks.x = element_blank(),
-  # axis.title.x = element_blank(),
-  axis.text.y = element_blank(),
-  axis.ticks.y = element_blank(),
-  axis.title.y = element_blank()
-)
+### Pre-Post Comparison
 
+```{r}
 compare_pre_post <- function(var_name, var_type, subplot_type, title, 
-                             chars_remove=NULL, shared_legend=TRUE) {
+                             exclude_outliers = FALSE,
+                             char_remove=NULL, shared_legend=TRUE) {
 
   pre_plot <- plot_func(initial_pre, var_name, var_type,
-                         "Initial", subplot_type, chars_remove)
+                         "Initial", subplot_type, 
+                        char_remove, remove_outliers=exclude_outliers)
   post_plot <- plot_func(post_clean, var_name, var_type,
-                          "Post", subplot_type, chars_remove)
+                          "Post", subplot_type, 
+                         char_remove, remove_outliers=exclude_outliers)
   if (subplot_type == "bar") {
         plot <- ggarrange(post_plot + remove_y, pre_plot + remove_y, 
                           ncol = 2,  nrow = 1, 
@@ -303,16 +330,20 @@ compare_pre_post <- function(var_name, var_type, subplot_type, title,
                                          face = "bold", size = 12)))
 
 }
+```
 
+### Comparison in same data
+
+```{r}
 compare_in_df <- function(data, var1, var2, 
                             var1_title, var2_title, 
                             subplot_type, plot_title,
                           var_type,
-                          chars_remove=NULL){
+                          char_remove=NULL){
   var1_plot <- plot_func(data, var1, var_type,
-                          var1_title, subplot_type, chars_remove)
+                          var1_title, subplot_type, char_remove)
   var2_plot <- plot_func(data, var2, var_type,
-                          var2_title, subplot_type, chars_remove)
+                          var2_title, subplot_type, char_remove)
   if (subplot_type == "bar") {
         plot <- ggarrange(var2_plot + remove_y, var1_plot + remove_y, 
                           ncol = 2,  nrow = 1, 
@@ -337,10 +368,27 @@ paired_testing <- function(data, var_name, test_type,
                            plot_diff=FALSE, plot_title=NULL, remove_outliers=FALSE) {
   pre_name <- paste(var_name, "pre", sep="_")
   post_name <- paste(var_name, "post", sep="_")
+  
+  sprintf("Removing outliers for both %s and %s", pre_name, post_name)
+  vars <- c(pre_name, post_name) 
+  if(remove_outliers==TRUE) {
+    for(var in vars){
+      quartiles <- quantile(data[, var], 
+                        probs=c(.25, .75), na.rm = TRUE)
+  
+      IQR <- IQR(data[, var], na.rm = TRUE)
+      
+      Lower <- quartiles[1] - 1.5*IQR
+      Upper <- quartiles[2] + 1.5*IQR 
+      
+      data <- subset(data, 
+                     data[, var] > Lower &
+                     data[, var] < Upper)
+    } 
+  }
   var_pre <- data[, pre_name]
   var_post <- data[, post_name]
   diff <- var_post - var_pre
-  
   # Running the test
   if(test_type == "wilcoxon"){
     #Wilcoxon Signed-Rank Test
@@ -366,10 +414,18 @@ paired_testing <- function(data, var_name, test_type,
 }
 ```
 
-## Regression Analysis
+## Regression Testing
+
+### Plotting Scatter-plots
 
 ```{r}
-plot_reg <- function(data, feature, dependent, remove_outliers=TRUE, reg_type) {
+plot_reg <- function(data, feature, dependent, 
+                     remove_outliers=TRUE, reg_type, 
+                     vals_remove=NULL) {
+  
+  if(is.null(vals_remove) == FALSE) {
+    data <- data[!grepl(vals_remove,data$dependent),]
+  }
   if(remove_outliers == TRUE) {
     vars <- c(feature, dependent) 
     for(var in vars){
@@ -401,47 +457,49 @@ plot_reg <- function(data, feature, dependent, remove_outliers=TRUE, reg_type) {
                         method.args = list(family=binomial)) +
                 theme_classic()
   }
-  
  
   return(plot)
 }
 ```
 
+### Community Ind. Variables
+
 ```{r}
 ind_vars <- c("pv_size_kwh", "customer_count", "capex_usd", "consumption")
 
-community_reg <- function(df, col_name, dep, title, var_type, calc_diff=FALSE) {
+community_reg <- function(df, col_name, dep, title, 
+                          var_type, calc_diff=FALSE, to_remove=NULL) {
   if (calc_diff == TRUE) {
       pre_name <- paste(col_name, "pre", sep="_")
       post_name <- paste(col_name, "post", sep="_")
-      df$col_diff <- df[, post_name] - df[, pre_name]
+      df$col_reg <- df[, post_name] - df[, pre_name]
       names(df)[names(df) == "community_post"] <- "community"
   } else {
-      df$col_diff <- df[, col_name]
+      df$col_reg <- df[, col_name]
   }
   
   if(var_type == "categorical") {
     data <- rownames_to_column(as.data.frame.matrix(
                                   prop.table(table(
                                       df[, "community"], 
-                                      df[, "col_diff"]),
+                                      df[, "col_reg"]),
                                      margin = 1)
                                               )
                                   , var = "community")
   } else if(var_type == "ratio") {
-    data <- as.data.frame(rowsum(df[, "col_diff"], 
+    data <- as.data.frame(rowsum(df[, "col_reg"], 
                                  df[, "community"], na.rm = TRUE))
     data$community <- rownames(data)
     
     
   }
   community_data <- merge(x=projects, y=data, by="community")
-    lst <- list()
+  lst <- list()
   
    for(ind in ind_vars) {
         print(ind)
           p <- plot_reg(data=community_data, feature=ind,  
-                        dependent=dep, reg_type="linear")
+                        dependent=dep, reg_type="linear", vals_remove=to_remove)
           lst <- append(lst, list(p))
           lm <- lm(community_data[,dep] ~ community_data[,ind])
           details <- summary(lm)
@@ -459,19 +517,35 @@ community_reg <- function(df, col_name, dep, title, var_type, calc_diff=FALSE) {
 
 ```
 
+### Customer Consumption
+
 ```{r}
-consumption_reg <- function(df, dep, title, reg_type) {
+consumption_reg <- function(df, dep, title, reg_type, 
+                            calc_diff=FALSE, exclude_outliers = FALSE, 
+                            to_remove=NULL) {
+
   if(reg_type == "linear") {
-    model <- lm(df[,dep] ~ df$Energy.Consumption)
+    if (calc_diff == TRUE) {
+      pre_name <- paste(dep, "pre", sep="_")
+      post_name <- paste(dep, "post", sep="_")
+      df$col_reg <- df[, post_name] - df[, pre_name]
+    } else {
+      df$col_reg <- df[, dep]
+    }
+    
+    model <- lm(df$col_reg ~ df$Energy.Consumption)
     p <- plot_reg(data=df, feature="Energy.Consumption",  
-                  dependent=dep, reg_type="linear")
+                  dependent="col_reg", reg_type="linear", 
+                  remove_outliers=exclude_outliers, 
+                  vals_remove=to_remove)
     
   } else if(reg_type == "logistic") {
-    model <- glm(df[, dep] ~ df$Energy.Consumption, 
+    model <- glm(df[,dep] ~ df$Energy.Consumption, 
                family=binomial)
     p <- plot_reg(data=df, feature="Energy.Consumption",  
                   dependent=dep, reg_type="logistic", 
-                  remove_outliers = FALSE)
+                  remove_outliers=exclude_outliers,
+                  vals_remove=to_remove)
     test <- wald.test(Sigma = vcov(model), 
                       b = coef(model), Terms = 1)
     print(test)
@@ -528,14 +602,14 @@ compare_in_df(data=post_clean, var_type="non_cont",
 # For Girls
 compare_pre_post(var_name="girls_unschooled_reasons", var_type="non_cont", 
         subplot_type="bar", title="Girls Schooling: Reasons for non-enrollment",
-        chars_remove=c("they_all_attend_school", ""))
+        char_remove=c("they_all_attend_school", ""))
 ```
 
 ```{r}
 # For Boys
 compare_pre_post(var_name="boys_unschooled_reasons",  var_type="non_cont",
         subplot_type="bar", title="Boys Schooling: Reasons for non-enrollment",
-        chars_remove=c("they_all_attend_school", ""))
+        char_remove=c("they_all_attend_school", ""))
 ```
 
 ### Household Chores
@@ -646,7 +720,7 @@ paired_testing(paired_enc, var_name="cooking_fuel_collection_time",
 **Value (Encoding if applied)**: Everything else = 0; "adult_female" = 1
 
 ```{r}
-# Are any household members business owners?
+# Are any household members business owners? Isolate for those with 'adult_'female
 paired_testing(paired_enc, var_name="business_owners_female", 
                test_type = "mcnemar", plot_diff=FALSE)
 ```
@@ -676,7 +750,15 @@ community_reg(df=ci_enc,
 # What is your primary power source?
 compare_pre_post(var_name="power_sources_primary", var_type="non_cont",
                  subplot_type="bar", title="Power Source",
-                 chars_remove=NULL)
+                 char_remove=NULL)
+```
+
+### Light Hours
+
+```{r}
+compare_pre_post(var_name="light_hours_current", var_type="non_cont",
+                 subplot_type="bar_discrete", title="Light Hours",
+                 char_remove=c(46))
 ```
 
 ### No. of Appliances
@@ -685,32 +767,40 @@ compare_pre_post(var_name="power_sources_primary", var_type="non_cont",
 # How many electronic devices or appliances do you currently use in the household
 compare_pre_post(var_name="appliances_count", var_type="non_cont",
                  subplot_type="bar_discrete", title="Appliances",
-                 chars_remove=NULL)
+                 char_remove=NULL)
 ```
 
 ```{r}
 # Has the number of electronic devices or appliances increased since connection to minigrid?
 plot_func(df=post_clean, var_name="appliances_count_change", 
           var_type="non_cont", plot_title="Change in No. of Appliances", 
-          plot_type="pie", chars_remove=NULL)
+          plot_type="pie", char_remove=NULL)
 ```
 
-### Travel Distance - Phone Charge
+### Phone Charge - Travel Distance
 
 ```{r}
 # How far must you travel to charge your mobile phone?
 compare_pre_post(var_name="phone_charge_travel_distance", var_type="non_cont",
                  subplot_type="bar", title="Travel Distance to Charge Phone",
-                 chars_remove=NULL)
+                 char_remove=NULL)
 ```
 
-### Travel Distance - Water Collection
+### Water Collection - Travel Distance
 
 ```{r}
 # How far must you travel to obtain your water supply?
 compare_pre_post(var_name="water_collection_travel_distance", var_type="non_cont",
                  subplot_type="bar", title="Travel Distance for Water Collection",
-                 chars_remove=NULL)
+                 char_remove=NULL)
+```
+
+### Water Collection Time
+
+```{r}
+compare_pre_post(var_name="water_collection_time", var_type="non_cont",
+                 subplot_type="pie", title="Water Collection Time",
+                 char_remove=NULL)
 ```
 
 ### C&I - Profile
@@ -719,14 +809,14 @@ compare_pre_post(var_name="water_collection_travel_distance", var_type="non_cont
 # Is this business, clinic, school still in operation?
 plot_func(df=ci_clean, var_name="operation_status", 
           var_type="non_cont", plot_title="C&I - Type", 
-          plot_type="pie", chars_remove=NULL)
+          plot_type="pie", char_remove=NULL)
 ```
 
 ```{r}
 # Please select your business type
 plot_func(df=ci_clean, var_name="business_type", 
           var_type="non_cont", plot_title="C&I - Type", 
-          plot_type="bar", chars_remove=NULL)
+          plot_type="bar", char_remove=NULL)
 ```
 
 ### C&I - Operation Hours
@@ -735,7 +825,7 @@ plot_func(df=ci_clean, var_name="business_type",
 # Since connection to Renewvia minigrid, have your hours of operation changed at all?
 plot_func(df=ci_clean, var_name="operations_hours_change", 
           var_type="non_cont", plot_title="Change in C&I Operation Hours", 
-          plot_type="pie", chars_remove=NULL)
+          plot_type="pie", char_remove=NULL)
 ```
 
 ### C&I - Workforce
@@ -744,28 +834,69 @@ plot_func(df=ci_clean, var_name="operations_hours_change",
 # Since connection to Renewvia mingrid, have you had any change in number of workers/employees at your place of work?
 plot_func(df=ci_clean, var_name="workforce_change", 
           var_type="non_cont", plot_title="Change in C&I Workforce", 
-          plot_type="pie", chars_remove=NULL)
+          plot_type="pie", char_remove=NULL)
+```
+
+### C&I - New Products/Services
+
+```{r}
+# Have you added any new products or services since connection to Renewvia minigrid?
+plot_func(df=ci_clean, var_name="ci_offering_change", 
+          var_type="non_cont", plot_title="Change in C&I Products/Services", 
+          plot_type="pie", char_remove=NULL)
 ```
 
 ## B) Inferential
 
-### Light Hours
+### No. of Appliances\*
+
+**Data Source**: Paired Household Surveys (Pre & Post)
+
+**Value (Encoding if applied)**: Any numeric value
+
+```{r}
+paired_testing(paired_enc, var_name = "appliances_count", 
+               plot_diff = TRUE, plot_title = "Difference Pre-Post in No. of Appliances",
+               test_type="ttest", remove_outliers=TRUE)
+```
+
+```{r}
+community_reg(df=paired_enc, calc_diff = TRUE,
+              col_name="appliances_count", dep="V1", 
+              title="Difference in No. of Appliances by Community", 
+              var_type="ratio")
+```
+
+```{r}
+consumption_reg(df = paired_enc, reg_type ="linear",
+                dep= "appliances_count", calc_diff=TRUE,
+                title="Energy Consumption vs. Difference in No. of Appliances")
+```
+
+### Light Hours\*
 
 **Data Source**: Paired Household Surveys (Pre & Post)
 
 **Value (Encoding if applied)**: Any numeric value between 0 and 24
 
 ```{r}
-compare_pre_post(var_name="light_hours_current", var_type="non_cont",
-                 subplot_type="bar_discrete", title="Light Hours",
-                 chars_remove=c(46))
-```
-
-```{r}
 ## How many hours of light per day do you currently have at home?
 paired_testing(paired_enc, var_name = "light_hours_current", 
                plot_diff = TRUE, plot_title = "Difference Pre-Post in Light Hours",
-               test_type="ttest")
+               test_type="ttest", remove_outliers=TRUE)
+```
+
+```{r}
+community_reg(df=paired_enc, calc_diff = TRUE,
+              col_name="light_hours_current", dep="V1", 
+              title="Difference in Light Hours by Community", 
+              var_type="ratio")
+```
+
+```{r}
+consumption_reg(df = paired_enc, reg_type ="linear",
+                dep= "light_hours_current", calc_diff=TRUE,
+                title="Energy Consumption vs. Difference in Light Hours")
 ```
 
 ### Business Operation Hours
@@ -777,13 +908,13 @@ paired_testing(paired_enc, var_name = "light_hours_current",
 ```{r}
 plot_func(df=ci_clean, var_name="operations_hours_change", 
           var_type="non_cont", plot_title="Change in C&I Business Hours", 
-          plot_type="pie", chars_remove=NULL)
+          plot_type="pie", char_remove=NULL)
 ```
 
 ```{r}
 plot_func(df=ci_clean, var_name="business_hours_increase", 
           var_type="non_cont", plot_title="Change in C&I Business Hours", 
-          plot_type="pie", chars_remove=NULL)
+          plot_type="pie", char_remove=NULL)
 ```
 
 ```{r}
@@ -794,7 +925,7 @@ community_reg(df=ci_enc,
               title="Scatterplots For Increase in Business Hours by Community")
 ```
 
-### TODO: Schools - Academic Performance
+### Schools - Academic Performance
 
 **Data Source**: C&I Post-Survey
 
@@ -803,17 +934,17 @@ community_reg(df=ci_enc,
 ```{r}
 plot_func(df=ci_clean, var_name="school_performance", 
           var_type="non_cont", plot_title="Schools - Academic Performance", 
-          plot_type="pie", chars_remove=NULL)
+          plot_type="pie", char_remove=NULL)
 ```
 
 ```{r}
 ## Have you seen a change in overall school performance?
-consumption_reg(df = ci_enc, reg_type ="logistic",
-                dep= "school_performance", 
-                title="Energy Consumption vs. School Performance")
+community_reg(df=ci_enc, 
+              col_name="school_performance", dep="1", var_type="categorical",
+              title="Schools - Increase in Academic Performace by Community")
 ```
 
-### TODO: Household - Academic Performance
+### Household - Academic Performance
 
 **Data Source**: Household Post-Survey
 
@@ -822,13 +953,20 @@ consumption_reg(df = ci_enc, reg_type ="logistic",
 ```{r}
 plot_func(df=post_clean, var_name="school_performance_change", 
           var_type="non_cont", plot_title="Household - Academic Performance", 
-          plot_type="pie", chars_remove=NULL)
+          plot_type="pie", char_remove=NULL)
 ```
 
 ```{r}
 community_reg(df=post_enc, 
-              col_name="school_performance_change", dep="1", var_type="categorical",
-              title="Scatterplots For Increase in School Performace by Community")
+              col_name="school_performance_change", 
+              dep="1", var_type="categorical",
+              title="Households - Increase in Academic Performace by Community")
+```
+
+### TODO: C&I Workforce
+
+```{r}
+# Since connection to Renewvia mini-grid, have you had any change in number of workers/employees at your place of work?
 ```
 
 # 3- Health
@@ -861,14 +999,14 @@ compare_pre_post(var_name="clean_drinking_water_source", var_type="non_cont",
 # How many kerosene lamps do you currently have in your household?
 compare_pre_post(var_name="kerosene_lamps_count", var_type="non_cont",
                  subplot_type="bar_discrete", title="No. of Kerosene Lamps", 
-                 chars_remove=c(24))
+                 char_remove=c(24))
 ```
 
 ```{r}
 # Has the number of kerosene lamps in your household changed since connection to minigrid?
 plot_func(df=post_clean, var_name="kerosene_lamp_usage_change", 
           var_type="non_cont", plot_title="Kerosene Lamps Usage", 
-          plot_type="pie", chars_remove=NULL)
+          plot_type="pie", char_remove=NULL)
 ```
 
 ### Healthcare
@@ -877,14 +1015,14 @@ plot_func(df=post_clean, var_name="kerosene_lamp_usage_change",
 # # Does your Health Center have access to electricity?
 compare_pre_post(var_name="clinic_electricity_access", var_type="non_cont",
                  subplot_type="pie", title="Clinic Access To Electricity", 
-                 chars_remove=NULL)
+                 char_remove=NULL)
 ```
 
 ```{r}
 # How close is the nearest Health Center / Clinic
 compare_pre_post(var_name="clinic_travel_distance", var_type="non_cont",
                  subplot_type="bar", title="Clinic Access - Travel Distance", 
-                 chars_remove=NULL)
+                 char_remove=NULL)
 ```
 
 ```{r}
@@ -930,7 +1068,7 @@ community_reg(df=post_enc,
               title="Increase in Access to Clean Drinking Water by Community")
 ```
 
-### Kerosene Lamps Count
+### Kerosene Lamps Count\*
 
 **Data Source**: Paired Household Surveys (Pre & Post)
 
@@ -940,6 +1078,19 @@ community_reg(df=post_enc,
 ## How many kerosene lamps do you currently use in your household? 
 paired_testing(paired_enc, var_name="kerosene_lamps_count", 
                test_type = "ttest", plot_diff=TRUE)
+```
+
+```{r}
+community_reg(df=paired_enc, calc_diff = TRUE,
+              col_name="kerosene_lamps_count", dep="V1", 
+              title="Difference in No. of Kerosene Lamps by Community", 
+              var_type="ratio")
+```
+
+```{r}
+consumption_reg(df = paired_enc, reg_type ="linear",
+                dep= "kerosene_lamps_count", calc_diff=TRUE,
+                title="Energy Consumption vs. Difference in No. of Kerosene Lamps")
 ```
 
 ### Kerosene Lamps Usage
@@ -964,13 +1115,13 @@ community_reg(df=post_enc,
 ```{r}
 plot_func(df=ci_clean, var_name="health_offering_change_count", 
           var_type="non_cont", plot_title="Change in Health Services Offered by Clinics", 
-          plot_type="bar_discrete", chars_remove=NULL)
+          plot_type="bar_discrete", char_remove=NULL)
 ```
 
 ```{r}
 plot_func(df=ci_clean, var_name="health_offering_change_count", 
           var_type="non_cont", plot_title="Change in Health Services Offered by Clinics", 
-          plot_type="pie", chars_remove=c(0))
+          plot_type="pie", char_remove=c(0))
 ```
 
 ```{r}
@@ -979,6 +1130,13 @@ community_reg(df=ci_enc,
               col_name="health_offering_change_count", dep="V1", 
               title="New Health Services Offered by Community", 
               var_type="ratio")
+```
+
+```{r}
+sub <- ci_enc %>% filter(health_offering_change_count != 0)
+consumption_reg(df = sub, reg_type ="linear", 
+                dep= "health_offering_change_count", calc_diff=FALSE,
+                title="Energy Consumption vs. New Health Services Offered")
 ```
 
 ### Clinic Access To Electricity
@@ -1089,11 +1247,6 @@ compare_pre_post(var_name="feel_unsafe_reasons", var_type="non_cont",
 # Does your community currently have outdoor community lights?
 compare_pre_post(var_name="community_lights", var_type="non_cont",
                  subplot_type="pie", title="Presence of Community Lights")
-
-# How safe would you feel outside your home at nighttime IF you had exterior lights/community lighting?
-# How safe would you feel outside your home at nighttime IF you had exterior lights?
-# Is this exterior lighting powered by minigrid?
-post_clean$home_exterior_lights
 ```
 
 ### Household - Exterior Lights
@@ -1128,66 +1281,124 @@ paired_testing(paired_enc, var_name="feel_safe_dark",
                test_type = "wilcoxon", plot_diff=TRUE)
 ```
 
-### Reasons for Feeling Unsafe
+### Reasons for Feeling Unsafe - Potential Theft
 
 ```{r}
-# What makes you feel the most unsafe?
+# What makes you feel the most unsafe? Testing for Potentiel Theft only
+community_reg(df=paired_enc, 
+              col_name="unsafe_due_to_theft", dep="-1", 
+              title="Unsafe Due to Theft", 
+              var_type="categorical", calc_diff = TRUE)
 ```
 
-### Presence of Community Lights
+### TODO: Presence of Community Lights
 
 ```{r}
 # Does your community currently have outdoor community lights?
+paired_testing(paired_enc, var_name="community_lights", 
+               test_type = "mcnemar", plot_diff=FALSE)
+```
+
+```{r}
+community_reg(df=paired_enc, 
+              col_name="community_lights", dep="1", 
+              title="Community Lights", 
+              var_type="categorical", calc_diff = TRUE)
 ```
 
 # 5- Economic Activity
 
 ## A) Descriptive
 
-### Household
+### Pre-connection: Employment Type
 
 ```{r}
 # Type of employment for Primary Provider
-# What is your average monthly household income:
-# Has your household income changed since your connection to minigrid power?
+plot_func(df=initial_pre, var_name="employement_type", 
+          var_type="non_cont", plot_title="Employement Type of Primary Provider", 
+          plot_type="pie")
+```
+
+### Occupation Change
+
+```{r}
 # Has your (or your spouses) occupation changed since youve been connected to minigrid power?
+plot_func(df=post_clean, var_name="occupation_change", 
+          var_type="non_cont", plot_title="Change in Occupation of Primary Provider", 
+          plot_type="pie")
+```
+
+### Household Income
+
+```{r}
+# What is your average monthly household income:
+# compare_pre_post(var_name="avg_household_income", var_type="cont",
+#                  subplot_type="hist", char_remove = 0, exclude_outliers = TRUE,
+#                  title="Average Household Income", shared_legend=FALSE)
+plot_func(df=initial_pre, var_name="avg_household_income", 
+          var_type="cont", plot_title="Pre-Connection - Average Household Income", 
+          plot_type="hist", char_remove = 0, remove_outliers = TRUE)
+plot_func(df=post_clean, var_name="avg_household_income", 
+          var_type="cont", plot_title="Post-Connection - Average Household Income", 
+          plot_type="hist", char_remove = 0, remove_outliers = TRUE)
 ```
 
 ```{r}
-# What is approximate monthly cost of energy used strictly for charging appliances?
-# 
-# What is the approximate monthly cost of energy used strictly for charging appliances?
-# 
-# What is the approximate monthly cost of energy used strictly for cooking?
-# How much do you pay per month to charge your mobile phone?
-# How much do you pay monthly for kerosene used only in kerosene lamps?
+# Has your household income changed since your connection to minigrid power?
+plot_func(df=post_clean, var_name="household_income_change", 
+          var_type="non_cont", plot_title="Change in Household Income", 
+          plot_type="pie")
 ```
+
+### TODO: Costs - Additional Cleaning
+
+#### Phone Charging
+
+```{r}
+# How much do you pay per month to charge your mobile phone?
+compare_pre_post(var_name="phone_charge_cost", var_type="non_cont",
+                 subplot_type="bar",
+                 title="Phone Charging Cost", shared_legend=TRUE)
+```
+
+#### Appliances Charging
+
+```{r}
+# What is approximate monthly cost of energy used strictly for charging appliances?
+compare_pre_post(var_name="applicances_charging_cost", var_type="non_cont",
+                 subplot_type="bar",
+                 title="Appliances Charging Cost", shared_legend=TRUE)
+```
+
+#### Cooking Energy
+
+```{r}
+# What is the approximate monthly cost of energy used strictly for cooking?
+compare_pre_post(var_name="cooking_energy_cost", var_type="non_cont",
+                 subplot_type="bar",
+                 title="Cooking Energy Cost", shared_legend=TRUE)
+```
+
+#### Kerosene Lamps
+
+```{r}
+# How much do you pay monthly for kerosene used only in kerosene lamps?
+compare_pre_post(var_name="kerosene_lamps_cost", var_type="non_cont",
+                 subplot_type="bar",
+                 title="Kerosene Lamps Cost", shared_legend=TRUE)
+```
+
+### TODO: Local Business Creation
 
 ```{r}
 # Are any household members business owners?
 # Is this business recent (started after connection to minigrid power?)
 # If this business is new, do you consider this new business a result of having access to minigrid power?
-# Is this business, clinic, school still in operation?
-# Please select your business type
-```
-
-### Commercial
-
-```{r}
-# Is this business, clinic, school still in operation?
-# 
-# Please select your business type
-# 
-# Since connection to Renewvia mingrid, have you had any change in number of workers/employees at your place of work?
-# 
-# Since connection to Renewvia minigrid, have your hours of operation changed at all?
-
-# Have you added any new products or services since connection to Renewvia minigrid?
 ```
 
 ## B) Inferential
 
-### Income
+### Avg. Household Income\*
 
 **Data Source**: Paired Household Surveys (Pre & Post)
 
@@ -1195,27 +1406,20 @@ paired_testing(paired_enc, var_name="feel_safe_dark",
 
 ```{r}
 ## What is your average monthly household income?
-# Running the paired t-test
-ct <- "nigeria"
-ct
-df <- paired_clean %>% filter(country_post == ct)
-income_pre <- df$avg_household_income_pre
-income_post <- df$avg_household_income_post
-t.test(income_pre, income_post,
-       paired = TRUE, alternative = "two.sided")
+nigeria_df <- paired_clean %>% filter(country_post == "nigeria")
+paired_testing(nigeria_df, var_name="avg_household_income", 
+               test_type = "ttest", plot_diff=TRUE)
 ```
 
 ```{r}
-ct <- "kenya"
-ct
-df <- paired_clean %>% filter(country_post == ct)
-income_pre <- df$avg_household_income_pre
-income_post <- df$avg_household_income_post
-t.test(income_pre, income_post,
-       paired = TRUE, alternative = "two.sided")
+kenya_df <- paired_clean %>% filter(country_post == "kenya")
+paired_testing(kenya_df, var_name="avg_household_income", 
+               test_type = "ttest", plot_diff=TRUE)
 ```
 
-### Income Change
+#### TODO: Needs further Investigation on negative differences
+
+### Household - Income Change
 
 **Data Source**: Household Post Survey
 
@@ -1223,11 +1427,31 @@ t.test(income_pre, income_post,
 
 ```{r}
 ## Has your household income changed since your connection to mini-grid power?
-# Isolate the dependent variable
+community_reg(df=post_enc, 
+              col_name="household_income_change", dep="1", 
+              title="Household Income Increase by Community", 
+              var_type="categorical", calc_diff = FALSE)
 ```
+
+### C&I - Earnings Change
+
+**Data Source**: Household Post Survey
+
+**Value (Encoding if applied)**: "Yes, it's decreased" = -1; "No, it's the same" = 0; "Yes, it's increased" = 1
 
 ```{r}
 # For businesses or shop owners only: Since connection to Renewvia mini-grid, have you seen any change in your weekly or monthly earnings?
+community_reg(df=ci_enc, 
+              col_name="earnings_change", dep="1", 
+              title="C&I Earnings Increase by Community", 
+              var_type="categorical", calc_diff = FALSE)
+```
+
+```{r}
+df_pos <- ci_enc %>% filter(earnings_change != -1)
+consumption_reg(df = df_pos, reg_type ="logistic",
+                dep= "earnings_change", 
+                title="Energy Consumption vs. C&I Earnings Increase")
 ```
 
 ### Business Ownership
@@ -1239,10 +1463,15 @@ t.test(income_pre, income_post,
 ```{r}
 # Are any household members business owners?
 ## McNemar's Test
+paired_testing(paired_enc, var_name="business_owners_binary", 
+               test_type = "mcnemar", plot_diff=FALSE)
 ```
-
-### Workplace
 
 ```{r}
-# Since connection to Renewvia mini-grid, have you had any change in number of workers/employees at your place of work?
+community_reg(df=paired_enc, 
+              col_name="business_owners_binary", dep="1", 
+              title="Household Business Onwership by Community", 
+              var_type="categorical", calc_diff =TRUE)
 ```
+
+### TODO: Regression with energy consumption in both directions (1, -1)
