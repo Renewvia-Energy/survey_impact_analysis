@@ -490,6 +490,7 @@ community_reg <- function(df, col_name, dep, title,
     data <- as.data.frame(rowsum(df[, "col_reg"], 
                                  df[, "community"], na.rm = TRUE))
     data$community <- rownames(data)
+    print(data)
     
     
   }
@@ -504,7 +505,7 @@ community_reg <- function(df, col_name, dep, title,
           lm <- lm(community_data[,dep] ~ community_data[,ind])
           details <- summary(lm)
           result <- as.data.frame(details$coefficients, row.names = c("Intercept", ind))
-          print(result)
+          print(details)
           print(confint(lm, level=0.95))
       }
   plot <- ggarrange(plotlist = lst, 
@@ -597,6 +598,8 @@ compare_in_df(data=post_clean, var_type="non_cont",
                subplot_type="pie", plot_title="School Enrollment Change")
 ```
 
+### TODO:: Bar charts by groups, Chi-Square goodness of fit, proportions not counts
+
 ```{r}
 # Dirving factor for non-enrollment in school for boys and girls
 # For Girls
@@ -620,7 +623,16 @@ compare_pre_post(var_name="avg_person_age_water_collection", var_type="non_cont"
         subplot_type="bar", title="Age of Person Responsible for Cooking Fuel Collection") 
 ```
 
-### Female Businesses Ownership
+```{r}
+# How many houses - subgroup with schol-age children getting water changes answers to 18_or_older? Binarize, school-aged (5-18) vs 18_and_older? Drop pairing, Side-by-side bars
+compare_in_df(data=paired_clean, var_type="non_cont", 
+               var1="avg_person_age_water_collection_pre", 
+               var2="avg_person_age_water_collection_post", 
+               var1_title="Pre", var2_title="Post", 
+               subplot_type="bar", plot_title="Avg. Age")
+```
+
+### TODO: Female Businesses Ownership - Subgroup by country, community
 
 ```{r}
 # How many new women-led businesses were created?
@@ -628,13 +640,31 @@ compare_pre_post(var_name="business_owners_female", var_type="non_cont",
         subplot_type="pie", title="Women Business Owners")
 ```
 
-### TODO
+```{r}
+compare_in_df(data=paired_clean, var_type="non_cont", 
+               var1="business_owners_female_pre", 
+               var2="business_owners_female_post", 
+               var1_title="Pre", var2_title="Post", 
+               subplot_type="bar", plot_title="Paired Female Business Owners")
+```
+
+```{r}
+compare_in_df(data=paired_clean, var_type="non_cont", 
+               var1="business_owners_binary_pre", 
+               var2="business_owners_binary_post", 
+               var1_title="Pre", var2_title="Post", 
+               subplot_type="bar", plot_title="Paired Business Owners")
+```
+
+### TODO: Binarize by gender
 
 ```{r}
 # In respondent's own words, how were women affected from the mini-grid?
 
 ## Requires additional cleaning/annotations
 # Who is mainly responsible for cooking fuel collection on a daily basis? Select all that apply
+# Binarize by gender, (1) adult
+# adult_male; child_female; whole_family
 ```
 
 ## B) Inferential
@@ -645,7 +675,7 @@ compare_pre_post(var_name="business_owners_female", var_type="non_cont",
 
 **Value (Encoding if applied)**: "Yes, it's decreased" = -1; "No, it's the same" = 0; "Yes, it's increased" = 1
 
-#### Linear Regression - Increase
+#### TODO: Work with counts instead proportions, Linear Regression - Increase
 
 ```{r}
 # Check for increase
@@ -669,7 +699,7 @@ community_reg(df=post_enc,
 
 **Value (Encoding if applied)**: "less than 1 hour" = 1; "1-2 hours" = 2; "2-3 hours" = 3; "3-4 hours" = 4; "greater than 4 hours" = 5
 
-#### Pre-Post Comparison
+#### TODO: Pre-Post Comparison, Visualize the paired differences
 
 ```{r}
 compare_in_df(data=paired_clean, var_type="non_cont", 
@@ -679,12 +709,12 @@ compare_in_df(data=paired_clean, var_type="non_cont",
                subplot_type="bar", plot_title="Water Collection Time")
 ```
 
-#### Sign-Test
+#### Wilcoxon
 
 ```{r}
 # How long does the water collection process take on a daily basis?
 paired_testing(paired_enc, var_name="water_collection_time", 
-               test_type = "sign", plot_diff=TRUE, 
+               test_type = "wilcoxon", plot_diff=TRUE, 
                plot_title="Difference Pre-Post of Water Collection Times")
 ```
 
@@ -1450,7 +1480,7 @@ community_reg(df=ci_enc,
 ```{r}
 df_pos <- ci_enc %>% filter(earnings_change != -1)
 consumption_reg(df = df_pos, reg_type ="logistic",
-                dep= "earnings_change", 
+                dep= "earnings_change", exclude_outliers = TRUE, 
                 title="Energy Consumption vs. C&I Earnings Increase")
 ```
 
