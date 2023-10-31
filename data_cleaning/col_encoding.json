@@ -1,0 +1,1578 @@
+{
+    "col_encoding": [
+        {
+            "col_name": "adult_headcount",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "age",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "appliances_addition_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "appliances_addition_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "appliances_addition_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "appliances_addition_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "appliances_addition_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "appliances_addition_type",
+            "col_enc_map": {
+                "cold_storage_refrigerator_or_freezer": 1,
+                "interior_lights": 2,
+                "exterior_lights": 3,
+                "fan": 4,
+                "cooking_appliance": 5,
+                "computer_or_tv": 6,
+                "other_electronic_device": 7,
+                "no_additional_appliances": 0
+            }
+        },
+        {
+            "col_name": "appliances_addition_type",
+            "col_enc_map": {
+                "cold_storage_refrigerator_or_freezer": 1,
+                "interior_lights": 2,
+                "exterior_lights": 3,
+                "fan": 4,
+                "cooking_appliance": 5,
+                "computer_or_tv": 6,
+                "other_electronic_device": 7,
+                "no_additional_appliances": 0
+            }
+        },
+        {
+            "col_name": "appliances_addition_type",
+            "col_enc_map": {
+                "cold_storage_refrigerator_or_freezer": 1,
+                "interior_lights": 2,
+                "exterior_lights": 3,
+                "fan": 4,
+                "cooking_appliance": 5,
+                "computer_or_tv": 6,
+                "other_electronic_device": 7,
+                "no_additional_appliances": 0
+            }
+        },
+        {
+            "col_name": "appliances_count",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "appliances_count",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "appliances_count",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "appliances_type_addition",
+            "col_enc_map": {
+                "stovetop": 1,
+                "television": 2,
+                "computer": 3,
+                "radio": 4,
+                "lights": 5,
+                "cell_phone_charger": 6,
+                "fan": 7,
+                "refrigerator": 8,
+                "microwave": 9,
+                "other": 10
+            }
+        },
+        {
+            "col_name": "appliances_count_change",
+            "col_enc_map": {
+                "no": 0,
+                "yes": 1,
+                "option 1": 0,
+                "option 2": 1
+            }
+        },
+        {
+            "col_name": "appliances_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "appliances_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "appliances_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "appliances_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "appliances_type",
+            "col_enc_map": {
+                "stovetop": 1,
+                "television": 2,
+                "computer": 3,
+                "radio": 4,
+                "lights": 5,
+                "cell_phone_charger": 6,
+                "fan": 7,
+                "refrigerator": 8,
+                "microwave": 9,
+                "other": 10
+            }
+        },
+        {
+            "col_name": "appliances_type",
+            "col_enc_map": {
+                "stovetop": 1,
+                "television": 2,
+                "computer": 3,
+                "radio": 4,
+                "lights": 5,
+                "cell_phone_charger": 6,
+                "fan": 7,
+                "refrigerator": 8,
+                "microwave": 9,
+                "other": 10
+            }
+        },
+        {
+            "col_name": "appliances_type",
+            "col_enc_map": {
+                "stovetop": 1,
+                "television": 2,
+                "computer": 3,
+                "radio": 4,
+                "lights": 5,
+                "cell_phone_charger": 6,
+                "fan": 7,
+                "refrigerator": 8,
+                "microwave": 9,
+                "other": 10
+            }
+        },
+        {
+            "col_name": "applicances_charging_cost",
+            "col_enc_map": {
+                "nothing_we_use_minigrid_power": 0,
+                "0_150_nkes": 1,
+                "150_1000_nkes": 2,
+                "1000_3000_nkes": 3,
+                "3000_4000_nkes": 4,
+                "4000_6000_nkes": 5
+            }
+        },
+        {
+            "col_name": "applicances_charging_cost",
+            "col_enc_map": {
+                "nothing_we_use_minigrid_power": 0,
+                "0_150_nkes": 1,
+                "150_1000_nkes": 2,
+                "1000_3000_nkes": 3,
+                "3000_4000_nkes": 4,
+                "4000_6000_nkes": 5
+            }
+        },
+        {
+            "col_name": "applicances_charging_sources",
+            "col_enc_map": {
+                "solar_home_kit": 1,
+                "petrol_generator": 2,
+                "diesel_generator": 3,
+                "battery": 4,
+                "minigrid_electricity_renewvia": 5,
+                "other": 6
+            }
+        },
+        {
+            "col_name": "applicances_charging_sources_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "avg_household_income",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "avg_person_age_water_collection",
+            "col_enc_map": {
+                "under_5_old": 1,
+                "5_10_old": 2,
+                "10_12_old": 3,
+                "12_15_old": 4,
+                "15_18_old": 5,
+                "18_or_older": 6
+            }
+        },
+        {
+            "col_name": "better_access_health_minigrid",
+            "col_enc_map": {
+                "no": 0,
+                "yes": 1,
+                "option 1": 0,
+                "option 2": 1
+            }
+        },
+        {
+            "col_name": "boys_age",
+            "col_enc_map": {
+                "1": 1,
+                "2": 2,
+                "3": 3,
+                "4": 4,
+                "5": 5,
+                "6": 6,
+                "7": 7,
+                "8": 8,
+                "9": 9,
+                "10": 10,
+                "11": 11,
+                "12": 12,
+                "13": 13,
+                "14": 14,
+                "15": 15,
+                "16": 16,
+                "older_than_16": 17
+            }
+        },
+        {
+            "col_name": "boys_headcount",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "boys_schooling",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "boys_schooling_change",
+            "col_enc_map": {
+                "yes_its_increased": 1,
+                "yes_its_decreased": -1,
+                "no_its_the_same": 0
+            }
+        },
+        {
+            "col_name": "boys_unschooled_reasons",
+            "col_enc_map": {
+                "they_all_attend_school": 1,
+                "they_all_attend_school_full_time": 1,
+                "household_chores": 2,
+                "lacking_money_for_school_fees": 3,
+                "health_reasons": 4,
+                "childcare": 5,
+                "not_old_enough": 6,
+                "too_old": 7,
+                "other": 8
+            }
+        },
+        {
+            "col_name": "boys_unschooled_reasons_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "business_hours_increase",
+            "col_enc_map": {
+                "1_2_hours_daily": 1,
+                "2_4_hours_daily": 2,
+                "4_6_hours_daily": 3,
+                "more_than_6_hours_daily": 4
+            }
+        },
+        {
+            "col_name": "business_recent",
+            "col_enc_map": {
+                "no": 0,
+                "yes": 1,
+                "option 1": 0,
+                "option 2": 1
+            }
+        },
+        {
+            "col_name": "business_type",
+            "col_enc_map": {
+                "clinic": 1,
+                "shop": 2,
+                "school": 3,
+                "religious_institution": 4,
+                "other_business": 5
+            }
+        },
+        {
+            "col_name": "business_type",
+            "col_enc_map": {
+                "clinic": 1,
+                "shop": 2,
+                "school": 3,
+                "religious_institution": 4,
+                "other_business": 5
+            }
+        },
+        {
+            "col_name": "business_use_minigrid",
+            "col_enc_map": {
+                "no": 0,
+                "yes": 1,
+                "option 1": 0,
+                "option 2": 1
+            }
+        },
+        {
+            "col_name": "cellphones_count",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "ci_new_offering",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "ci_offering_change",
+            "col_enc_map": {
+                "no": 0,
+                "yes": 1,
+                "option 1": 0,
+                "option 2": 1
+            }
+        },
+        {
+            "col_name": "clean_drinking_water",
+            "col_enc_map": {
+                "no": 0,
+                "yes": 1,
+                "option 1": 0,
+                "option 2": 1
+            }
+        },
+        {
+            "col_name": "clean_drinking_water_access",
+            "col_enc_map": {
+                "yes_it_has_increased": 1,
+                "yes_it_has_decreased": -1,
+                "no_it_is_pretty_much_the_same": 0
+            }
+        },
+        {
+            "col_name": "clean_drinking_water_source",
+            "col_enc_map": {
+                "boiled_water": 1,
+                "bottled_water": 2,
+                "treated": 3,
+                "treated_filtered_water": 3,
+                "clean_community_source": 4
+            }
+        },
+        {
+            "col_name": "clean_water_source",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "clinic_electricity_access",
+            "col_enc_map": {
+                "no": 0,
+                "yes": 1,
+                "option 1": 0,
+                "option 2": 1
+            }
+        },
+        {
+            "col_name": "clinic_electricity_access",
+            "col_enc_map": {
+                "no": 0,
+                "yes": 1,
+                "option 1": 0,
+                "option 2": 1
+            }
+        },
+        {
+            "col_name": "clinic_offering_unable_prior_minigrid",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "clinic_open_hours",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "clinic_refrigeration_access",
+            "col_enc_map": {
+                "no": 0,
+                "yes": 1,
+                "option 1": 0,
+                "option 2": 1
+            }
+        },
+        {
+            "col_name": "clinic_travel_distance",
+            "col_enc_map": {
+                "no travel": 0,
+                "less_than_1_km": 1,
+                "between_1_2_km": 2,
+                "between_2_3_km": 3,
+                "between_3_5_km": 4,
+                "greater_than_5_km": 5
+            }
+        },
+        {
+            "col_name": "clinic_travel_distance",
+            "col_enc_map": {
+                "no travel": 0,
+                "less_than_1_km": 1,
+                "between_1_2_km": 2,
+                "between_2_3_km": 3,
+                "between_3_5_km": 4,
+                "greater_than_5_km": 5
+            }
+        },
+        {
+            "col_name": "closed_operations_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "community_clean_water_source",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "community_lights",
+            "col_enc_map": {
+                "no": 0,
+                "yes": 1
+            }
+        },
+        {
+            "col_name": "connection_period",
+            "col_enc_map": {
+                "less_than_6_months": 1,
+                "6_12_months": 2,
+                "1_2_years": 3,
+                "longer_than_2": 4
+            }
+        },
+        {
+            "col_name": "connection_period_initial",
+            "col_enc_map": {
+                "0_3_months": 1,
+                "3_6_months": 2,
+                "6_12_months": 3,
+                "12_24_months": 4,
+                "24_36_months": 5,
+                "over_36_months": 6
+            }
+        },
+        {
+            "col_name": "connection_period",
+            "col_enc_map": {
+                "less_than_6_months": 1,
+                "6_12_months": 2,
+                "1_2_years": 3,
+                "longer_than_2": 4
+            }
+        },
+        {
+            "col_name": "connection_period",
+            "col_enc_map": {
+                "0_3_months": 1,
+                "3_6_months": 2,
+                "6_12_months": 3,
+                "12_24_months": 4,
+                "24_36_months": 5,
+                "over_36_months": 6
+            }
+        },
+        {
+            "col_name": "connection_period_non_original_subscriber",
+            "col_enc_map": {
+                "0_3_months": 1,
+                "3_6_months": 2,
+                "6_12_months": 3,
+                "12_24_months": 4,
+                "more_than_24_months": 5
+            }
+        },
+        {
+            "col_name": "cooking_energy_cost",
+            "col_enc_map": {
+                "nothing": 1,
+                "0_1000_nkes": 2,
+                "1000_1500_nkes": 3,
+                "1500_2000_nkes": 4,
+                "2000_3000_nkes": 5,
+                "3000_4000_nkes": 6
+            }
+        },
+        {
+            "col_name": "cooking_energy_sources",
+            "col_enc_map": {
+                "charcoal": 1,
+                "kerosene": 2,
+                "firewood": 3,
+                "biomass": 4,
+                "minigrid_electricity_renewvia": 5,
+                "other": 6
+            }
+        },
+        {
+            "col_name": "cooking_energy_sources_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "cooking_energy_sources_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "cooking_energy_sources_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "cooking_energy_sources_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "cooking_fuel_collection_time",
+            "col_enc_map": {
+                "no_need_to_collect_fuel": 1,
+                "less_than_1_hour": 2,
+                "1_2_hours": 3,
+                "3_5_hours": 4,
+                "greater_than_5_hours": 5
+            }
+        },
+        {
+            "col_name": "cooking_fuel_responsible",
+            "col_enc_map": {
+                "adult_male": 1,
+                "adult_female": 2,
+                "child_male": 3,
+                "child_female": 4,
+                "whole_family": 5
+            }
+        },
+        {
+            "col_name": "country",
+            "col_enc_map": {
+                "nigeria": 1,
+                "kenya": 2
+            }
+        },
+        {
+            "col_name": "country_id",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "diesel_usage_change",
+            "col_enc_map": {
+                "yes_it_has_increased": 1,
+                "yes_it_has_decreased": -1,
+                "no_it_is_pretty_much_the_same": 0
+            }
+        },
+        {
+            "col_name": "earnings_change",
+            "col_enc_map": {
+                "yes_they_have_increased": 1,
+                "yes_they_have_decreased": -1,
+                "no_it_is_pretty_much_the_same": 0
+            }
+        },
+        {
+            "col_name": "employement_type",
+            "col_enc_map": {
+                "seasonal_self_employed": 1,
+                "seasonal_non_self_employed": 2,
+                "regular_self_employed": 3,
+                "regular_non_self_employed": 4,
+                "unemployed": 5
+            }
+        },
+        {
+            "col_name": "end",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "end",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "end",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "exterior_lights_minigrid",
+            "col_enc_map": {
+                "no": 0,
+                "yes": 1,
+                "option 1": 0,
+                "option 2": 1
+            }
+        },
+        {
+            "col_name": "feel_safe_dark",
+            "col_enc_map": {
+                "very_safe": 1,
+                "somewhat_safe": 2,
+                "neither_safe_nor_unsafe": 3,
+                "somewhat_unsafe": 4,
+                "very_unsafe": 5
+            }
+        },
+        {
+            "col_name": "feel_safe_if_exterior_lights",
+            "col_enc_map": {
+                "very_safe": 1,
+                "somewhat_safe": 2,
+                "neither_safe_nor_unsafe": 3,
+                "somewhat_unsafe": 4,
+                "very_unsafe": 5
+            }
+        },
+        {
+            "col_name": "feel_safe_if_exterior_lights",
+            "col_enc_map": {
+                "very_safe": 1,
+                "somewhat_safe": 2,
+                "neither_safe_nor_unsafe": 3,
+                "somewhat_unsafe": 4,
+                "very_unsafe": 5
+            }
+        },
+        {
+            "col_name": "feel_safer_with_minigrid",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "feel_safer_with_minigrid",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "feel_unsafe_reasons",
+            "col_enc_map": {
+                "potential_theft": 1,
+                "unsafe_travel_to_obtain_water_supplies_or_charging_phones": 2,
+                "unsafe_travel_to_obtain_water_supplies_and_charging_phones": 2,
+                "unsafe_travel": 2,
+                "lack_of_community_lighting": 4,
+                "other": 5,
+                "i_dont_feel_unsafe": 6
+            }
+        },
+        {
+            "col_name": "feel_unsafe_reasons_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "feel_unsafe_reasons_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "feel_unsafe_reasons_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "feel_unsafe_reasons_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "first_name",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "first_name",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "gender",
+            "col_enc_map": {
+                "female": 1,
+                "male": 2
+            }
+        },
+        {
+            "col_name": "girls_age",
+            "col_enc_map": {
+                "1": 1,
+                "2": 2,
+                "3": 3,
+                "4": 4,
+                "5": 5,
+                "6": 6,
+                "7": 7,
+                "8": 8,
+                "9": 9,
+                "10": 10,
+                "11": 11,
+                "12": 12,
+                "13": 13,
+                "14": 14,
+                "15": 15,
+                "16": 16,
+                "older_than_16": 17
+            }
+        },
+        {
+            "col_name": "girls_headcount",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "girls_schooling",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "girls_schooling_change",
+            "col_enc_map": {
+                "yes_its_increased": 1,
+                "yes_its_decreased": -1,
+                "no_its_the_same": 0
+            }
+        },
+        {
+            "col_name": "girls_unschooled_reasons",
+            "col_enc_map": {
+                "they_all_attend_school": 1,
+                "they_all_attend_school_full_time": 1,
+                "household_chores": 2,
+                "lacking_money_for_school_fees": 3,
+                "health_reasons": 4,
+                "childcare": 5,
+                "not_old_enough": 6,
+                "too_old": 7,
+                "other": 8
+            }
+        },
+        {
+            "col_name": "girls_unschooled_reasons_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "girls_unschooled_reasons_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "girls_unschooled_reasons_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "girls_unschooled_reasons_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "health_offering_change",
+            "col_enc_map": {
+                "clinic_can_see_more_patients": 1,
+                "wait_times_are_shorter": 2,
+                "clinic_stays_open_longer_hours": 3,
+                "clinic_now_has_a_refrigerator_for_vaccines": 4,
+                "none_of_these": 0
+            }
+        },
+        {
+            "col_name": "home_exterior_lights",
+            "col_enc_map": {
+                "no": 0,
+                "yes": 1,
+                "option 1": 0,
+                "option 2": 1
+            }
+        },
+        {
+            "col_name": "household_income_change",
+            "col_enc_map": {
+                "yes_its_increased": 1,
+                "yes_its_decreased": -1,
+                "no_it_is_the_same": 0
+            }
+        },
+        {
+            "col_name": "household_income_change",
+            "col_enc_map": {
+                "yes_it_has_increased": 1,
+                "yes_it_has_decreased": -1,
+                "no_it_has_the_same": 0
+            }
+        },
+        {
+            "col_name": "household_income_change_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "household_income_change_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "household_business_owners",
+            "col_enc_map": {
+                "none": 1,
+                "adult_male": 2,
+                "adult_female": 3
+            }
+        },
+        {
+            "col_name": "household_headcount",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "household_headcount_change",
+            "col_enc_map": {
+                "yes_its_increased": 1,
+                "yes_its_decreased": -1,
+                "no_it_has_stayed_the_same": 0
+            }
+        },
+        {
+            "col_name": "household_headcount_change_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "household_headcount_change_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "institution_name",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "interviewed_before",
+            "col_enc_map": {
+                "no": 0,
+                "yes": 1,
+                "option 1": 0,
+                "option 2": 1
+            }
+        },
+        {
+            "col_name": "kenya_community",
+            "col_enc_map": {
+                "kalobeyei_settlement": 1,
+                "kalobeyei_town": 2,
+                "ndeda": 3,
+                "ngurunit": 4,
+                "ringiti": 5,
+                "oyamo": 6,
+                "olkiramatian": 7,
+                "lomekwi": 8,
+                "katiko": 9,
+                "locheremoit": 10,
+                "kagintankori": 11,
+                "kapelbok": 12,
+                "lorengelup": 13,
+                "nakukulas": 14
+            }
+        },
+        {
+            "col_name": "kenya_community",
+            "col_enc_map": {
+                "kalobeyei_settlement": 1,
+                "kalobeyei_town": 2,
+                "ndeda": 3,
+                "ngurunit": 4,
+                "ringiti": 5,
+                "oyamo": 6,
+                "olkiramatian": 7,
+                "lomekwi": 8,
+                "katiko": 9,
+                "locheremoit": 10,
+                "kagintankori": 11,
+                "kapelbok": 12,
+                "lorengelup": 13,
+                "nakukulas": 14
+            }
+        },
+        {
+            "col_name": "kerosene_lamp_usage_change",
+            "col_enc_map": {
+                "yes_its_increased": 1,
+                "yes_its_decreased": -1,
+                "no_its_the_same": 0
+            }
+        },
+        {
+            "col_name": "kerosene_lamp_usage_time",
+            "col_enc_map": {
+                "we_dont_have_a_kerosene_lamp": 0,
+                "less_than_one_hour": 1,
+                "1_2_hours": 2,
+                "3_5_hours": 3,
+                "greater_than_5_hours": 4
+            }
+        },
+        {
+            "col_name": "kerosene_lamps_cost",
+            "col_enc_map": {
+                "nothing": 0,
+                "0_200_nkes": 1,
+                "200_600_nkes": 2,
+                "600_1000_nkes": 3,
+                "1000_1400_nkes": 4,
+                "1400_nkes_and_above": 5
+            }
+        },
+        {
+            "col_name": "kerosene_lamps_count",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "kerosene_lamps_count",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "kerosene_lamps_count",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "kerosene_lamps_count",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "kerosene_usage_change",
+            "col_enc_map": {
+                "yes_it_has_increased": 1,
+                "yes_it_has_decreased": -1,
+                "no_it_is_pretty_much_the_same": 0
+            }
+        },
+        {
+            "col_name": "last_name",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "last_name",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "light_hours_current",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "light_hours_current",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "light_hours_current",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "light_primary_sources",
+            "col_enc_map": {
+                "battery_powered_flashlighttorch": 1,
+                "electric_source_phone_light_electric_lightbulb": 2,
+                "kerosene_source_kerosene_lamps": 3
+            }
+        },
+        {
+            "col_name": "location",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "minigrid_access_life_family_impact",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "minigrid_access_life_improvement",
+            "col_enc_map": {
+                "yes": 1,
+                "no_its_the_same": 0
+            }
+        },
+        {
+            "col_name": "minigrid_access_life_improvement_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "minigrid_access_life_improvement_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "minigrid_access_productivity_improvement",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "minigrid_benefits",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "minigrid_benefits",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "minigrid_effect_on_household_female",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "minigrid_problems",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "minigrid_signup_primary_reason",
+            "col_enc_map": {
+                "reliable_access_to_light": 1,
+                "ability_to_charge_mobile_phone(s": 2,
+                "possibility_to_purchase_a_tv": 3,
+                "safety_of_persons_physical": 4,
+                "security_of_property_home_possessions": 5,
+                "ability_to_earn_more_money": 6,
+                "ability_to_save_more_money": 7,
+                "increased_hours_of_productivity_business_studying_etc": 8,
+                "ability_to_start_a_new_business": 9
+            }
+        },
+        {
+            "col_name": "minigrid_signup_primary_reason",
+            "col_enc_map": {
+                "reliable_access_to_light": 1,
+                "ability_to_charge_mobile_phone(s": 2,
+                "possibility_to_purchase_a_tv": 3,
+                "safety_of_persons_physical": 4,
+                "security_of_property_home_possessions": 5,
+                "ability_to_earn_more_money": 6,
+                "ability_to_save_more_money": 7,
+                "increased_hours_of_productivity_business_studying_etc": 8,
+                "ability_to_start_a_new_business": 9
+            }
+        },
+        {
+            "col_name": "minigrid_signup_secondary_reason",
+            "col_enc_map": {
+                "reliable_access_to_light": 1,
+                "ability_to_charge_mobile_phones": 2,
+                "possibility_to_purchase_a_tv": 3,
+                "safety_of_persons_physical": 4,
+                "security_of_property_home_possessions": 5,
+                "ability_to_earn_more_money": 6,
+                "ability_to_save_more_money": 7,
+                "increased_hours_of_productivity_business_studying_etc": 8,
+                "ability_to_start_a_business": 9
+            }
+        },
+        {
+            "col_name": "minigrid_signup_secondary_reason",
+            "col_enc_map": {
+                "reliable_access_to_light": 1,
+                "ability_to_charge_mobile_phones": 2,
+                "possibility_to_purchase_a_tv": 3,
+                "safety_of_persons_physical": 4,
+                "security_of_property_home_possessions": 5,
+                "ability_to_earn_more_money": 6,
+                "ability_to_save_more_money": 7,
+                "increased_hours_of_productivity_business_studying_etc": 8,
+                "ability_to_start_a_business": 9
+            }
+        },
+        {
+            "col_name": "new_prod_serv_add_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "nigeria_community",
+            "col_enc_map": {
+                "akipelai": 1,
+                "oloibiri": 2,
+                "ozuzu": 3,
+                "opu": 4,
+                "balep": 5,
+                "bendeghe_afi": 6,
+                "ekong_anaku": 7,
+                "emereoke": 9
+            }
+        },
+        {
+            "col_name": "nigeria_community",
+            "col_enc_map": {
+                "akipelai": 1,
+                "oloibiri": 2,
+                "ozuzu": 3,
+                "opu": 4,
+                "balep": 5,
+                "bendeghe_afi": 6,
+                "ekong_anaku": 7,
+                "emereoke": 9
+            }
+        },
+        {
+            "col_name": "non_renewvia_electrical_sources",
+            "col_enc_map": {
+                "no_just_renewvia_minigrid": 1,
+                "yes_diesel_generator": 2,
+                "yes_solar_home_kit": 3
+            }
+        },
+        {
+            "col_name": "occupation",
+            "col_enc_map": {
+                "farming": 1,
+                "fishing": 2,
+                "shopkeeper": 3,
+                "salonbarbershop": 4,
+                "trade_labor_welding_technician_electrician_carpenter_mechanic_etc": 5,
+                "driver": 6,
+                "religious_institution": 7,
+                "education": 8,
+                "ingo": 9,
+                "house_work_paid": 10,
+                "house_work_unpaid": 11,
+                "food_processing": 12,
+                "manual_labor_non_farming": 13,
+                "health_centerhospital": 14,
+                "cleaner": 15,
+                "security": 16,
+                "i_do_not_earn_income": 17
+            }
+        },
+        {
+            "col_name": "occupation_change",
+            "col_enc_map": {
+                "no": 0,
+                "yes": 1,
+                "option 1": 0,
+                "option 2": 1
+            }
+        },
+        {
+            "col_name": "occupation_change",
+            "col_enc_map": {
+                "no": 0,
+                "yes": 1,
+                "option 1": 0,
+                "option 2": 1
+            }
+        },
+        {
+            "col_name": "occupation_change_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "occupation_change_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "occupation_primary_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "occupation_secondary_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "occupation_secondary_provider",
+            "col_enc_map": {
+                "farming": 1,
+                "fishing": 2,
+                "shopkeeper": 3,
+                "salonbarbershop": 4,
+                "trade_labor_welding_technician_electrician_carpenter_mechanic_etc": 5,
+                "driver": 6,
+                "religious_institution": 7,
+                "education": 8,
+                "ingo": 9,
+                "house_work_paid": 10,
+                "house_work_unpaid": 11,
+                "food_processing": 12,
+                "manual_labor_non_farming": 13,
+                "health_centerhospital": 14,
+                "cleaner": 15,
+                "security": 16,
+                "i_do_not_earn_income": 17
+            }
+        },
+        {
+            "col_name": "operation_status",
+            "col_enc_map": {
+                "yes_we_are_still_operating": 1,
+                "no_its_closed": 0,
+                "no_it_closed": 0
+            }
+        },
+        {
+            "col_name": "operations_hours_change",
+            "col_enc_map": {
+                "yes_they_have_increased": 1,
+                "yes_they_have_decreased": -1,
+                "no_it_is_pretty_much_the_same": 0
+            }
+        },
+        {
+            "col_name": "original_person",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "other_household_activities",
+            "col_enc_map": {
+                "processing_ugaligari": 1,
+                "processing_alcohols": 2,
+                "processing_palm_oil": 3,
+                "other_food_processing": 4,
+                "sewing": 5,
+                "hair_cuttingsalon": 6
+            }
+        },
+        {
+            "col_name": "phone_charge_cost",
+            "col_enc_map": {
+                "nothing_we_use_minigrid_power": 0,
+                "0_100_nkes": 1,
+                "100_500_nkes": 2,
+                "500_750_nkes": 3,
+                "750_1000_nkes": 4,
+                "1000_nkes_and_above": 5,
+                "1000_n_and_above": 5
+            }
+        },
+        {
+            "col_name": "phone_charge_frequency",
+            "col_enc_map": {
+                "every_day": 1,
+                "every_1_2_days": 2,
+                "every_2_3_days": 3,
+                "every_4_or_more_days": 4
+            }
+        },
+        {
+            "col_name": "phone_charge_location",
+            "col_enc_map": {
+                "home": 1,
+                "neighbor": 2,
+                "shop": 3,
+                "other": 4
+            }
+        },
+        {
+            "col_name": "phone_charge_location_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "phone_charge_location_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "phone_charge_location_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "phone_charge_location_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "phone_charge_travel_distance",
+            "col_enc_map": {
+                "no travel": 0,
+                "less_than_1_km": 1,
+                "1_2_km": 2,
+                "2_5_km": 3,
+                "5_10_km": 4,
+                "greater_than_10_km": 5
+            }
+        },
+        {
+            "col_name": "power_current_sources_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "power_current_sources_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "power_current_sources_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "power_current_sources_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "power_primary_source_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "power_primary_source_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "power_primary_source_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "power_primary_source_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "power_sources",
+            "col_enc_map": {
+                "solar_home_kit": 1,
+                "charcoal": 2,
+                "kerosene_lamp": 3,
+                "petrol_generator": 4,
+                "diesel_generator": 5,
+                "candles": 6,
+                "minigrid_electricity_renewvia": 7,
+                "other": 8
+            }
+        },
+        {
+            "col_name": "power_sources",
+            "col_enc_map": {
+                "solar_home_kit": 1,
+                "charcoal": 2,
+                "kerosene_lamp": 3,
+                "petrol_generator": 4,
+                "diesel_generator": 5,
+                "candles": 6,
+                "minigrid_electricity_renewvia": 7,
+                "other": 8
+            }
+        },
+        {
+            "col_name": "power_sources",
+            "col_enc_map": {
+                "solar_home_kit": 1,
+                "charcoal": 2,
+                "kerosene_lamp": 3,
+                "petrol_generator": 4,
+                "diesel_generator": 5,
+                "candles": 6,
+                "minigrid_electricity_renewvia": 7,
+                "other": 8
+            }
+        },
+        {
+            "col_name": "power_sources_primary",
+            "col_enc_map": {
+                "solar_home_kit": 1,
+                "charcoal": 2,
+                "kerosene_lamp": 3,
+                "petrol_generator": 4,
+                "diesel_generator": 5,
+                "candles": 6,
+                "minigrid_electricity_renewvia": 7
+            }
+        },
+        {
+            "col_name": "power_sources_primary",
+            "col_enc_map": {
+                "solar_home_kit": 1,
+                "charcoal": 2,
+                "kerosene_lamp": 3,
+                "petrol_generator": 4,
+                "diesel_generator": 5,
+                "candles": 6,
+                "minigrid_electricity_renewvia": 7
+            }
+        },
+        {
+            "col_name": "power_sources_usage",
+            "col_enc_map": {
+                "less_than_2_hours": 1,
+                "between_2_5_hours": 2,
+                "between_5_8_hours": 3,
+                "more_than_8_hours": 4
+            }
+        },
+        {
+            "col_name": "power_sources_usage",
+            "col_enc_map": {
+                "less_than_2_hours": 1,
+                "between_2_and_5_hours": 2,
+                "between_5_and_8_hours": 3,
+                "more_than_8_hours": 4
+            }
+        },
+        {
+            "col_name": "primary_provider",
+            "col_enc_map": {
+                "no": 0,
+                "yes": 1,
+                "option 1": 0,
+                "option 2": 1
+            }
+        },
+        {
+            "col_name": "primary_provider",
+            "col_enc_map": {
+                "no": 0,
+                "yes": 1,
+                "option 1": 0,
+                "option 2": 1
+            }
+        },
+        {
+            "col_name": "primary_provider_occupation",
+            "col_enc_map": {
+                "farming": 1,
+                "fishing": 2,
+                "shopkeeper": 3,
+                "salonbarbershop": 4,
+                "trade_labor_welding_technician_electrician_carpenter_mechanic_etc": 5,
+                "driver": 6,
+                "religious_instituition": 7,
+                "education": 8,
+                "ingo": 9,
+                "house_work_paid": 10,
+                "house_work_unpaid": 11,
+                "food_processing": 12,
+                "manual_labor_non_farming": 13,
+                "health_centerhospital": 14,
+                "cleaner": 15,
+                "security": 16,
+                "not_currently_employed": 17,
+                "other": 18,
+                "religious_institution": 19,
+                "other_business": 20
+            }
+        },
+        {
+            "col_name": "primary_provider_occupation",
+            "col_enc_map": {
+                "farming": 1,
+                "fishing": 2,
+                "shopkeeper": 3,
+                "salonbarbershop": 4,
+                "trade_labor_welding_technician_electrician_carpenter_mechanic_etc": 5,
+                "driver": 6,
+                "religious_instituition": 7,
+                "education": 8,
+                "ingo": 9,
+                "house_work_paid": 10,
+                "house_work_unpaid": 11,
+                "food_processing": 12,
+                "manual_labor_non_farming": 13,
+                "health_centerhospital": 14,
+                "cleaner": 15,
+                "security": 16,
+                "not_currently_employed": 17,
+                "other": 18,
+                "religious_institution": 19
+            }
+        },
+        {
+            "col_name": "renewvia_id",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "renewvia_id",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "school_attendance_change",
+            "col_enc_map": {
+                "yes_we_have_seen_overall_greater_attendance": 1,
+                "no_we_have_not_noticed_a_change": 0
+            }
+        },
+        {
+            "col_name": "school_offering_unable_prior_minigrid",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "school_performance",
+            "col_enc_map": {
+                "yes_overall_school_performance_is_better": 1,
+                "yes_overall_school_performance_is_worse": -1,
+                "no_there_has_not_been_a_noticeable_change": 0
+            }
+        },
+        {
+            "col_name": "school_performance_change",
+            "col_enc_map": {
+                "yes_its_gotten_worse": -1,
+                "no_there_has_not_been_a_noticeable_change": 0,
+                "yes_overall_school_performance_is_better": 1
+            }
+        },
+        {
+            "col_name": "school_performance_change_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "school_performance_change_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "start",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "start",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "status",
+            "col_enc_map": {
+                "pre_connection": 0,
+                "post_connection": 1
+            }
+        },
+        {
+            "col_name": "water_collection_responsible",
+            "col_enc_map": {
+                "adult_male": 1,
+                "adult_female": 2,
+                "child_male": 3,
+                "child_female": 4
+            }
+        },
+        {
+            "col_name": "water_collection_time",
+            "col_enc_map": {
+                "less_than_1_hour": 1,
+                "1_2_hours": 2,
+                "2_3_hours": 3,
+                "3_4_hours": 4,
+                "greater_than_4_hours": 5
+            }
+        },
+        {
+            "col_name": "water_collection_travel_distance",
+            "col_enc_map": {
+                "no travel": 0,
+                "less_than_1_km": 1,
+                "1_2_km": 2,
+                "2_5_km": 3,
+                "5_10_km": 4,
+                "greater_than_10_km": 5
+            }
+        },
+        {
+            "col_name": "water_cost",
+            "col_enc_map": {
+                "i_dont_pay_its_free": 0,
+                "0_500_nkes": 1,
+                "500_3000_nkes": 2,
+                "3000_5000_nkes": 3,
+                "5000_nkes_and_above": 4
+            }
+        },
+        {
+            "col_name": "water_source",
+            "col_enc_map": {
+                "at_home_tap": 1,
+                "community_well_or_pump": 2,
+                "clear_water_source_fresh_spring_lake_etc.": 1,
+                "dirty_water_source_pond_contaminated_well_etc": 0,
+                "clear_water": 1,
+                "dirty_water": 0
+            }
+        },
+        {
+            "col_name": "workforce_change",
+            "col_enc_map": {
+                "yes_we_have_added_workers": 1,
+                "yes_we_have_lost_workers": -1,
+                "no_the_number_has_remained_the_same": 0
+            }
+        },
+        {
+            "col_name": "workforce_change_explain",
+            "col_enc_map": {}
+        },
+        {
+            "col_name": "workforce_change_female",
+            "col_enc_map": {}
+        }
+    ]
+}

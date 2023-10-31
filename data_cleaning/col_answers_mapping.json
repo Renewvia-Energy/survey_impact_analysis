@@ -188,6 +188,7 @@
       "old_name": "What is approximate monthly cost of energy used strictly for charging appliances?",
       "new_name": "applicances_charging_cost",
       "mapping": {
+        "nothing - we use minigrid power": "nothing we use minigrid power",
         "nkes": "0-150 N/KES",
         "copy-1-of-nkes": "150-1000 N/KES",
         "copy-2-of-nkes": "1000-3000 N/KES",
@@ -199,6 +200,7 @@
       "old_name": "What is the approximate monthly cost of energy used strictly for charging appliances?",
       "new_name": "applicances_charging_cost",
       "mapping": {
+        "nothing - we use minigrid power": "nothing we use minigrid power",
         "nkes": "0-150 N/KES",
         "copy-1-of-nkes": "150-1000 N/KES",
         "copy-2-of-nkes": "1000-3000 N/KES",
@@ -616,6 +618,7 @@
       "old_name": "What is the approximate monthly cost of energy used strictly for cooking?",
       "new_name": "cooking_energy_cost",
       "mapping": {
+        "nothing - we use minigrid power": "nothing we use minigrid power",
         "nkes": "0-1000 N/KES",
         "copy-1-of-nkes": "1000-1500 N/KES",
         "copy-2-of-nkes": "1500-2000 N/KES",
@@ -1442,6 +1445,7 @@
       "old_name": "How much do you pay per month to charge your mobile phone?",
       "new_name": "phone_charge_cost",
       "mapping": {
+        "nothing - we use minigrid power": "nothing we use minigrid power",
         "nkes": "0-100 N/KES",
         "copy-1-of-nkes": "100-500 N/KES",
         "copy-2-of-nkes": "500-750 N/KES",

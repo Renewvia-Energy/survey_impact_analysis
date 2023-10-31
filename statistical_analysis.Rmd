@@ -200,12 +200,15 @@ get_stats <- function(data, ct, var_name,data_source,
 
 ```{r}
 remove_y <- theme(
-  # axis.text.x = element_blank(),
-  # axis.ticks.x = element_blank(),
-  # axis.title.x = element_blank(),
   axis.text.y = element_blank(),
   axis.ticks.y = element_blank(),
   axis.title.y = element_blank()
+)
+
+remove_x <- theme(
+  axis.text.x = element_blank(),
+  axis.ticks.x = element_blank(),
+  axis.title.x = element_blank()
 )
 ```
 
@@ -214,7 +217,8 @@ remove_y <- theme(
 ```{r}
 # For pie and bar charts
 plot_func <- function(df, var_name, var_type, 
-                      plot_title, plot_type, char_remove=NULL,
+                      plot_title, lgd, plot_type, 
+                      char_remove=NULL,
                       remove_outliers = FALSE) {
   if(is.null(char_remove) == FALSE) {
     df <- df %>% filter(.data[[var_name]] != char_remove)
@@ -242,36 +246,51 @@ plot_func <- function(df, var_name, var_type,
       setnames(data, 
                old = c('var','Freq'), 
                new = c('labels','counts'))
-    
-
-      
+      # print(data)
+      data_tab <- data %>% mutate(csum = rev(cumsum(rev(counts))),
+                       pos = counts/2 + lead(csum, 1),
+                       pos = if_else(is.na(pos), counts/2, pos),
+                       percentage = counts/sum(counts))
+      data_tab$labels <- as.factor(data_tab$labels)
       if (plot_type == 'pie') {
-          data_tab <- data %>% mutate(csum = rev(cumsum(rev(counts))),
-                                 pos = counts/2 + lead(csum, 1),
-                                 pos = if_else(is.na(pos), counts/2, pos),
-                                 percentage = counts/sum(counts))
-          data_tab$labels <- as.factor(data_tab$labels)
-          plot <- data_tab %>% ggplot(aes(x = "", y = counts, fill = labels)) +
+          plot <- data_tab %>% ggplot(aes(x = "", y = counts, 
+                                          fill = labels)) +
                               geom_col(width = 1, color = 1) +
                               geom_label_repel(
                                 aes(y = pos,
                                     label = glue("{counts} ({percent(percentage)})"),
                                      fill = labels),
                                     show.legend = FALSE) +
-                              labs(fill = var_name, title=plot_title) +
+                              labs(fill = lgd, title=plot_title) +
                               coord_polar(theta = "y") +
                               theme_void() + 
                               theme(legend.text=element_text(size=6))
-      } else if (plot_type == "bar") {
-          plot <- data %>% ggplot(aes(y=counts, 
-                                      x=reorder(labels, counts), 
-                                      fill=labels)) + 
+      } else if (plot_type == "bar_simple") {
+          plot <- data %>% ggplot(aes(y=counts,
+                                      x=reorder(labels, counts),
+                                      fill=labels)) +
                             geom_col(width = 0.7) +
                             geom_text(aes(label=counts), vjust=-0.3, size=3)+
-                            labs(fill = var_name, title=plot_title) + 
-                            coord_flip() + 
+                            labs(fill = lgd, title=plot_title) +
+                            coord_flip() +
                             theme(legend.text=element_text(size=6))
-      } else if (plot_type == "bar_discrete") {
+         
+      } else if(plot_type == "bar_stack"){
+        
+         plot <- data_tab %>% ggplot(aes(x = "", y = counts, 
+                                  fill = labels)) +
+                      geom_col(width = 1, color = 1) +
+                      geom_label_repel(
+                        aes(y = pos,
+                            label = glue("{counts} ({percent(percentage)})"),
+                             fill = labels),
+                            show.legend = FALSE) +
+                      labs(fill = lgd, title=plot_title) +
+                      # coord_polar(theta = "y") +
+                      theme_void() + 
+                      theme(legend.text=element_text(size=6))
+      }
+        else if (plot_type == "bar_discrete") {
           plot <- data %>% ggplot(aes(y=counts, x=labels)) + 
                             geom_col(width = 0.7) +
                             labs(title=plot_title, x = var_name) 
@@ -301,20 +320,49 @@ plot_func <- function(df, var_name, var_type,
 }
 ```
 
-### Pre-Post Comparison
+### General Comparison
 
 ```{r}
-compare_pre_post <- function(var_name, var_type, subplot_type, title, 
-                             exclude_outliers = FALSE,
+generic_compare <- function(data, var_type, var1, var2, 
+                          var1_title, var2_title, 
+                          subplot_type, plot_title,
+                          lgd_title, 
+                          char_remove=NULL){
+  var1_plot <- plot_func(data, var1, var_type, lgd = lgd_title,
+                          var1_title, subplot_type, char_remove)
+  var2_plot <- plot_func(data, var2, var_type,lgd = lgd_title,
+                          var2_title, subplot_type, char_remove)
+  if (subplot_type == "bar_simple" || subplot_type == "bar_stack") {
+        plot <- ggarrange(var2_plot + remove_y, var1_plot + remove_y, 
+                          ncol = 2,  nrow = 1, 
+                          common.legend = TRUE,legend="bottom")
+  } else {
+        plot <- ggarrange(var2_plot, var1_plot, 
+                        ncol = 2, nrow = 1, 
+                        common.legend = TRUE,
+                        legend="right")
+  }
+  
+  return(annotate_figure(plot, top = text_grob(plot_title, 
+                 color = "black", face = "bold", size = 12)))
+}
+```
+
+### Comparison Unpaired Post-Pre
+
+```{r}
+compare_pre_post <- function(df_pre, df_post,
+                             var_name, var_type, subplot_type, title, 
+                             exclude_outliers = FALSE, lgd_title,
                              char_remove=NULL, shared_legend=TRUE) {
 
-  pre_plot <- plot_func(initial_pre, var_name, var_type,
-                         "Initial", subplot_type, 
+  pre_plot <- plot_func(df_pre, var_name, var_type,
+                         "Initial", subplot_type, lgd = lgd_title,
                         char_remove, remove_outliers=exclude_outliers)
-  post_plot <- plot_func(post_clean, var_name, var_type,
-                          "Post", subplot_type, 
+  post_plot <- plot_func(df_post, var_name, var_type,
+                          "Post", subplot_type, lgd = lgd_title,
                          char_remove, remove_outliers=exclude_outliers)
-  if (subplot_type == "bar") {
+  if (subplot_type == "bar_simple" || subplot_type == "bar_stack") {
         plot <- ggarrange(post_plot + remove_y, pre_plot + remove_y, 
                           ncol = 2,  nrow = 1, 
                           common.legend = shared_legend,legend="bottom")
@@ -332,31 +380,74 @@ compare_pre_post <- function(var_name, var_type, subplot_type, title,
 }
 ```
 
-### Comparison in same data
+### Comparison Paired Post-Pre
 
 ```{r}
-compare_in_df <- function(data, var1, var2, 
-                            var1_title, var2_title, 
-                            subplot_type, plot_title,
-                          var_type,
+compare_paired <- function(data, var_name, view,
+                           lgd_title, plot_title,
                           char_remove=NULL){
-  var1_plot <- plot_func(data, var1, var_type,
-                          var1_title, subplot_type, char_remove)
-  var2_plot <- plot_func(data, var2, var_type,
-                          var2_title, subplot_type, char_remove)
-  if (subplot_type == "bar") {
-        plot <- ggarrange(var2_plot + remove_y, var1_plot + remove_y, 
+    var_pre <- as.factor(data[,paste(var_name, "pre", sep="_")])
+    var_post <- as.factor(data[,paste(var_name, "post", sep="_")])
+    x <- list(labels = c(unique(var_post[is.na(var_post) == FALSE])))
+    paired_df <- as.data.frame(x)
+    counts_post <- as.data.frame(t(table(var_post)))[,2:3]
+    props_post <- as.data.frame(prop.table(table(var_post)))
+    setnames(counts_post,
+             old = c('var_post','Freq'),
+             new = c('labels','counts_post'))
+    setnames(props_post,
+             old = c('var_post','Freq'),
+             new = c('labels','props_post'))
+    
+    counts_pre <- as.data.frame(t(table(var_pre)))[,2:3]
+    props_pre <- as.data.frame(prop.table(table(var_pre)))
+    setnames(counts_pre,
+             old = c('var_pre','Freq'),
+             new = c('labels','counts_pre'))
+    setnames(props_pre,
+         old = c('var_pre','Freq'),
+         new = c('labels','props_pre'))
+    
+    df_list <- list(paired_df, counts_post, counts_pre, props_pre, props_post)
+    merged <- df_list %>% reduce(left_join, by='labels')
+    merged <- merged %>% replace(is.na(.), 0)
+    merged$diff_counts <- merged$counts_post - merged$counts_pre
+    merged$diff_props <- merged$props_post - merged$props_pre
+    merged$count_change <- merged$diff_counts/merged$counts_pre
+    print(merged)
+    
+    # side_plot <- 
+    count_plot <- merged %>% ggplot(aes(x = labels, y = diff_counts)) +
+                      geom_bar(aes(fill = labels), stat="identity") +
+                      geom_label_repel(
+                        aes(label = 
+                              glue("{diff_counts} ({percent(count_change)})"),
+                            fill = labels),
+                            show.legend = FALSE) +
+                      labs(fill = lgd_title, 
+                           y="Difference in Counts") +
+                        theme(legend.text=element_text(size=6)) + 
+                        remove_x
+    
+    prop_plot <- merged %>% ggplot(aes(x = labels, y = diff_props)) +
+                  geom_bar(aes(fill = labels), stat="identity") +
+                  geom_label_repel(
+                    aes(label = 
+                          glue("{percent(diff_props)}"),
+                        fill = labels),
+                        show.legend = FALSE) +
+                  labs(fill = lgd_title,  
+                       y="Difference in Proportions") +
+                    theme(legend.text=element_text(size=6)) + 
+                    remove_x
+    
+    plot <- ggarrange(count_plot, prop_plot,
                           ncol = 2,  nrow = 1, 
                           common.legend = TRUE,legend="bottom")
-  } else {
-        plot <- ggarrange(var2_plot, var1_plot, 
-                        ncol = 2, nrow = 1, 
-                        common.legend = TRUE,
-                        legend="right")
-  }
-      
-  return(annotate_figure(plot, top = text_grob(plot_title, 
-                 color = "black", face = "bold", size = 12)))
+
+    return(annotate_figure(plot, 
+                         top = text_grob(plot_title, color = "black", 
+                                         face = "bold", size = 12)))
 }
 ```
 
@@ -365,7 +456,8 @@ compare_in_df <- function(data, var1, var2,
 ```{r}
 # Running the paired t-test
 paired_testing <- function(data, var_name, test_type, 
-                           plot_diff=FALSE, plot_title=NULL, remove_outliers=FALSE) {
+                           plot_diff=FALSE, plot_title=NULL, 
+                           remove_outliers=FALSE) {
   pre_name <- paste(var_name, "pre", sep="_")
   post_name <- paste(var_name, "post", sep="_")
   
@@ -420,18 +512,47 @@ paired_testing <- function(data, var_name, test_type,
 
 ```{r}
 plot_reg <- function(data, feature, dependent, 
-                     remove_outliers=TRUE, reg_type, 
-                     vals_remove=NULL) {
+                     remove_outliers=TRUE, which_outliers="all" ,
+                     reg_type, vals_remove=NULL) {
   
   if(is.null(vals_remove) == FALSE) {
     data <- data[!grepl(vals_remove,data$dependent),]
   }
-  if(remove_outliers == TRUE) {
-    vars <- c(feature, dependent) 
-    for(var in vars){
-      quartiles <- quantile(data[, var], 
-                        probs=c(.25, .75), na.rm = TRUE)
   
+  if(remove_outliers == TRUE) {
+    if(which_outliers=="all") {
+      vars <- c(feature, dependent) 
+      for(var in vars){
+        quartiles <- quantile(data[, var], 
+                          probs=c(.25, .75), na.rm = TRUE)
+      
+        IQR <- IQR(data[, var], na.rm = TRUE)
+        
+        Lower <- quartiles[1] - 1.5*IQR
+        Upper <- quartiles[2] + 1.5*IQR 
+        
+        data <- subset(data, 
+                       data[, var] > Lower &
+                       data[, var] < Upper)
+      }
+    }else if(which_outliers=="dependent"){
+      var <- dependent
+      quartiles <- quantile(data[, var], 
+                          probs=c(.25, .75), na.rm = TRUE)
+      
+      IQR <- IQR(data[, var], na.rm = TRUE)
+      
+      Lower <- quartiles[1] - 1.5*IQR
+      Upper <- quartiles[2] + 1.5*IQR 
+      
+      data <- subset(data, 
+                     data[, var] > Lower &
+                     data[, var] < Upper)
+    }else if(which_outliers=="feature"){
+      var <- feature
+      quartiles <- quantile(data[, var], 
+                          probs=c(.25, .75), na.rm = TRUE)
+      
       IQR <- IQR(data[, var], na.rm = TRUE)
       
       Lower <- quartiles[1] - 1.5*IQR
@@ -441,8 +562,8 @@ plot_reg <- function(data, feature, dependent,
                      data[, var] > Lower &
                      data[, var] < Upper)
     }
-    
   }
+  
   if(reg_type == "linear") {
     plot <- ggplot(data,
                 aes(x=.data[[feature]], y=.data[[dependent]])) +
@@ -462,13 +583,14 @@ plot_reg <- function(data, feature, dependent,
 }
 ```
 
-### Community Ind. Variables
+### Community Variables
 
 ```{r}
 ind_vars <- c("pv_size_kwh", "customer_count", "capex_usd", "consumption")
 
 community_reg <- function(df, col_name, dep, title, 
-                          var_type, calc_diff=FALSE, to_remove=NULL) {
+                          var_type, calc_diff=FALSE, 
+                          to_remove=NULL, outliers) {
   if (calc_diff == TRUE) {
       pre_name <- paste(col_name, "pre", sep="_")
       post_name <- paste(col_name, "post", sep="_")
@@ -480,33 +602,37 @@ community_reg <- function(df, col_name, dep, title,
   
   if(var_type == "categorical") {
     data <- rownames_to_column(as.data.frame.matrix(
-                                  prop.table(table(
-                                      df[, "community"], 
-                                      df[, "col_reg"]),
-                                     margin = 1)
-                                              )
-                                  , var = "community")
+                                  table(df[, "community"], 
+                                        df[, "col_reg"])), 
+                               var = "community")
   } else if(var_type == "ratio") {
     data <- as.data.frame(rowsum(df[, "col_reg"], 
                                  df[, "community"], na.rm = TRUE))
     data$community <- rownames(data)
-    print(data)
     
     
   }
   community_data <- merge(x=projects, y=data, by="community")
+  print(community_data)
   lst <- list()
   
    for(ind in ind_vars) {
         print(ind)
           p <- plot_reg(data=community_data, feature=ind,  
-                        dependent=dep, reg_type="linear", vals_remove=to_remove)
+                        dependent=dep, reg_type="linear",
+                        which_outliers = outliers,
+                        vals_remove=to_remove)
           lst <- append(lst, list(p))
-          lm <- lm(community_data[,dep] ~ community_data[,ind])
-          details <- summary(lm)
-          result <- as.data.frame(details$coefficients, row.names = c("Intercept", ind))
-          print(details)
-          print(confint(lm, level=0.95))
+          # lm <- lm(community_data[,dep] ~ community_data[,ind])
+          # details <- summary(lm)
+          # result <- as.data.frame(details$coefficients, 
+          #                         row.names = c("Intercept", ind))
+          # print(details)
+          # print(confint(lm, level=0.95))
+          pearson_test <- cor.test(community_data[,dep], 
+                           community_data[,ind], 
+                           method="pearson")
+          print(pearson_test)
       }
   plot <- ggarrange(plotlist = lst, 
                     ncol = 2, nrow = 2, 
@@ -522,7 +648,8 @@ community_reg <- function(df, col_name, dep, title,
 
 ```{r}
 consumption_reg <- function(df, dep, title, reg_type, 
-                            calc_diff=FALSE, exclude_outliers = FALSE, 
+                            calc_diff=FALSE, outliers=NULL, 
+                            exclude_outliers = FALSE, 
                             to_remove=NULL) {
 
   if(reg_type == "linear") {
@@ -538,7 +665,12 @@ consumption_reg <- function(df, dep, title, reg_type,
     p <- plot_reg(data=df, feature="Energy.Consumption",  
                   dependent="col_reg", reg_type="linear", 
                   remove_outliers=exclude_outliers, 
+                  which_outliers = outliers,
                   vals_remove=to_remove)
+    pearson_test <- cor.test(df$col_reg, 
+                           df$Energy.Consumption, 
+                           method="pearson")
+    print(pearson_test)
     
   } else if(reg_type == "logistic") {
     model <- glm(df[,dep] ~ df$Energy.Consumption, 
@@ -546,14 +678,12 @@ consumption_reg <- function(df, dep, title, reg_type,
     p <- plot_reg(data=df, feature="Energy.Consumption",  
                   dependent=dep, reg_type="logistic", 
                   remove_outliers=exclude_outliers,
+                  which_outliers = outliers,
                   vals_remove=to_remove)
     test <- wald.test(Sigma = vcov(model), 
                       b = coef(model), Terms = 1)
     print(test)
   }
-  
-  print(summary(model))
-  print(confint(model, level=0.95))
   
   return(p)
   
@@ -568,11 +698,13 @@ consumption_reg <- function(df, dep, title, reg_type,
 
 ```{r}
 # What was the gender breakdown of survey respondents, pre and post?
-compare_pre_post(var_name="gender", var_type="non_cont",
-        subplot_type="pie", title="Gender Breakdown")
+compare_pre_post(df_pre=initial_pre, df_post=post_clean,
+                 var_name="gender", var_type="non_cont",
+                 lgd_title ="Reasons",
+                 subplot_type="pie", title="Gender Breakdown")
 ```
 
-### School Enrollment
+### Pre-Connection School Enrollment
 
 ```{r}
 # What was school enrollment by gender pre-connection?
@@ -589,83 +721,261 @@ setnames(tab, old = c('V1','V2', 'V3'),
 tab
 ```
 
+### School Enrollment Change
+
 ```{r}
 # Was there a change in enrollment by gender afterwards?
-compare_in_df(data=post_clean, var_type="non_cont",
+generic_compare(data=post_clean, var_type="non_cont",
                var1="girls_schooling_change", 
                var2="boys_schooling_change", 
                var1_title="Girls", var2_title="Boys", 
                subplot_type="pie", plot_title="School Enrollment Change")
 ```
 
-### TODO:: Bar charts by groups, Chi-Square goodness of fit, proportions not counts
+### Reasons for (un)enrollment
+
+#### Girls' Schooling
 
 ```{r}
 # Dirving factor for non-enrollment in school for boys and girls
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean,
+                 var_name="girls_unschooled_reasons", 
+                 var_type="non_cont",
+                 lgd_title ="Reasons",
+                 subplot_type="bar_simple", 
+                 title="Unpaired - Girls Schooling: Reasons for non-enrollment")
+
 # For Girls
-compare_pre_post(var_name="girls_unschooled_reasons", var_type="non_cont", 
-        subplot_type="bar", title="Girls Schooling: Reasons for non-enrollment",
-        char_remove=c("they_all_attend_school", ""))
+compare_paired(data=paired_clean,
+               var_name="girls_unschooled_reasons",
+               lgd_title="Reasons",
+               plot_title="Girls Schooling: Reasons for non-enrollment")
 ```
+
+#### Boys' Schooling
 
 ```{r}
 # For Boys
-compare_pre_post(var_name="boys_unschooled_reasons",  var_type="non_cont",
-        subplot_type="bar", title="Boys Schooling: Reasons for non-enrollment",
-        char_remove=c("they_all_attend_school", ""))
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean,
+                 var_name="boys_unschooled_reasons", 
+                 var_type="non_cont",
+                 subplot_type="bar_simple", 
+                 title="Unpaired - Boys Schooling: Reasons for non-enrollment")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="boys_unschooled_reasons",
+               lgd_title="Reasons",
+               plot_title="Paired - Boys Schooling: Reasons for non-enrollment")
 ```
 
-### Household Chores
+### Houeshold Chores
+
+#### Water Collection - Responsibility
 
 ```{r}
 # What is the average age of the person in charge of water collection?
-compare_pre_post(var_name="avg_person_age_water_collection", var_type="non_cont",
-        subplot_type="bar", title="Age of Person Responsible for Cooking Fuel Collection") 
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean,
+                 var_name="avg_person_age_water_collection", 
+                 var_type="non_cont",
+                 lgd_title="Age Group",
+                 subplot_type="bar_simple", 
+                 title="Unpaired: Age of Person Responsible 
+                 for Water Collection")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="avg_person_age_water_collection",
+               lgd_title="Age Group",
+               plot_title="Paired: Age of Person Responsible 
+               for Water Collection")
 ```
+
+#### Is the person responsible school-aged?
 
 ```{r}
-# How many houses - subgroup with schol-age children getting water changes answers to 18_or_older? Binarize, school-aged (5-18) vs 18_and_older? Drop pairing, Side-by-side bars
-compare_in_df(data=paired_clean, var_type="non_cont", 
-               var1="avg_person_age_water_collection_pre", 
-               var2="avg_person_age_water_collection_post", 
-               var1_title="Pre", var2_title="Post", 
-               subplot_type="bar", plot_title="Avg. Age")
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean,
+                 var_name="water_collection_school_aged", 
+                 var_type="non_cont",
+                 subplot_type="pie",
+                 lgd_title="Is the person responsible school-aged?",
+                 title="Unpaired: Shcool-Aged Person responsible 
+                 for Water Collection")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="water_collection_school_aged",
+               lgd_title="Is the person responsible school-aged?",
+               plot_title="Paired: Shcool-Aged Person responsible 
+                 for Water Collection")
 ```
 
-### TODO: Female Businesses Ownership - Subgroup by country, community
+#### Water Collection Time
+
+```{r}
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean,
+                 var_name="water_collection_time", 
+                 var_type="non_cont",
+                 subplot_type="bar_simple",
+                 lgd_title="Time Intervals",
+                 title="Unpaired: Water Collection Time")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="water_collection_time",
+               lgd_title="Time Intervals",
+               plot_title="Paired: Water Collection Time")
+```
+
+#### Cooking Fuel Collection Time
+
+```{r}
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean,
+                 var_name="cooking_fuel_collection_time", 
+                 var_type="non_cont",
+                 subplot_type="bar_simple",
+                 lgd_title="Time Intervals",
+                 title="Unpaired: Cooking Fuel Collection Time")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="cooking_fuel_collection_time",
+               lgd_title="Time Intervals",
+               plot_title="Paired: Cooking Fuel Collection Time")
+```
+
+#### Cooking Fuel Collection - Are men involved?
+
+```{r}
+# unique(paired_clean$cooking_fuel_responsible_post)
+
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean,
+                 var_name="cooking_fuel_responsible_binary", 
+                 var_type="non_cont",
+                 subplot_type="pie",
+                 lgd_title="Are men involved?",
+                 title="Unpaired: Shcool-Aged Person responsible 
+                 for Cooking Fuel Collection")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="cooking_fuel_responsible_binary",
+               lgd_title="Are men involved?",
+               plot_title="Paired: Shcool-Aged Person responsible 
+                 for Cooking Fuel Collection")
+```
+
+### Female Businesses Ownership - Subgroup by country, community
 
 ```{r}
 # How many new women-led businesses were created?
-compare_pre_post(var_name="business_owners_female", var_type="non_cont", 
-        subplot_type="pie", title="Women Business Owners")
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean,
+                 var_name="business_owners_female", 
+                 var_type="non_cont", 
+                 lgd_title = "Is there a woman business owner?",
+                  subplot_type="pie", 
+                  title="Unpaired - Women Business Owners")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="business_owners_female",
+               lgd_title="Is there a woman business owner?",
+               plot_title="Paired: Women Business Owners")
+```
+
+#### Subgroup Analysis - Country
+
+```{r}
+ctr <- "nigeria"
+country_pre <- initial_pre %>% filter(country == ctr)
+country_post <- post_clean %>% filter(country == ctr)
+compare_pre_post(df_pre=country_pre, df_post=country_post,
+                 var_name="business_owners_female", 
+                 var_type="non_cont", 
+                 lgd_title = "Is there a woman business owner?",
+                  subplot_type="pie", 
+                  title="Nigeria Unpaired: Women Business Owners")
+
+# Paired
+country_paired <- paired_clean %>% filter(country_post == ctr)
+compare_paired(data=country_paired,
+               var_name="business_owners_female",
+               lgd_title="Is there a woman business owner?",
+               plot_title="Nigeria Paired: Women Business Owners")
 ```
 
 ```{r}
-compare_in_df(data=paired_clean, var_type="non_cont", 
-               var1="business_owners_female_pre", 
-               var2="business_owners_female_post", 
-               var1_title="Pre", var2_title="Post", 
-               subplot_type="bar", plot_title="Paired Female Business Owners")
+ctr <- "kenya"
+country_pre <- initial_pre %>% filter(country == ctr)
+country_post <- post_clean %>% filter(country == ctr)
+compare_pre_post(df_pre=country_pre, df_post=country_post,
+                 var_name="business_owners_female", 
+                 var_type="non_cont", 
+                 lgd_title = "Is there a woman business owner?",
+                  subplot_type="pie", 
+                  title="Kenya Unpaired: Women Business Owners")
+
+# Paired
+country_paired <- paired_clean %>% filter(country_post == ctr)
+compare_paired(data=country_paired,
+               var_name="business_owners_female",
+               lgd_title="Is there a woman business owner?",
+               plot_title="Kenya Paired: Women Business Owners")
+```
+
+#### Subgroup Analysis - Gender
+
+```{r}
+gdr <- "male"
+gender_pre <- initial_pre %>% filter(gender == gdr)
+gender_post <- post_clean %>% filter(gender == gdr)
+compare_pre_post(df_pre=gender_pre, df_post=gender_post,
+                 var_name="business_owners_female", 
+                 var_type="non_cont", 
+                 lgd_title = "Is there a woman business owner?",
+                  subplot_type="pie", 
+                  title="Men Unpaired: Women Business Owners")
+
+# Paired
+gender_paired <- paired_clean %>% filter(gender_post == gdr)
+compare_paired(data=gender_paired,
+               var_name="business_owners_female",
+               lgd_title="Is there a woman business owner?",
+               plot_title="Men Paired: Women Business Owners")
 ```
 
 ```{r}
-compare_in_df(data=paired_clean, var_type="non_cont", 
-               var1="business_owners_binary_pre", 
-               var2="business_owners_binary_post", 
-               var1_title="Pre", var2_title="Post", 
-               subplot_type="bar", plot_title="Paired Business Owners")
+gdr <- "female"
+gender_pre <- initial_pre %>% filter(gender == gdr)
+gender_post <- post_clean %>% filter(gender == gdr)
+compare_pre_post(df_pre=gender_pre, df_post=gender_post,
+                 var_name="business_owners_female", 
+                 var_type="non_cont", 
+                 lgd_title = "Is there a woman business owner?",
+                  subplot_type="pie", 
+                  title="Women Unpaired: Women Business Owners")
+
+# Paired
+gender_paired <- paired_clean %>% filter(gender_post == gdr)
+compare_paired(data=gender_paired,
+               var_name="business_owners_female",
+               lgd_title="Is there a woman business owner?",
+               plot_title="Women Paired: Women Business Owners")
 ```
 
-### TODO: Binarize by gender
+### TODO
 
-```{r}
-# In respondent's own words, how were women affected from the mini-grid?
+-   Bar charts by groups, Chi-Square goodness of fit, proportions not counts
 
-## Requires additional cleaning/annotations
-# Who is mainly responsible for cooking fuel collection on a daily basis? Select all that apply
-# Binarize by gender, (1) adult
-# adult_male; child_female; whole_family
-```
+-   Qualitative Methods: In respondent's own words, how were women affected from the mini-grid?
 
 ## B) Inferential
 
@@ -675,22 +985,44 @@ compare_in_df(data=paired_clean, var_type="non_cont",
 
 **Value (Encoding if applied)**: "Yes, it's decreased" = -1; "No, it's the same" = 0; "Yes, it's increased" = 1
 
-#### TODO: Work with counts instead proportions, Linear Regression - Increase
+#### Girls' Schooling - Increase
 
 ```{r}
 # Check for increase
-community_reg(df=post_enc, 
-              col_name="girls_schooling_change", dep="1", var_type="categorical",
-              title="Scatterplots For Increase in School Change by Community")
+community_reg(df=post_enc, outliers = "feature",
+              col_name="girls_schooling_change", dep="1", 
+              var_type="categorical",
+              title="Counts of Increase in Girls' School Enrollment by Community")
 ```
 
-#### Linear Regression - Decrease
+#### Girls' Schooling - Decrease
 
 ```{r}
 # Check for decrease
-community_reg(df=post_enc, 
-              col_name="girls_schooling_change", dep="-1", var_type="categorical",
-              title="Scatterplots For Increase in School Change by Community")
+community_reg(df=post_enc, outliers = "feature",
+              col_name="girls_schooling_change", dep="-1", 
+              var_type="categorical",
+              title="Counts of Decrease in Girls' School Enrollment by Community")
+```
+
+#### Boys' Schooling - Increase
+
+```{r}
+# Check for increase
+community_reg(df=post_enc, outliers = "feature",
+              col_name="boys_schooling_change", dep="1", 
+              var_type="categorical",
+              title="Counts of Increase in Boys' School Enrollment by Community")
+```
+
+#### Boys' Schooling - Decrease
+
+```{r}
+# Check for decrease
+community_reg(df=post_enc, outliers = "feature",
+              col_name="boys_schooling_change", dep="-1", 
+              var_type="categorical",
+              title="Counts of Increase in Boys' School Enrollment by Community")
 ```
 
 ### Water Collection Time
@@ -699,17 +1031,7 @@ community_reg(df=post_enc,
 
 **Value (Encoding if applied)**: "less than 1 hour" = 1; "1-2 hours" = 2; "2-3 hours" = 3; "3-4 hours" = 4; "greater than 4 hours" = 5
 
-#### TODO: Pre-Post Comparison, Visualize the paired differences
-
-```{r}
-compare_in_df(data=paired_clean, var_type="non_cont", 
-               var1="water_collection_time_pre", 
-               var2="water_collection_time_post", 
-               var1_title="Pre", var2_title="Post", 
-               subplot_type="bar", plot_title="Water Collection Time")
-```
-
-#### Wilcoxon
+#### Wilcoxon Signed-Rank Test
 
 ```{r}
 # How long does the water collection process take on a daily basis?
@@ -718,21 +1040,32 @@ paired_testing(paired_enc, var_name="water_collection_time",
                plot_title="Difference Pre-Post of Water Collection Times")
 ```
 
+#### Community Variables
+
+```{r}
+# Regression - Pre-Post Differences
+community_reg(df=paired_enc, outliers = "feature",
+              col_name="water_collection_time", dep="V1", 
+              var_type="ratio", calc_diff = TRUE,
+              title="Cumulative Difference in 
+              Water COllection Difference by Community")
+```
+
+#### Individual Consumption
+
+```{r}
+# Regression - Pre-Post Differences
+consumption_reg(df = paired_enc, reg_type ="linear",
+                dep= "water_collection_time", calc_diff=TRUE,
+                title="Individual Difference in 
+              Water COllection Difference by Community")
+```
+
 ### Cooking Fuel Collection Time
 
 **Data Source**: Paired Household Surveys (Pre & Post)
 
 **Value (Encoding if applied)**: "No need to collect fuel" = 1; "less than 1 hour" = 2; "1-2 hours" =3; "3-5 hours" = 4; "greater than 4 hours" = 5
-
-#### Pre-Post Comparison
-
-```{r}
-compare_in_df(data=paired_clean, var_type="non_cont",
-               var1="cooking_fuel_collection_time_pre", 
-               var2="cooking_fuel_collection_time_post", 
-               var1_title="Pre", var2_title="Post", 
-               subplot_type="bar", plot_title="Cooking Fuel Collection Time")
-```
 
 #### Wilcoxon Signed-Rank Test
 
@@ -741,6 +1074,27 @@ compare_in_df(data=paired_clean, var_type="non_cont",
 paired_testing(paired_enc, var_name="cooking_fuel_collection_time", 
                test_type = "wilcoxon", plot_diff=TRUE, 
                plot_title="Difference Pre-Post of Water Collection Times")
+```
+
+#### Community Variables
+
+```{r}
+# Regression - Pre-Post Differences
+community_reg(df=paired_enc, outliers = "feature",
+              col_name="cooking_fuel_collection_time", dep="V1", 
+              var_type="ratio", calc_diff = TRUE,
+              title="Cumulative Difference in 
+              Cooking Fuel Collection Time Difference by Community")
+```
+
+#### Individual Consumption
+
+```{r}
+# Regression - Pre-Post Differences
+consumption_reg(df = paired_enc, reg_type ="linear",
+                dep= "cooking_fuel_collection_time", calc_diff=TRUE,
+                title="Individual Difference in 
+                Cooking Fuel Collection Time Difference by Community")
 ```
 
 ### Women-led Business Ownership
@@ -752,6 +1106,50 @@ paired_testing(paired_enc, var_name="cooking_fuel_collection_time",
 ```{r}
 # Are any household members business owners? Isolate for those with 'adult_'female
 paired_testing(paired_enc, var_name="business_owners_female", 
+               test_type = "mcnemar", plot_diff=FALSE)
+```
+
+```{r}
+# Regression - Pre-Post Differences
+community_reg(df=paired_enc, outliers = "feature",
+              col_name="business_owners_female", dep="1", 
+              var_type="categorical", calc_diff = TRUE,
+              title="Difference in New Female Business Owners by Community")
+```
+
+#### Subgroup Analysis - Country
+
+```{r}
+# Nigeria
+ctr <- 1
+country_paired <- paired_enc %>% filter(country_post == ctr)
+paired_testing(country_paired, var_name="business_owners_female", 
+               test_type = "mcnemar", plot_diff=FALSE)
+```
+
+```{r}
+# Kenya
+ctr <- 2
+country_paired <- paired_enc %>% filter(country_post == ctr)
+paired_testing(country_paired, var_name="business_owners_female", 
+               test_type = "mcnemar", plot_diff=FALSE)
+```
+
+#### Subgroup Analysis - Gender
+
+```{r}
+# Women
+gdr <- 1
+gender_paired <- paired_enc %>% filter(gender_post == gdr)
+paired_testing(gender_paired, var_name="business_owners_female", 
+               test_type = "mcnemar", plot_diff=FALSE)
+```
+
+```{r}
+# Men
+gdr <- 2
+gender_paired <- paired_enc %>% filter(gender_post == gdr)
+paired_testing(gender_paired, var_name="business_owners_female", 
                test_type = "mcnemar", plot_diff=FALSE)
 ```
 
@@ -767,7 +1165,16 @@ paired_testing(paired_enc, var_name="business_owners_female",
 community_reg(df=ci_enc, 
               col_name="workforce_change_female", dep="V1", 
               title="New Female Workers Change by Community", 
-              var_type="ratio")
+              outliers="all", var_type="ratio")
+```
+
+```{r}
+# Regression - Pre-Post Differences
+df_reg <- ci_enc %>% filter(workforce_change_female != 0)
+consumption_reg(df = df_reg, reg_type ="linear",
+                dep= "workforce_change_female", 
+                exclude_outliers = TRUE, outliers = "feature",
+                title="New Female Workers Change by Community")
 ```
 
 # 2- Productivity
@@ -778,9 +1185,9 @@ community_reg(df=ci_enc,
 
 ```{r}
 # What is your primary power source?
-compare_pre_post(var_name="power_sources_primary", var_type="non_cont",
-                 subplot_type="bar", title="Power Source",
-                 char_remove=NULL)
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, lgd_title ="Types",
+                 var_name="power_sources_primary", var_type="non_cont",
+                 subplot_type="bar_simple", title="Power Source")
 ```
 
 ### Light Hours
@@ -1176,7 +1583,7 @@ consumption_reg(df = sub, reg_type ="linear",
 **Value (Encoding if applied)**: "yes" = 1; "no" = 0
 
 ```{r}
-compare_in_df(data=paired_clean, var_type="non_cont",
+generic_compare(data=paired_clean, var_type="non_cont",
                var1="clinic_electricity_access_pre", 
                var2="clinic_electricity_access_post", 
                var1_title="Pre - Electricity Access", var2_title="Post - Minigrid Access", 
@@ -1202,7 +1609,7 @@ community_reg(df=paired_enc,
 **Value (Encoding if applied)**: "yes" = 1; "no" = 0
 
 ```{r}
-compare_in_df(data=paired_clean, var_type="non_cont",
+generic_compare(data=paired_clean, var_type="non_cont",
                var1="clinic_refrigeration_access_pre", 
                var2="clinic_refrigeration_access_post", 
                var1_title="Pre", var2_title="Post", 
@@ -1256,7 +1663,7 @@ consumption_reg(df = post_enc, reg_type ="logistic",
 
 ```{r}
 # How safe do you feel outside your home when it is dark?
-compare_in_df(data=paired_enc, var_type="non_cont",
+generic_compare(data=paired_enc, var_type="non_cont",
                var1="feel_safe_dark_pre", 
                var2="feel_safe_dark_post", 
                var1_title="Pre", var2_title="Post", 
@@ -1290,7 +1697,7 @@ plot_func(df=post_clean, var_name="home_exterior_lights",
 
 ```{r}
 # Is this exterior lighting powered by minigrid?
-compare_in_df(data=post_clean, var_type="non_cont",
+generic_compare(data=post_clean, var_type="non_cont",
               var1="exterior_lights_minigrid", 
                var2="home_exterior_lights", 
                var1_title="Powered by Minigrid?", var2_title="Home With Exterior Light?", 
@@ -1478,9 +1885,10 @@ community_reg(df=ci_enc,
 ```
 
 ```{r}
+# To fix, exclude outliers
 df_pos <- ci_enc %>% filter(earnings_change != -1)
 consumption_reg(df = df_pos, reg_type ="logistic",
-                dep= "earnings_change", exclude_outliers = TRUE, 
+                dep= "earnings_change",  
                 title="Energy Consumption vs. C&I Earnings Increase")
 ```
 
