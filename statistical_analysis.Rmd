@@ -571,11 +571,12 @@ plot_reg <- function(data, feature, dependent,
                   geom_smooth(color='red', method = "lm", se = FALSE) +
                 theme_classic()
   } else if(reg_type == "logistic") {
+    print(head(data))
      plot <- ggplot(data, 
                     aes(x=.data[[feature]], y=.data[[dependent]])) + 
               geom_point(color='blue', alpha=.5) +
-              stat_smooth(method="glm", color="red", se=FALSE, 
-                        method.args = list(family=binomial)) +
+             geom_smooth(method = "glm", color='red',
+                         method.args= list(family="binomial"), se=FALSE)
                 theme_classic()
   }
  
@@ -623,16 +624,17 @@ community_reg <- function(df, col_name, dep, title,
                         which_outliers = outliers,
                         vals_remove=to_remove)
           lst <- append(lst, list(p))
-          # lm <- lm(community_data[,dep] ~ community_data[,ind])
-          # details <- summary(lm)
-          # result <- as.data.frame(details$coefficients, 
-          #                         row.names = c("Intercept", ind))
-          # print(details)
-          # print(confint(lm, level=0.95))
           pearson_test <- cor.test(community_data[,dep], 
                            community_data[,ind], 
                            method="pearson")
           print(pearson_test)
+          
+          lm <- lm(community_data[,dep] ~ community_data[,ind])
+          details <- summary(lm)
+          result <- as.data.frame(details$coefficients,
+                                  row.names = c("Intercept", ind))
+          print(details)
+          print(confint(lm, level=0.95))
       }
   plot <- ggarrange(plotlist = lst, 
                     ncol = 2, nrow = 2, 
@@ -648,8 +650,9 @@ community_reg <- function(df, col_name, dep, title,
 
 ```{r}
 consumption_reg <- function(df, dep, title, reg_type, 
-                            calc_diff=FALSE, outliers=NULL, 
-                            exclude_outliers = FALSE, 
+                            calc_diff=FALSE, 
+                            exclude_outliers = FALSE,
+                            outliers=NULL, 
                             to_remove=NULL) {
 
   if(reg_type == "linear") {
@@ -662,6 +665,8 @@ consumption_reg <- function(df, dep, title, reg_type,
     }
     
     model <- lm(df$col_reg ~ df$Energy.Consumption)
+    print(summary(model))
+    print(confint(model, level=0.95))
     p <- plot_reg(data=df, feature="Energy.Consumption",  
                   dependent="col_reg", reg_type="linear", 
                   remove_outliers=exclude_outliers, 
@@ -673,8 +678,10 @@ consumption_reg <- function(df, dep, title, reg_type,
     print(pearson_test)
     
   } else if(reg_type == "logistic") {
-    model <- glm(df[,dep] ~ df$Energy.Consumption, 
+    model <- glm(df$col_reg ~ df$Energy.Consumption, 
                family=binomial)
+    print(summary(model))
+    print(confint(model, level=0.95))
     p <- plot_reg(data=df, feature="Energy.Consumption",  
                   dependent=dep, reg_type="logistic", 
                   remove_outliers=exclude_outliers,
@@ -1079,7 +1086,15 @@ paired_testing(paired_enc, var_name="business_owners_female",
 community_reg(df=paired_enc, outliers = "feature",
               col_name="business_owners_female", dep="1", 
               var_type="categorical", calc_diff = TRUE,
-              title="Difference in New Female Business Owners by Community")
+              title="Increase in New Female Business Owners by Community")
+```
+
+```{r}
+# Regression - Pre-Post Differences
+community_reg(df=paired_enc, outliers = "feature",
+              col_name="business_owners_female", dep="-1", 
+              var_type="categorical", calc_diff = TRUE,
+              title="Decrease in New Female Business Owners by Community")
 ```
 
 #### Subgroup Analysis - Country
@@ -1186,10 +1201,15 @@ compare_paired(data=paired_clean,
 ### TODO: Light Hours
 
 ```{r}
+## How many hours of light per day do you currently have at home?
+# Unpaired
 compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
                  var_name="light_hours_current", var_type="non_cont",
                  subplot_type="bar_discrete", title="Light Hours",
                  char_remove=c(46))
+
+# Paired
+# Histogram of differences in paired 
 ```
 
 ### Appliances
@@ -1426,7 +1446,7 @@ plot_func(df=ci_clean, var_name="ci_offering_change",
 
 -   Annotation & encoding of "light_primary_source"
 
--   For cooking enerrgy sources, add the unclean sources: charcoal, firewood
+-   For cooking energy sources, add the unclean sources: charcoal, firewood
 
 ## B) Inferential
 
@@ -1443,20 +1463,6 @@ paired_testing(paired_enc, var_name = "appliances_count",
                test_type="ttest", remove_outliers=TRUE)
 ```
 
-```{r}
-community_reg(df=paired_enc, calc_diff = TRUE,
-              col_name="appliances_count", dep="V1", 
-              title="Difference in No. of Appliances by Community", 
-              var_type="ratio", outliers = "dependent")
-```
-
-```{r}
-consumption_reg(df = paired_enc, reg_type ="linear",
-                dep= "appliances_count", calc_diff=TRUE,
-                title="Energy Consumption vs. Difference in No. of Appliances", 
-                outliers = "dependent")
-```
-
 ### Light Hours\*
 
 **Data Source**: Paired Household Surveys (Pre & Post)
@@ -1470,20 +1476,6 @@ paired_testing(paired_enc, var_name = "light_hours_current",
                test_type="ttest", remove_outliers=TRUE)
 ```
 
-```{r}
-community_reg(df=paired_enc, calc_diff = TRUE,
-              col_name="light_hours_current", dep="V1", 
-              title="Difference in Light Hours by Community", 
-              var_type="ratio", outliers = "all")
-```
-
-```{r}
-consumption_reg(df = paired_enc, reg_type ="linear",
-                dep= "light_hours_current", calc_diff=TRUE,
-                title="Energy Consumption vs. Difference in Light Hours",
-                outliers = NULL)
-```
-
 ### Business Operation Hours
 
 **Data Source**: C&I Post-Survey
@@ -1495,15 +1487,7 @@ consumption_reg(df = paired_enc, reg_type ="linear",
 # Check for increase
 community_reg(df=ci_enc, outliers = "feature",
               col_name="operations_hours_change", dep="1", var_type="categorical",
-              title="Scatterplots For Increase in Business Hours by Community")
-```
-
-```{r}
-# Check for decrease
-community_reg(df=ci_enc, outliers = NULL,
-              col_name="operations_hours_change", 
-              dep="-1", var_type="categorical",
-              title="Scatterplots For Increase in Business Hours by Community")
+              title="Increase in Business Hours by Community")
 ```
 
 ### Schools - Academic Performance
@@ -1535,68 +1519,147 @@ community_reg(df=ci_enc, outliers = "feature",
 
 ```{r}
 # Encoding
-# community_reg(df=post_enc, outliers = "feature",
-#               col_name="school_performance_change", 
-#               dep="1", var_type="categorical",
-#               title="Households - Increase in Academic Performace by Community")
+community_reg(df=post_enc, outliers = "feature",
+              col_name="school_performance_change",
+              dep="1", var_type="categorical",
+              title="Households - Increase in Academic Performace by Community")
 ```
 
-### TODO: C&I - Operation Hours
+### Commercial & Institution 
+
+#### Operation Hours Change
+
+**Data Source**: C&I Post-Survey
+
+**Value (Encoding if applied)**: "Yes, they have increased" = 1, "Yes, they have decreased" = -1, "No, it is pretty much the same" = 0
+
+```{r}
+
+community_reg(df=ci_enc, outliers = "feature",
+              col_name="operations_hours_change", 
+              dep="1", var_type="categorical",
+              title="Increase in C&I's Operation Hours by Community")
+```
+
+```{r}
+# Consumption
+```
+
+#### Workforce Change
+
+**Data Source**: C&I Post-Survey
+
+**Value (Encoding if applied)**: "Yes, we have added workers" = 1, "Yes, we have lost workers" = -1, "No, the number has remained the same" = 0
 
 ```{r}
 # Since connection to Renewvia mini-grid, have you had any change in number of workers/employees at your place of work?
+community_reg(df=ci_enc, outliers = "feature",
+              col_name="workforce_change", 
+              dep="1", var_type="categorical",
+              title="Increase in C&I's Workforce by Community")
 ```
 
-### TODO: C&I Workforce
+#### Adding New Products/Services
+
+**Data Source**: C&I Post-Survey
+
+**Value (Encoding if applied)**: "Yes" = 1, "No" = 0
 
 ```{r}
-
+# Have you added any new products or services since connection to Renewvia minigrid?
+community_reg(df=ci_enc, outliers = "feature",
+              col_name="ci_offering_change", 
+              dep="1", var_type="categorical",
+              title="C&I's Newly Added Offerings by Community")
 ```
 
-### TODO: C&I - New Products/Services
-
 ```{r}
-
+consumption_reg(df = ci_enc, reg_type ="logistic",
+                dep= "ci_offering_change", 
+                exclude_outliers = TRUE, outliers = "feature",
+                title="Energy Consumption vs. Newly Added Offerings")
 ```
 
 # 3- Health
 
 ## A) Descriptive
 
-### Water Source
+### Water
+
+#### All Sources
 
 ```{r}
-# What is your source of water?
-compare_pre_post(var_name="water_source", var_type="non_cont",
-                 subplot_type="pie", title="Sources Water")
+## What is your source of water?
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
+                 var_name="water_source", var_type="non_cont",
+                 subplot_type="pie", lgd_title = "Sources",
+                 title="Unpaired: Water Sources",
+                 char_remove=NULL)
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="water_source",
+               lgd_title="Sources",
+               plot_title="Paired: Water Sources")
 ```
+
+#### Access to Clean Drinking Water
 
 ```{r}
 # Do you have a source for clean drinking water?
-compare_pre_post(var_name="clean_drinking_water", var_type="non_cont",
-                 subplot_type="pie", title="Clean Drinking Water")
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
+                 var_name="clean_drinking_water", var_type="non_cont",
+                 subplot_type="pie", 
+                 lgd_title = "Do you have clean drinking water?",
+                 title="Unpaired: Clean Drinking Water Access")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="clean_drinking_water",
+               lgd_title="Do you have clean drinking water?",
+               plot_title="Paired: Clean Drinking Water Access")
 ```
+
+#### Clean Sources
 
 ```{r}
 # What is the source for clean drinking water?
-compare_pre_post(var_name="clean_drinking_water_source", var_type="non_cont",
-                 subplot_type="pie", title="Clean Drinking Water Sources")
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
+                 var_name="clean_drinking_water_source", var_type="non_cont",
+                 subplot_type="pie", 
+                 lgd_title = "Do you have clean drinking water?",
+                 title="Unpaired: Clean Drinking Water Sources")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="clean_drinking_water_source",
+               lgd_title="Do you have clean drinking water?",
+               plot_title="Paired: Clean Drinking Water Sources")
 ```
 
 ### Kerosene Lamps
 
+#### Count
+
 ```{r}
 # How many kerosene lamps do you currently have in your household?
-compare_pre_post(var_name="kerosene_lamps_count", var_type="non_cont",
-                 subplot_type="bar_discrete", title="No. of Kerosene Lamps", 
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
+                 var_name="kerosene_lamps_count", var_type="non_cont",
+                 subplot_type="bar_discrete", 
+                 title="Unpaired: No. of Kerosene Lamps",
                  char_remove=c(24))
 ```
 
+#### Usage Change
+
 ```{r}
 # Has the number of kerosene lamps in your household changed since connection to minigrid?
-plot_func(df=post_clean, var_name="kerosene_lamp_usage_change", 
+plot_func(df=post_clean, var_name="kerosene_lamp_usage_change", lgd ="Change", 
           var_type="non_cont", plot_title="Kerosene Lamps Usage", 
-          plot_type="pie", char_remove=NULL)
+          plot_type="pie")
 ```
 
 ### Healthcare
@@ -1654,7 +1717,8 @@ paired_testing(paired_enc, var_name="clean_drinking_water",
 ```{r}
 ## Since connection to Renewvia mini-grid, has your access to clean drinking water changed at all?
 community_reg(df=post_enc, 
-              col_name="clean_drinking_water_source", dep="1", var_type="categorical",
+              col_name="clean_drinking_water_source", 
+              dep="1", var_type="categorical",
               title="Increase in Access to Clean Drinking Water by Community")
 ```
 
@@ -2070,7 +2134,9 @@ community_reg(df=ci_enc,
 # To fix, exclude outliers
 df_pos <- ci_enc %>% filter(earnings_change != -1)
 consumption_reg(df = df_pos, reg_type ="logistic",
-                dep= "earnings_change",  outliers = "dependent",
+                dep= "earnings_change",  
+                exclude_outliers = TRUE,
+                outliers = "feature",
                 title="Energy Consumption vs. C&I Earnings Increase")
 ```
 
