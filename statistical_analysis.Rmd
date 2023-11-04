@@ -512,7 +512,7 @@ paired_testing <- function(data, var_name, test_type,
 
 ```{r}
 plot_reg <- function(data, feature, dependent, 
-                     remove_outliers=TRUE, which_outliers="all" ,
+                     remove_outliers=TRUE, which_outliers,
                      reg_type, vals_remove=NULL) {
   
   if(is.null(vals_remove) == FALSE) {
@@ -728,6 +728,7 @@ tab
 generic_compare(data=post_clean, var_type="non_cont",
                var1="girls_schooling_change", 
                var2="boys_schooling_change", 
+               lgd_title ="Change",
                var1_title="Girls", var2_title="Boys", 
                subplot_type="pie", plot_title="School Enrollment Change")
 ```
@@ -760,7 +761,7 @@ compare_paired(data=paired_clean,
 # Unpaired
 compare_pre_post(df_pre=initial_pre, df_post=post_clean,
                  var_name="boys_unschooled_reasons", 
-                 var_type="non_cont",
+                 var_type="non_cont",lgd_title ="Reasons",
                  subplot_type="bar_simple", 
                  title="Unpaired - Boys Schooling: Reasons for non-enrollment")
 
@@ -771,7 +772,7 @@ compare_paired(data=paired_clean,
                plot_title="Paired - Boys Schooling: Reasons for non-enrollment")
 ```
 
-### Houeshold Chores
+### Household Chores
 
 #### Water Collection - Responsibility
 
@@ -812,42 +813,6 @@ compare_paired(data=paired_clean,
                lgd_title="Is the person responsible school-aged?",
                plot_title="Paired: Shcool-Aged Person responsible 
                  for Water Collection")
-```
-
-#### Water Collection Time
-
-```{r}
-# Unpaired
-compare_pre_post(df_pre=initial_pre, df_post=post_clean,
-                 var_name="water_collection_time", 
-                 var_type="non_cont",
-                 subplot_type="bar_simple",
-                 lgd_title="Time Intervals",
-                 title="Unpaired: Water Collection Time")
-
-# Paired
-compare_paired(data=paired_clean,
-               var_name="water_collection_time",
-               lgd_title="Time Intervals",
-               plot_title="Paired: Water Collection Time")
-```
-
-#### Cooking Fuel Collection Time
-
-```{r}
-# Unpaired
-compare_pre_post(df_pre=initial_pre, df_post=post_clean,
-                 var_name="cooking_fuel_collection_time", 
-                 var_type="non_cont",
-                 subplot_type="bar_simple",
-                 lgd_title="Time Intervals",
-                 title="Unpaired: Cooking Fuel Collection Time")
-
-# Paired
-compare_paired(data=paired_clean,
-               var_name="cooking_fuel_collection_time",
-               lgd_title="Time Intervals",
-               plot_title="Paired: Cooking Fuel Collection Time")
 ```
 
 #### Cooking Fuel Collection - Are men involved?
@@ -1181,107 +1146,287 @@ consumption_reg(df = df_reg, reg_type ="linear",
 
 ## A) Descriptive
 
-### Power Source
+### Power
+
+#### Sources
 
 ```{r}
-# What is your primary power source?
+## What is your primary power source?
+# Unpaired
 compare_pre_post(df_pre=initial_pre, df_post=post_clean, lgd_title ="Types",
                  var_name="power_sources_primary", var_type="non_cont",
-                 subplot_type="bar_simple", title="Power Source")
+                 subplot_type="bar_simple", 
+                 title="Unpaired: Primary Power Source")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="power_sources_primary",
+               lgd_title="Source Type",
+               plot_title="Paired: Pimary Power Source")
 ```
 
-### Light Hours
+#### **Un-clean sources: Diesel, Petrol, Kerosene**
 
 ```{r}
-compare_pre_post(var_name="light_hours_current", var_type="non_cont",
+## What is your primary power source?
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
+                 lgd_title ="Is the source non-renewable?",
+                 var_name="power_sources_unclean", var_type="non_cont",
+                 subplot_type="pie", 
+                 title="Unpaired: Usage of unclean sources")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="power_sources_unclean",
+               lgd_title="Is the source non-renewable?",
+               plot_title="Paired: Usage of unclean sources")
+```
+
+### TODO: Light Hours
+
+```{r}
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
+                 var_name="light_hours_current", var_type="non_cont",
                  subplot_type="bar_discrete", title="Light Hours",
                  char_remove=c(46))
 ```
 
-### No. of Appliances
+### Appliances
+
+#### Count
 
 ```{r}
 # How many electronic devices or appliances do you currently use in the household
-compare_pre_post(var_name="appliances_count", var_type="non_cont",
-                 subplot_type="bar_discrete", title="Appliances",
-                 char_remove=NULL)
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
+                 var_name="appliances_count", var_type="non_cont",
+                 subplot_type="bar_discrete", title="Appliances")
 ```
+
+#### Change
 
 ```{r}
 # Has the number of electronic devices or appliances increased since connection to minigrid?
 plot_func(df=post_clean, var_name="appliances_count_change", 
-          var_type="non_cont", plot_title="Change in No. of Appliances", 
-          plot_type="pie", char_remove=NULL)
+          var_type="non_cont", lgd = "Change",
+          plot_title="Change in No. of Appliances", 
+          plot_type="pie")
 ```
 
-### Phone Charge - Travel Distance
+#### Charging Sources
+
+```{r}
+# What is your primary power source?
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, lgd_title ="Types",
+                 var_name="applicances_charging_sources", var_type="non_cont",
+                 subplot_type="bar_simple", 
+                 title="Unpaired: Appliances Charging Source")
+
+compare_paired(data=paired_clean,
+               var_name="applicances_charging_sources",
+               lgd_title="Source Type",
+               plot_title="Paired: Appliances Charging Source")
+```
+
+### Phone Charging
+
+#### Frequency
+
+```{r}
+## How often do you need to charge your mobile phone?
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
+                 var_name="phone_charge_frequency", var_type="non_cont",
+                 subplot_type="bar_simple", lgd_title = "Time Intervals",
+                 title="Unpaired: Phone Charging Frequency")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="phone_charge_frequency",
+               lgd_title="Time Intervals",
+               plot_title="Paired: Phone Charging Frequency")
+```
+
+#### Location
+
+```{r}
+## Where do you typically charge your mobile phone?
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
+                 var_name="phone_charge_location", var_type="non_cont",
+                 subplot_type="pie", lgd_title = "Places",
+                 title="Unpaired: Location of Phone Charging")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="phone_charge_location",
+               lgd_title="Places",
+               plot_title="Paired: Location of Phone Charging")
+```
+
+#### Travel Distance
 
 ```{r}
 # How far must you travel to charge your mobile phone?
-compare_pre_post(var_name="phone_charge_travel_distance", var_type="non_cont",
-                 subplot_type="bar", title="Travel Distance to Charge Phone",
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
+                 var_name="phone_charge_travel_distance", var_type="non_cont",
+                 subplot_type="bar_simple", lgd_title = "Distances",
+                 title="Unpaired: Travel Distance to Charge Phone",
                  char_remove=NULL)
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="phone_charge_travel_distance",
+               lgd_title="Time Intervals",
+               plot_title="Paired: Travel Distance to Charge Phone")
 ```
 
-### Water Collection - Travel Distance
+### Water Collection
+
+#### Travel Distance
 
 ```{r}
-# How far must you travel to obtain your water supply?
-compare_pre_post(var_name="water_collection_travel_distance", var_type="non_cont",
-                 subplot_type="bar", title="Travel Distance for Water Collection",
+## How far must you travel to obtain your water supply?
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
+                 var_name="water_collection_travel_distance", var_type="non_cont",
+                 subplot_type="bar", lgd_title = "Distances",
+                 title="Travel Distance for Water Collection",
                  char_remove=NULL)
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="water_collection_travel_distance",
+               lgd_title="Time Intervals",
+               plot_title="Paired: Travel Distance for Water Collection")
 ```
 
-### Water Collection Time
+#### Time
 
 ```{r}
-compare_pre_post(var_name="water_collection_time", var_type="non_cont",
-                 subplot_type="pie", title="Water Collection Time",
-                 char_remove=NULL)
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean,
+                 var_name="water_collection_time", 
+                 var_type="non_cont",
+                 subplot_type="bar_simple",
+                 lgd_title="Time Intervals",
+                 title="Unpaired: Water Collection Time")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="water_collection_time",
+               lgd_title="Time Intervals",
+               plot_title="Paired: Water Collection Time")
 ```
 
-### C&I - Profile
+### Cooking Fuel 
+
+#### Sources
 
 ```{r}
-# Is this business, clinic, school still in operation?
-plot_func(df=ci_clean, var_name="operation_status", 
-          var_type="non_cont", plot_title="C&I - Type", 
-          plot_type="pie", char_remove=NULL)
+## What is your main source of energy for cooking?
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, lgd_title ="Types",
+                 var_name="cooking_energy_sources", var_type="non_cont",
+                 subplot_type="pie", 
+                 title="Unpaired: Cooking Energy Sources")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="cooking_energy_sources",
+               lgd_title="Types",
+               plot_title="Paired: Cooking Energy Sources")
 ```
+
+#### **TODO: Un-clean sources: Kerosene, Charcoal**
 
 ```{r}
-# Please select your business type
-plot_func(df=ci_clean, var_name="business_type", 
-          var_type="non_cont", plot_title="C&I - Type", 
-          plot_type="bar", char_remove=NULL)
 ```
 
-### C&I - Operation Hours
+#### Time
+
+```{r}
+##  How long does the cooking fuel collection process take on a daily basis?
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean,
+                 var_name="cooking_fuel_collection_time", 
+                 var_type="non_cont",
+                 subplot_type="bar_simple",
+                 lgd_title="Time Intervals",
+                 title="Unpaired: Cooking Fuel Collection Time")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="cooking_fuel_collection_time",
+               lgd_title="Time Intervals",
+               plot_title="Paired: Cooking Fuel Collection Time")
+```
+
+### Households - Academic Performance
+
+```{r}
+plot_func(df=post_clean, var_name="school_performance_change", 
+          var_type="non_cont", lgd = "Change",
+          plot_title="Household - Academic Performance", 
+          plot_type="pie")
+```
+
+### Schools - Academic Performance
+
+```{r}
+plot_func(df=ci_clean, var_name="school_performance", 
+          var_type="non_cont", lgd = "Change",
+          plot_title="Schools - Academic Performance", 
+          plot_type="pie")
+
+```
+
+### Commercial & Institution 
+
+#### Operation Hours Change
 
 ```{r}
 # Since connection to Renewvia minigrid, have your hours of operation changed at all?
 plot_func(df=ci_clean, var_name="operations_hours_change", 
-          var_type="non_cont", plot_title="Change in C&I Operation Hours", 
-          plot_type="pie", char_remove=NULL)
+          var_type="non_cont", lgd="Change",
+          plot_title="Change in C&I Business Hours", 
+          plot_type="pie")
 ```
 
-### C&I - Workforce
+#### Additional Operation Hours
+
+```{r}
+plot_func(df=ci_clean, var_name="business_hours_increase", 
+          var_type="non_cont", lgd="By how much?",
+          plot_title="C&I Added Operation Hours", 
+          plot_type="pie")
+```
+
+#### Change in Workforce
 
 ```{r}
 # Since connection to Renewvia mingrid, have you had any change in number of workers/employees at your place of work?
 plot_func(df=ci_clean, var_name="workforce_change", 
-          var_type="non_cont", plot_title="Change in C&I Workforce", 
+          var_type="non_cont", lgd="Change",
+          plot_title="Change in C&I Workforce", 
           plot_type="pie", char_remove=NULL)
 ```
 
-### C&I - New Products/Services
+#### Adding New Products/Services
 
 ```{r}
 # Have you added any new products or services since connection to Renewvia minigrid?
 plot_func(df=ci_clean, var_name="ci_offering_change", 
-          var_type="non_cont", plot_title="Change in C&I Products/Services", 
+          var_type="non_cont", lgd="Change",
+          plot_title="Change in C&I Products/Services", 
           plot_type="pie", char_remove=NULL)
 ```
+
+### TODO
+
+-   Annotation & encoding of "light_primary_source"
+
+-   For cooking enerrgy sources, add the unclean sources: charcoal, firewood
 
 ## B) Inferential
 
@@ -1293,7 +1438,8 @@ plot_func(df=ci_clean, var_name="ci_offering_change",
 
 ```{r}
 paired_testing(paired_enc, var_name = "appliances_count", 
-               plot_diff = TRUE, plot_title = "Difference Pre-Post in No. of Appliances",
+               plot_diff = TRUE, 
+               plot_title = "Difference Pre-Post in No. of Appliances",
                test_type="ttest", remove_outliers=TRUE)
 ```
 
@@ -1301,13 +1447,14 @@ paired_testing(paired_enc, var_name = "appliances_count",
 community_reg(df=paired_enc, calc_diff = TRUE,
               col_name="appliances_count", dep="V1", 
               title="Difference in No. of Appliances by Community", 
-              var_type="ratio")
+              var_type="ratio", outliers = "dependent")
 ```
 
 ```{r}
 consumption_reg(df = paired_enc, reg_type ="linear",
                 dep= "appliances_count", calc_diff=TRUE,
-                title="Energy Consumption vs. Difference in No. of Appliances")
+                title="Energy Consumption vs. Difference in No. of Appliances", 
+                outliers = "dependent")
 ```
 
 ### Light Hours\*
@@ -1327,13 +1474,14 @@ paired_testing(paired_enc, var_name = "light_hours_current",
 community_reg(df=paired_enc, calc_diff = TRUE,
               col_name="light_hours_current", dep="V1", 
               title="Difference in Light Hours by Community", 
-              var_type="ratio")
+              var_type="ratio", outliers = "all")
 ```
 
 ```{r}
 consumption_reg(df = paired_enc, reg_type ="linear",
                 dep= "light_hours_current", calc_diff=TRUE,
-                title="Energy Consumption vs. Difference in Light Hours")
+                title="Energy Consumption vs. Difference in Light Hours",
+                outliers = NULL)
 ```
 
 ### Business Operation Hours
@@ -1343,22 +1491,18 @@ consumption_reg(df = paired_enc, reg_type ="linear",
 **Value (Encoding if applied)**: "Yes, they have increased" = 1, "Yes, they have decreased" = -1, "No, it is pretty much the same" = 0
 
 ```{r}
-plot_func(df=ci_clean, var_name="operations_hours_change", 
-          var_type="non_cont", plot_title="Change in C&I Business Hours", 
-          plot_type="pie", char_remove=NULL)
-```
-
-```{r}
-plot_func(df=ci_clean, var_name="business_hours_increase", 
-          var_type="non_cont", plot_title="Change in C&I Business Hours", 
-          plot_type="pie", char_remove=NULL)
-```
-
-```{r}
 ## Since connection to Renewvia mini-grid, have your hours of operation changed at all?
 # Check for increase
-community_reg(df=ci_enc, 
+community_reg(df=ci_enc, outliers = "feature",
               col_name="operations_hours_change", dep="1", var_type="categorical",
+              title="Scatterplots For Increase in Business Hours by Community")
+```
+
+```{r}
+# Check for decrease
+community_reg(df=ci_enc, outliers = NULL,
+              col_name="operations_hours_change", 
+              dep="-1", var_type="categorical",
               title="Scatterplots For Increase in Business Hours by Community")
 ```
 
@@ -1369,41 +1513,50 @@ community_reg(df=ci_enc,
 **Value (Encoding if applied)**: "Yes, they have increased" = 1, "Yes, they have decreased" = -1, "No, it is pretty much the same" = 0
 
 ```{r}
-plot_func(df=ci_clean, var_name="school_performance", 
-          var_type="non_cont", plot_title="Schools - Academic Performance", 
-          plot_type="pie", char_remove=NULL)
-```
-
-```{r}
 ## Have you seen a change in overall school performance?
-community_reg(df=ci_enc, 
+community_reg(df=ci_enc, outliers = "feature",
               col_name="school_performance", dep="1", var_type="categorical",
               title="Schools - Increase in Academic Performace by Community")
 ```
 
-### Household - Academic Performance
+```{r}
+# Encoding
+## Have you seen a change in overall school performance?
+# community_reg(df=ci_enc, outliers = "feature",
+#               col_name="school_performance", dep="-1", var_type="categorical",
+#               title="Schools - Increase in Academic Performace by Community")
+```
+
+### TODO: Household - Academic Performance
 
 **Data Source**: Household Post-Survey
 
 **Value (Encoding if applied)**: "Yes, they have increased" = 1, "Yes, they have decreased" = -1, "No, it is pretty much the same" = 0
 
 ```{r}
-plot_func(df=post_clean, var_name="school_performance_change", 
-          var_type="non_cont", plot_title="Household - Academic Performance", 
-          plot_type="pie", char_remove=NULL)
+# Encoding
+# community_reg(df=post_enc, outliers = "feature",
+#               col_name="school_performance_change", 
+#               dep="1", var_type="categorical",
+#               title="Households - Increase in Academic Performace by Community")
 ```
 
+### TODO: C&I - Operation Hours
+
 ```{r}
-community_reg(df=post_enc, 
-              col_name="school_performance_change", 
-              dep="1", var_type="categorical",
-              title="Households - Increase in Academic Performace by Community")
+# Since connection to Renewvia mini-grid, have you had any change in number of workers/employees at your place of work?
 ```
 
 ### TODO: C&I Workforce
 
 ```{r}
-# Since connection to Renewvia mini-grid, have you had any change in number of workers/employees at your place of work?
+
+```
+
+### TODO: C&I - New Products/Services
+
+```{r}
+
 ```
 
 # 3- Health
@@ -1557,7 +1710,8 @@ plot_func(df=ci_clean, var_name="health_offering_change_count",
 
 ```{r}
 plot_func(df=ci_clean, var_name="health_offering_change_count", 
-          var_type="non_cont", plot_title="Change in Health Services Offered by Clinics", 
+          var_type="non_cont", 
+          plot_title="Change in Health Services Offered by Clinics", 
           plot_type="pie", char_remove=c(0))
 ```
 
@@ -1833,6 +1987,34 @@ compare_pre_post(var_name="kerosene_lamps_cost", var_type="non_cont",
 # If this business is new, do you consider this new business a result of having access to minigrid power?
 ```
 
+### C&I
+
+#### Operation Status
+
+```{r}
+# Is this business, clinic, school still in operation?
+plot_func(df=ci_clean, var_name="operation_status", 
+          var_type="non_cont", lgd = "Status",
+          plot_title="C&I - Type", 
+          plot_type="pie")
+```
+
+#### Busines Type
+
+```{r}
+# Please select your business type
+plot_func(df=ci_clean, var_name="business_type", 
+          var_type="non_cont", lgd = "Business Type",
+          plot_title="C&I - Type", 
+          plot_type="pie")
+```
+
+### C&I - New Products/Services
+
+```{r}
+
+```
+
 ## B) Inferential
 
 ### Avg. Household Income\*
@@ -1888,7 +2070,7 @@ community_reg(df=ci_enc,
 # To fix, exclude outliers
 df_pos <- ci_enc %>% filter(earnings_change != -1)
 consumption_reg(df = df_pos, reg_type ="logistic",
-                dep= "earnings_change",  
+                dep= "earnings_change",  outliers = "dependent",
                 title="Energy Consumption vs. C&I Earnings Increase")
 ```
 
@@ -1906,7 +2088,7 @@ paired_testing(paired_enc, var_name="business_owners_binary",
 ```
 
 ```{r}
-community_reg(df=paired_enc, 
+community_reg(df=paired_enc, outliers = "feature",
               col_name="business_owners_binary", dep="1", 
               title="Household Business Onwership by Community", 
               var_type="categorical", calc_diff =TRUE)
