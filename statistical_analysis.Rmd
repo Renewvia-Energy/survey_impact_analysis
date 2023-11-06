@@ -388,7 +388,10 @@ compare_paired <- function(data, var_name, view,
                           char_remove=NULL){
     var_pre <- as.factor(data[,paste(var_name, "pre", sep="_")])
     var_post <- as.factor(data[,paste(var_name, "post", sep="_")])
-    x <- list(labels = c(unique(var_post[is.na(var_post) == FALSE])))
+    labels_all <- c(unique(var_pre[is.na(var_pre) == FALSE]),
+                    unique(var_post[is.na(var_post) == FALSE]))
+  
+    x <- list(labels = unique(labels_all))
     paired_df <- as.data.frame(x)
     counts_post <- as.data.frame(t(table(var_post)))[,2:3]
     props_post <- as.data.frame(prop.table(table(var_post)))
@@ -460,27 +463,26 @@ paired_testing <- function(data, var_name, test_type,
                            remove_outliers=FALSE) {
   pre_name <- paste(var_name, "pre", sep="_")
   post_name <- paste(var_name, "post", sep="_")
-  
-  sprintf("Removing outliers for both %s and %s", pre_name, post_name)
-  vars <- c(pre_name, post_name) 
+   
   if(remove_outliers==TRUE) {
-    for(var in vars){
-      quartiles <- quantile(data[, var], 
-                        probs=c(.25, .75), na.rm = TRUE)
-  
-      IQR <- IQR(data[, var], na.rm = TRUE)
-      
-      Lower <- quartiles[1] - 1.5*IQR
-      Upper <- quartiles[2] + 1.5*IQR 
-      
-      data <- subset(data, 
-                     data[, var] > Lower &
-                     data[, var] < Upper)
-    } 
+    data$temp <- abs(data[, post_name] - data[, pre_name])
+    quartiles <- quantile(data$temp,
+                          probs=c(.25, .75), na.rm = TRUE)
+
+    IQR <- IQR(data$temp, na.rm = TRUE)
+
+    Lower <- quartiles[1] - 1.5*IQR
+    Upper <- quartiles[2] + 1.5*IQR
+
+    data <- subset(data,
+                   data$temp > Lower &
+                   data$temp < Upper)
   }
+  
   var_pre <- data[, pre_name]
   var_post <- data[, post_name]
   diff <- var_post - var_pre
+  
   # Running the test
   if(test_type == "wilcoxon"){
     #Wilcoxon Signed-Rank Test
@@ -512,7 +514,7 @@ paired_testing <- function(data, var_name, test_type,
 
 ```{r}
 plot_reg <- function(data, feature, dependent, 
-                     remove_outliers=TRUE, which_outliers,
+                     remove_outliers, which_outliers=NULL,
                      reg_type, vals_remove=NULL) {
   
   if(is.null(vals_remove) == FALSE) {
@@ -538,7 +540,7 @@ plot_reg <- function(data, feature, dependent,
     }else if(which_outliers=="dependent"){
       var <- dependent
       quartiles <- quantile(data[, var], 
-                          probs=c(.25, .75), na.rm = TRUE)
+                            probs=c(.25, .75), na.rm = TRUE)
       
       IQR <- IQR(data[, var], na.rm = TRUE)
       
@@ -548,6 +550,7 @@ plot_reg <- function(data, feature, dependent,
       data <- subset(data, 
                      data[, var] > Lower &
                      data[, var] < Upper)
+      
     }else if(which_outliers=="feature"){
       var <- feature
       quartiles <- quantile(data[, var], 
@@ -591,7 +594,9 @@ ind_vars <- c("pv_size_kwh", "customer_count", "capex_usd", "consumption")
 
 community_reg <- function(df, col_name, dep, title, 
                           var_type, calc_diff=FALSE, 
-                          to_remove=NULL, outliers) {
+                          to_remove=NULL, 
+                          exclude_outliers = FALSE, 
+                          outliers=NULL) {
   if (calc_diff == TRUE) {
       pre_name <- paste(col_name, "pre", sep="_")
       post_name <- paste(col_name, "post", sep="_")
@@ -610,31 +615,29 @@ community_reg <- function(df, col_name, dep, title,
     data <- as.data.frame(rowsum(df[, "col_reg"], 
                                  df[, "community"], na.rm = TRUE))
     data$community <- rownames(data)
-    
-    
   }
+  
   community_data <- merge(x=projects, y=data, by="community")
   print(community_data)
   lst <- list()
   
    for(ind in ind_vars) {
         print(ind)
-          p <- plot_reg(data=community_data, feature=ind,  
-                        dependent=dep, reg_type="linear",
-                        which_outliers = outliers,
-                        vals_remove=to_remove)
-          lst <- append(lst, list(p))
-          pearson_test <- cor.test(community_data[,dep], 
-                           community_data[,ind], 
-                           method="pearson")
-          print(pearson_test)
-          
-          lm <- lm(community_data[,dep] ~ community_data[,ind])
-          details <- summary(lm)
-          result <- as.data.frame(details$coefficients,
-                                  row.names = c("Intercept", ind))
-          print(details)
-          print(confint(lm, level=0.95))
+        p <- plot_reg(data=community_data, feature=ind,  
+                      dependent=dep, reg_type="linear",
+                      remove_outliers = exclude_outliers,
+                      which_outliers = outliers,
+                      vals_remove=to_remove)
+        lst <- append(lst, list(p))
+        pearson_test <- cor.test(community_data[,dep], 
+                                 community_data[,ind], 
+                                 method="pearson")
+        print(pearson_test)
+        
+        lm <- lm(community_data[,dep] ~ community_data[,ind])
+        details <- summary(lm)
+        print(details)
+        print(confint(lm, level=0.95))
       }
   plot <- ggarrange(plotlist = lst, 
                     ncol = 2, nrow = 2, 
@@ -643,7 +646,6 @@ community_reg <- function(df, col_name, dep, title,
   annotate_figure(plot, top = text_grob(title, 
                  color = "black", face = "bold", size = 12))
 }
-
 ```
 
 ### Customer Consumption
@@ -655,15 +657,16 @@ consumption_reg <- function(df, dep, title, reg_type,
                             outliers=NULL, 
                             to_remove=NULL) {
 
-  if(reg_type == "linear") {
-    if (calc_diff == TRUE) {
+  if (calc_diff == TRUE) {
       pre_name <- paste(dep, "pre", sep="_")
       post_name <- paste(dep, "post", sep="_")
       df$col_reg <- df[, post_name] - df[, pre_name]
+      df <- df %>% filter(col_reg != -1)
     } else {
       df$col_reg <- df[, dep]
     }
-    
+  
+  if(reg_type == "linear") {
     model <- lm(df$col_reg ~ df$Energy.Consumption)
     print(summary(model))
     print(confint(model, level=0.95))
@@ -672,10 +675,10 @@ consumption_reg <- function(df, dep, title, reg_type,
                   remove_outliers=exclude_outliers, 
                   which_outliers = outliers,
                   vals_remove=to_remove)
-    pearson_test <- cor.test(df$col_reg, 
+    test <- cor.test(df$col_reg, 
                            df$Energy.Consumption, 
                            method="pearson")
-    print(pearson_test)
+    print(test)
     
   } else if(reg_type == "logistic") {
     model <- glm(df$col_reg ~ df$Energy.Consumption, 
@@ -683,7 +686,7 @@ consumption_reg <- function(df, dep, title, reg_type,
     print(summary(model))
     print(confint(model, level=0.95))
     p <- plot_reg(data=df, feature="Energy.Consumption",  
-                  dependent=dep, reg_type="logistic", 
+                  dependent="col_reg", reg_type="logistic", 
                   remove_outliers=exclude_outliers,
                   which_outliers = outliers,
                   vals_remove=to_remove)
@@ -1339,7 +1342,7 @@ compare_paired(data=paired_clean,
                plot_title="Paired: Water Collection Time")
 ```
 
-### Cooking Fuel 
+### Cooking Fuel
 
 #### Sources
 
@@ -1401,7 +1404,7 @@ plot_func(df=ci_clean, var_name="school_performance",
 
 ```
 
-### Commercial & Institution 
+### Commercial & Institution
 
 #### Operation Hours Change
 
@@ -1429,7 +1432,7 @@ plot_func(df=ci_clean, var_name="business_hours_increase",
 plot_func(df=ci_clean, var_name="workforce_change", 
           var_type="non_cont", lgd="Change",
           plot_title="Change in C&I Workforce", 
-          plot_type="pie", char_remove=NULL)
+          plot_type="pie")
 ```
 
 #### Adding New Products/Services
@@ -1439,7 +1442,7 @@ plot_func(df=ci_clean, var_name="workforce_change",
 plot_func(df=ci_clean, var_name="ci_offering_change", 
           var_type="non_cont", lgd="Change",
           plot_title="Change in C&I Products/Services", 
-          plot_type="pie", char_remove=NULL)
+          plot_type="pie")
 ```
 
 ### TODO
@@ -1525,7 +1528,7 @@ community_reg(df=post_enc, outliers = "feature",
               title="Households - Increase in Academic Performace by Community")
 ```
 
-### Commercial & Institution 
+### Commercial & Institution
 
 #### Operation Hours Change
 
@@ -1664,34 +1667,90 @@ plot_func(df=post_clean, var_name="kerosene_lamp_usage_change", lgd ="Change",
 
 ### Healthcare
 
-```{r}
-# # Does your Health Center have access to electricity?
-compare_pre_post(var_name="clinic_electricity_access", var_type="non_cont",
-                 subplot_type="pie", title="Clinic Access To Electricity", 
-                 char_remove=NULL)
-```
+#### Clinic's Electricity
 
 ```{r}
-# How close is the nearest Health Center / Clinic
-compare_pre_post(var_name="clinic_travel_distance", var_type="non_cont",
-                 subplot_type="bar", title="Clinic Access - Travel Distance", 
-                 char_remove=NULL)
+# # Does your Health Center have access to electricity?
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
+                 var_name="clinic_electricity_access", var_type="non_cont",
+                 subplot_type="pie", 
+                 lgd_title = "Does the clinic have electricity?",
+                 title="Unpaired: Clinic Access To Electricity")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="clinic_electricity_access",
+               lgd_title="Does the clinic have electricity?",
+               plot_title="Paired: Clinic Access To Electricity")
 ```
+
+#### Clinic Travel Distance
+
+```{r}
+## How close is the nearest Health Center / Clinic
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
+                 var_name="clinic_travel_distance", var_type="non_cont",
+                 subplot_type="pie", 
+                 lgd_title = "Distances",
+                 title="Unpaired: Clinic Travel Distance")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="clinic_travel_distance",
+               lgd_title="Distances",
+               plot_title="Paired: Clinic Travel Distance")
+```
+
+#### Clinic's Refrigeration
 
 ```{r}
 # Does your Health Center / Clinic have access to refrigeration?
-compare_pre_post(var_name="clinic_refrigeration_access", var_type="non_cont",
-                 subplot_type="pie", title="Clinic Access to Refrigeration")
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
+                 var_name="clinic_refrigeration_access", var_type="non_cont",
+                 subplot_type="pie", 
+                 lgd_title = "Does the Clinic have access to refrigeration?",
+                 title="Unpaired: Clinic Access to Refrigeration")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="clinic_refrigeration_access",
+               lgd_title="Does the Clinic have access to refrigeration?",
+               plot_title="Paired: Clinic Access to Refrigeration")
 ```
 
-### TODO: New Columns for each type
-
-```{r}
-# What services are you able to offer/sell/provide due to connection to Renewvia minigrid that you werent able to offer prior to connection?
-```
+#### New Health Services
 
 ```{r}
 # What is the Clinic / Hospital able to offer or provide due to connection to Renewvia minigrid that it wasnt able to offer before?
+plot_func(df=ci_clean, var_name="health_offering_change_count", 
+          var_type="non_cont", plot_title="No. of New Health Services", 
+          plot_type="bar_discrete", char_remove = 0)
+```
+
+#### Types of Services
+
+```{r}
+# What were those added services?
+wait <- sum(ci_clean$shorter_wait, na.rm = TRUE)
+vaccines <- sum(ci_clean$vaccine_cold_storage, na.rm = TRUE)
+patients <- sum(ci_clean$more_patients_treated, na.rm = TRUE)
+hours <- sum(ci_clean$clinic_longer_hours, na.rm = TRUE)
+
+vals <- c(wait, vaccines, patients, hours)
+
+# creating matrix
+tab <- as.data.frame(as.matrix(vals), 
+                     row.names = c("Shorter.Wait.Times", 
+                                   "Vaccines.Cold.Storage", 
+                                   "More.Patients", 
+                                   "Longer.Hours"))
+setnames(tab, old = c('V1'),
+          new = c("Count"))
+# t(tab)
+tab
 ```
 
 ## B) Inferential
@@ -1703,23 +1762,28 @@ compare_pre_post(var_name="clinic_refrigeration_access", var_type="non_cont",
 **Value (Encoding if applied)**: "yes" = 1; "no" = 0
 
 ```{r}
+# Do you have a source for clean drinking water?
 ## Do you have a source for clean drinking water? ## McNemar's  Test
 paired_testing(paired_enc, var_name="clean_drinking_water", 
                test_type = "mcnemar", plot_diff=FALSE)
 ```
 
-### Clean drinking water access - change
-
-**Data Source**: C&I Post Survey
-
-**Value (Encoding if applied)**: "Yes, it's decreased" = -1; "No, it's the same" = 0; "Yes, it's increased" = 1
+```{r}
+# Regression - Pre-Post Differences
+community_reg(df=paired_enc, outliers = "feature",
+              col_name="clean_drinking_water", dep="1", 
+              var_type="categorical", calc_diff = TRUE,
+              title="Increase in Access to clean drinking water by Community")
+```
 
 ```{r}
-## Since connection to Renewvia mini-grid, has your access to clean drinking water changed at all?
-community_reg(df=post_enc, 
-              col_name="clean_drinking_water_source", 
-              dep="1", var_type="categorical",
-              title="Increase in Access to Clean Drinking Water by Community")
+consumption_reg(df = paired_enc, reg_type ="logistic",
+                dep= "clean_drinking_water", 
+                calc_diff = TRUE,
+                # exclude_outliers = TRUE,
+                # outliers = "feature",
+                title="Energy Consumption vs. Increase in 
+                Access to clean drinking water")
 ```
 
 ### Kerosene Lamps Count\*
@@ -1731,19 +1795,21 @@ community_reg(df=post_enc,
 ```{r}
 ## How many kerosene lamps do you currently use in your household? 
 paired_testing(paired_enc, var_name="kerosene_lamps_count", 
-               test_type = "ttest", plot_diff=TRUE)
+               test_type = "ttest", 
+               plot_diff=TRUE, remove_outliers = TRUE)
 ```
 
 ```{r}
 community_reg(df=paired_enc, calc_diff = TRUE,
               col_name="kerosene_lamps_count", dep="V1", 
               title="Difference in No. of Kerosene Lamps by Community", 
-              var_type="ratio")
+              var_type="ratio", outliers = "feature", exclude_outliers = TRUE)
 ```
 
 ```{r}
 consumption_reg(df = paired_enc, reg_type ="linear",
                 dep= "kerosene_lamps_count", calc_diff=TRUE,
+                exclude_outliers = TRUE, outliers = "feature", 
                 title="Energy Consumption vs. Difference in No. of Kerosene Lamps")
 ```
 
@@ -1757,6 +1823,7 @@ consumption_reg(df = paired_enc, reg_type ="linear",
 community_reg(df=post_enc, 
               col_name="kerosene_lamp_usage_change", dep="-1", 
               var_type="categorical",
+              exclude_outliers = TRUE, outliers = "feature", 
               title="Decrease in Lamps Water by Community")
 ```
 
@@ -1767,22 +1834,10 @@ community_reg(df=post_enc,
 **Value (Encoding if applied)**: Any value
 
 ```{r}
-plot_func(df=ci_clean, var_name="health_offering_change_count", 
-          var_type="non_cont", plot_title="Change in Health Services Offered by Clinics", 
-          plot_type="bar_discrete", char_remove=NULL)
-```
-
-```{r}
-plot_func(df=ci_clean, var_name="health_offering_change_count", 
-          var_type="non_cont", 
-          plot_title="Change in Health Services Offered by Clinics", 
-          plot_type="pie", char_remove=c(0))
-```
-
-```{r}
 ## For clinics or health services only: Since connection to Renewvia mini-grid, have your health service offerings changed in any of the following ways: (select all that apply).
 community_reg(df=ci_enc, 
               col_name="health_offering_change_count", dep="V1", 
+              exclude_outliers = TRUE, outliers = "feature", 
               title="New Health Services Offered by Community", 
               var_type="ratio")
 ```
@@ -1791,6 +1846,7 @@ community_reg(df=ci_enc,
 sub <- ci_enc %>% filter(health_offering_change_count != 0)
 consumption_reg(df = sub, reg_type ="linear", 
                 dep= "health_offering_change_count", calc_diff=FALSE,
+                exclude_outliers = TRUE, outliers = "feature", 
                 title="Energy Consumption vs. New Health Services Offered")
 ```
 
@@ -1801,23 +1857,8 @@ consumption_reg(df = sub, reg_type ="linear",
 **Value (Encoding if applied)**: "yes" = 1; "no" = 0
 
 ```{r}
-generic_compare(data=paired_clean, var_type="non_cont",
-               var1="clinic_electricity_access_pre", 
-               var2="clinic_electricity_access_post", 
-               var1_title="Pre - Electricity Access", var2_title="Post - Minigrid Access", 
-               subplot_type="pie", plot_title="Clinic Access To Electricity")
-```
-
-```{r}
 paired_testing(paired_enc, var_name="clinic_electricity_access", 
                test_type = "mcnemar", plot_diff=FALSE)
-```
-
-```{r}
-community_reg(df=paired_enc, 
-              col_name="clinic_electricity_access", dep="1", 
-              title="Clinic Access To Electricity", 
-              var_type="categorical", calc_diff = TRUE)
 ```
 
 ### Clinic Access To Refrigeration
@@ -1827,25 +1868,10 @@ community_reg(df=paired_enc,
 **Value (Encoding if applied)**: "yes" = 1; "no" = 0
 
 ```{r}
-generic_compare(data=paired_clean, var_type="non_cont",
-               var1="clinic_refrigeration_access_pre", 
-               var2="clinic_refrigeration_access_post", 
-               var1_title="Pre", var2_title="Post", 
-               subplot_type="pie", plot_title="Paired - Clinic Access to Refrigeration")
-```
-
-```{r}
 ## Does your Health Center / Clinic have access to refrigeration?
 ## McNemar's  Test
 paired_testing(paired_enc, var_name="clinic_refrigeration_access", 
                test_type = "mcnemar", plot_diff=FALSE)
-```
-
-```{r}
-community_reg(df=paired_enc, 
-              col_name="clinic_refrigeration_access", dep="1", 
-              title="Clinic Access To Refrigeration", 
-              var_type="categorical", calc_diff = TRUE)
 ```
 
 ### Better access to healthcare
@@ -1855,21 +1881,17 @@ community_reg(df=paired_enc,
 **Value (Encoding if applied)**: "yes" = 1; "no" = 0
 
 ```{r}
-## Do you feel that you have better access to health services because of connection to mini-grid?
-plot_func(df=post_clean, var_name="better_access_health_minigrid", 
-          var_type="non_cont", plot_title="Households - Better Access to Healthcare", 
-          plot_type="pie")
-```
-
-```{r}
 community_reg(df=post_enc, 
-              col_name="better_access_health_minigrid", dep="1", var_type="categorical",
+              col_name="better_access_health_minigrid", 
+              dep="1", var_type="categorical",
+              exclude_outliers = TRUE, outliers = "feature", 
               title="Scatterplots For Better Healthcare Access by Community") 
 ```
 
 ```{r}
 consumption_reg(df = post_enc, reg_type ="logistic",
-                dep= "better_access_health_minigrid", 
+                dep= "better_access_health_minigrid",
+                exclude_outliers = TRUE, outliers = "feature", 
                 title="Energy Consumption vs. Better Healthcare Access")
 ```
 
@@ -1881,19 +1903,41 @@ consumption_reg(df = post_enc, reg_type ="logistic",
 
 ```{r}
 # How safe do you feel outside your home when it is dark?
-generic_compare(data=paired_enc, var_type="non_cont",
-               var1="feel_safe_dark_pre", 
-               var2="feel_safe_dark_post", 
-               var1_title="Pre", var2_title="Post", 
-               subplot_type="bar_discrete", plot_title="Feeling Safe When Dark")
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
+                 var_name="feel_safe_dark", var_type="non_cont",
+                 subplot_type="bar_simple", lgd_title = "Scores",
+                 title="Unpaired: Feeling Safe When Dark")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="feel_safe_dark",
+               lgd_title="Score",
+               plot_title="Paired: Feeling Safe When Dark")
+```
+
+```{r}
+a <- c(unique(initial_pre$feel_unsafe_reasons[is.na(initial_pre$feel_unsafe_reasons) == FALSE]),
+  unique(post_clean$feel_unsafe_reasons[is.na(post_clean$feel_unsafe_reasons) == FALSE]))
+
+unique(a)
 ```
 
 ### Reasons for Feeling Unsafe
 
 ```{r}
 # What makes you feel the most unsafe?
-compare_pre_post(var_name="feel_unsafe_reasons", var_type="non_cont",
-                 subplot_type="bar", title="Reasons for Feeling unsafe")
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
+                 var_name="feel_unsafe_reasons", var_type="non_cont",
+                 subplot_type="pie", lgd_title = "Reasons",
+                 title="Unpaired: Reasons for Feeling unsafe")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="feel_unsafe_reasons",
+               lgd_title="Reasons",
+               plot_title="Paired: Reasons for Feeling unsafe")
 ```
 
 ### Presence of Community Lights
@@ -2099,6 +2143,8 @@ kenya_df <- paired_clean %>% filter(country_post == "kenya")
 paired_testing(kenya_df, var_name="avg_household_income", 
                test_type = "ttest", plot_diff=TRUE)
 ```
+
+#### TODO: Subgroup Analysis by Gender, Community
 
 #### TODO: Needs further Investigation on negative differences
 
