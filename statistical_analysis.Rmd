@@ -225,7 +225,6 @@ plot_func <- function(df, var_name, var_type,
   }
   
   if(remove_outliers == TRUE) {
-      print("Removing outliers")
       quartiles <- quantile(df[, var_name], 
                         probs=c(.25, .75), na.rm = TRUE)
   
@@ -298,10 +297,11 @@ plot_func <- function(df, var_name, var_type,
   }else if(var_type == "cont") {
       if(plot_type == "hist") {
         plot <- ggplot(df, aes(x=.data[[var_name]])) + 
-                      geom_histogram(stat = "count",
+                      geom_histogram(
+                        # stat = "count", 
                                      fill = 'yellow',
-                                     alpha = 0.7,
-                                     col = 'black', bins=10) + 
+                                     # alpha = 0.7,
+                                     col = 'black', bins=10) +
                       geom_vline(xintercept = mean(df[,var_name], na.rm=TRUE),
                                  col="lightblue", lty=1, lwd = 1) +
                       geom_vline(xintercept = median(df[,var_name], na.rm=TRUE),
@@ -1916,13 +1916,6 @@ compare_paired(data=paired_clean,
                plot_title="Paired: Feeling Safe When Dark")
 ```
 
-```{r}
-a <- c(unique(initial_pre$feel_unsafe_reasons[is.na(initial_pre$feel_unsafe_reasons) == FALSE]),
-  unique(post_clean$feel_unsafe_reasons[is.na(post_clean$feel_unsafe_reasons) == FALSE]))
-
-unique(a)
-```
-
 ### Reasons for Feeling Unsafe
 
 ```{r}
@@ -1944,53 +1937,89 @@ compare_paired(data=paired_clean,
 
 ```{r}
 # Does your community currently have outdoor community lights?
-compare_pre_post(var_name="community_lights", var_type="non_cont",
-                 subplot_type="pie", title="Presence of Community Lights")
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
+                 var_name="community_lights", var_type="non_cont",
+                 subplot_type="pie", 
+                 lgd_title = "Does the community have lights?",
+                 title="Unpaired: Presence of Community Lights")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="community_lights",
+               lgd_title="Does the community have lights?",
+               plot_title="Paired: Presence of Community Lights")
 ```
 
 ### Household - Exterior Lights
 
 ```{r}
 # Does your home have exterior lighting?
-plot_func(df=post_clean, var_name="home_exterior_lights", 
-          var_type="non_cont", plot_title="Households - Exterior Lights", 
-          plot_type="pie")
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
+                 var_name="home_exterior_lights", var_type="non_cont",
+                 subplot_type="pie", 
+                 lgd_title = "Does the home have exterior lights?",
+                 title="Unpaired: Home Exterior Lights")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="home_exterior_lights",
+               lgd_title="Does the home have exterior lights?",
+               plot_title="Paired: Home Exterior Lights")
 ```
+
+### Exterior Lights By Mini-Grid
 
 ```{r}
 # Is this exterior lighting powered by minigrid?
-generic_compare(data=post_clean, var_type="non_cont",
-              var1="exterior_lights_minigrid", 
-               var2="home_exterior_lights", 
-               var1_title="Powered by Minigrid?", var2_title="Home With Exterior Light?", 
-               subplot_type="pie", plot_title="Households - Exterior Lights")
+plot_func(df=post_clean, var_name="exterior_lights_minigrid", 
+          var_type="non_cont", lgd="Powered by Mini-Grid",
+          plot_title="Households - Exterior Lights Powered by Mini-Grid", 
+          plot_type="pie")
 ```
 
 ## B) Inferential
 
-### Feeling Safe
+### Feeling Safe\*
 
-**Data Source**: Household Post Survey
+**Data Source**: Paired Household Surveys (Pre & Post)
 
 **Value (Encoding if applied)**: "Very unsafe" = 1; "Somewhat unsafe" = 2; "Neither safe nor unsafe"= 3; "Somewhat safe" = 4; "Very safe" = 5
 
 ```{r}
 # # How safe do you feel outside your home when it is dark?
 paired_testing(paired_enc, var_name="feel_safe_dark", 
-               test_type = "wilcoxon", plot_diff=TRUE)
+               test_type = "sign", plot_diff=TRUE)
 ```
 
-### Reasons for Feeling Unsafe - Potential Theft
+```{r}
+# paired_enc$safe_diff <- ifelse(paired_enc$feel_safe_dark_pre < 
+#                                paired_enc$feel_safe_dark_post, 1, 
+#                                ifelse((paired_enc$feel_safe_dark_pre >
+#                                        paired_enc$feel_safe_dark_post), -1, 0))
+```
+
+### Potential Theft
+
+**Data Source**: Paired Household Surveys (Pre & Post)
+
+**Value (Encoding if applied)**: "Yes" = 1; "No" = 0
 
 ```{r}
 # What makes you feel the most unsafe? Testing for Potentiel Theft only
 community_reg(df=paired_enc, 
               col_name="unsafe_due_to_theft", dep="-1", 
               title="Unsafe Due to Theft", 
+              exclude_outliers = TRUE, outliers = "feature",
               var_type="categorical", calc_diff = TRUE)
 ```
 
-### TODO: Presence of Community Lights
+### Presence of Community Lights
+
+**Data Source**: Paired Household Surveys (Pre & Post)
+
+**Value (Encoding if applied)**: "Yes" = 1; "No" = 0
 
 ```{r}
 # Does your community currently have outdoor community lights?
@@ -2002,6 +2031,7 @@ paired_testing(paired_enc, var_name="community_lights",
 community_reg(df=paired_enc, 
               col_name="community_lights", dep="1", 
               title="Community Lights", 
+              exclude_outliers = TRUE, outliers = "feature",
               var_type="categorical", calc_diff = TRUE)
 ```
 
@@ -2009,12 +2039,13 @@ community_reg(df=paired_enc,
 
 ## A) Descriptive
 
-### Pre-connection: Employment Type
+### Employment Type
 
 ```{r}
 # Type of employment for Primary Provider
 plot_func(df=initial_pre, var_name="employement_type", 
-          var_type="non_cont", plot_title="Employement Type of Primary Provider", 
+          var_type="non_cont", lgd="Type",
+          plot_title="Employement Type of Primary Provider", 
           plot_type="pie")
 ```
 
@@ -2023,7 +2054,8 @@ plot_func(df=initial_pre, var_name="employement_type",
 ```{r}
 # Has your (or your spouses) occupation changed since youve been connected to minigrid power?
 plot_func(df=post_clean, var_name="occupation_change", 
-          var_type="non_cont", plot_title="Change in Occupation of Primary Provider", 
+          var_type="non_cont", lgd="Change in Occupation?",
+          plot_title="Change in Occupation of Primary Provider", 
           plot_type="pie")
 ```
 
@@ -2031,68 +2063,128 @@ plot_func(df=post_clean, var_name="occupation_change",
 
 ```{r}
 # What is your average monthly household income:
-# compare_pre_post(var_name="avg_household_income", var_type="cont",
-#                  subplot_type="hist", char_remove = 0, exclude_outliers = TRUE,
-#                  title="Average Household Income", shared_legend=FALSE)
-plot_func(df=initial_pre, var_name="avg_household_income", 
-          var_type="cont", plot_title="Pre-Connection - Average Household Income", 
-          plot_type="hist", char_remove = 0, remove_outliers = TRUE)
-plot_func(df=post_clean, var_name="avg_household_income", 
-          var_type="cont", plot_title="Post-Connection - Average Household Income", 
-          plot_type="hist", char_remove = 0, remove_outliers = TRUE)
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
+                 var_name="avg_household_income", var_type="cont",
+                 subplot_type="hist", exclude_outliers = TRUE, 
+                 title="Unpaired: Average Household Income")
 ```
 
 ```{r}
 # Has your household income changed since your connection to minigrid power?
 plot_func(df=post_clean, var_name="household_income_change", 
-          var_type="non_cont", plot_title="Change in Household Income", 
+          var_type="non_cont", lgd="Change",
+          plot_title="Change in Household Income", 
           plot_type="pie")
 ```
 
-### TODO: Costs - Additional Cleaning
+### Household Expenses
 
 #### Phone Charging
 
 ```{r}
 # How much do you pay per month to charge your mobile phone?
-compare_pre_post(var_name="phone_charge_cost", var_type="non_cont",
-                 subplot_type="bar",
-                 title="Phone Charging Cost", shared_legend=TRUE)
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
+                 var_name="phone_charge_cost", var_type="non_cont",
+                 subplot_type="pie", lgd_title = "Costs",
+                 title="Unpaired: Phone Charging Cost")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="phone_charge_cost",
+               lgd_title="Costs",
+               plot_title="Paired: Phone Charging Cost")
 ```
 
 #### Appliances Charging
 
 ```{r}
 # What is approximate monthly cost of energy used strictly for charging appliances?
-compare_pre_post(var_name="applicances_charging_cost", var_type="non_cont",
-                 subplot_type="bar",
-                 title="Appliances Charging Cost", shared_legend=TRUE)
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
+                 var_name="applicances_charging_cost", var_type="non_cont",
+                 subplot_type="pie", lgd_title = "Costs",
+                 title="Unpaired: Appliances Charging Cost")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="applicances_charging_cost",
+               lgd_title="Costs",
+               plot_title="Paired: Appliances Charging Cost")
 ```
 
 #### Cooking Energy
 
 ```{r}
 # What is the approximate monthly cost of energy used strictly for cooking?
-compare_pre_post(var_name="cooking_energy_cost", var_type="non_cont",
-                 subplot_type="bar",
-                 title="Cooking Energy Cost", shared_legend=TRUE)
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
+                 var_name="cooking_energy_cost", var_type="non_cont",
+                 subplot_type="pie", lgd_title = "Costs",
+                 title="Unpaired: Cooking Energy Cost")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="cooking_energy_cost",
+               lgd_title="Costs",
+               plot_title="Paired: Cooking Energy Cost")
 ```
 
 #### Kerosene Lamps
 
 ```{r}
 # How much do you pay monthly for kerosene used only in kerosene lamps?
-compare_pre_post(var_name="kerosene_lamps_cost", var_type="non_cont",
-                 subplot_type="bar",
-                 title="Kerosene Lamps Cost", shared_legend=TRUE)
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
+                 var_name="kerosene_lamps_cost", var_type="non_cont",
+                 subplot_type="pie", lgd_title = "Costs",
+                 title="Unpaired: Kerosene Lamps Cost")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="kerosene_lamps_cost",
+               lgd_title="Costs",
+               plot_title="Paired: Kerosene Lamps Cost")
 ```
 
-### TODO: Local Business Creation
+### Local Business Creation
+
+#### Business Owners
 
 ```{r}
 # Are any household members business owners?
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
+                 var_name="business_owners_binary", var_type="non_cont",
+                 subplot_type="pie", lgd_title = "Own a Business?",
+                 title="Unpaired: Household Business Ownership")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="business_owners_binary",
+               lgd_title="Own a Business?",
+               plot_title="Paired: Household Business Ownership")
+```
+
+#### Recently Open
+
+```{r}
 # Is this business recent (started after connection to minigrid power?)
+plot_func(df=post_clean, var_name="business_recent", 
+          var_type="non_cont", lgd="Recent?",
+          plot_title="Recent Business Ownership", 
+          plot_type="pie")
+```
+
+#### Mini-grid related
+
+```{r}
 # If this business is new, do you consider this new business a result of having access to minigrid power?
+plot_func(df=post_clean, var_name="business_use_minigrid", 
+          var_type="non_cont", lgd="Recent?",
+          plot_title="Business, A Result From Mini-Grid", 
+          plot_type="pie")
 ```
 
 ### C&I
@@ -2107,7 +2199,7 @@ plot_func(df=ci_clean, var_name="operation_status",
           plot_type="pie")
 ```
 
-#### Busines Type
+#### Business Type
 
 ```{r}
 # Please select your business type
@@ -2115,12 +2207,6 @@ plot_func(df=ci_clean, var_name="business_type",
           var_type="non_cont", lgd = "Business Type",
           plot_title="C&I - Type", 
           plot_type="pie")
-```
-
-### C&I - New Products/Services
-
-```{r}
-
 ```
 
 ## B) Inferential
@@ -2134,7 +2220,19 @@ plot_func(df=ci_clean, var_name="business_type",
 ```{r}
 ## What is your average monthly household income?
 nigeria_df <- paired_clean %>% filter(country_post == "nigeria")
-paired_testing(nigeria_df, var_name="avg_household_income", 
+paired_testing(nigeria_df, var_name="avg_household_income",
+               test_type = "ttest", plot_diff=TRUE)
+
+# Nigerian Women
+gdr <- "female"
+women_paired <- nigeria_df %>% filter(gender_post == gdr)
+paired_testing(women_paired, var_name="avg_household_income",
+               test_type = "ttest", plot_diff=TRUE)
+
+# Nigerian Men
+gdr <- "male"
+men_paired <- nigeria_df %>% filter(gender_post == gdr)
+paired_testing(men_paired, var_name="avg_household_income",
                test_type = "ttest", plot_diff=TRUE)
 ```
 
@@ -2142,9 +2240,19 @@ paired_testing(nigeria_df, var_name="avg_household_income",
 kenya_df <- paired_clean %>% filter(country_post == "kenya")
 paired_testing(kenya_df, var_name="avg_household_income", 
                test_type = "ttest", plot_diff=TRUE)
-```
 
-#### TODO: Subgroup Analysis by Gender, Community
+# Nigerian Women
+gdr <- "female"
+women_paired <- kenya_df %>% filter(gender_post == gdr)
+paired_testing(women_paired, var_name="avg_household_income",
+               test_type = "ttest", plot_diff=TRUE)
+
+# Nigerian Men
+gdr <- "male"
+men_paired <- kenya_df %>% filter(gender_post == gdr)
+paired_testing(men_paired, var_name="avg_household_income",
+               test_type = "ttest", plot_diff=TRUE)
+```
 
 #### TODO: Needs further Investigation on negative differences
 
