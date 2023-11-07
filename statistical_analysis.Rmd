@@ -2254,8 +2254,6 @@ paired_testing(men_paired, var_name="avg_household_income",
                test_type = "ttest", plot_diff=TRUE)
 ```
 
-#### TODO: Needs further Investigation on negative differences
-
 ### Household - Income Change
 
 **Data Source**: Household Post Survey
