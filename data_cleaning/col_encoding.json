@@ -1481,7 +1481,9 @@
             "col_enc_map": {
                 "yes_its_gotten_worse": -1,
                 "no_there_has_not_been_a_noticeable_change": 0,
-                "yes_overall_school_performance_is_better": 1
+                "yes_overall_school_performance_is_better": 1,
+                "no_its_the_same": 0,
+                "yes_its_gotten_better": 1
             }
         },
         {

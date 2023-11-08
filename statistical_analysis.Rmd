@@ -10,9 +10,9 @@ output:
 
 ## Descriptive
 
--   Generating summary statistics
+-   Summary statistics
 
--   Plotting graphs/charts
+-   Visualizatin with graphs/charts
 
 ## **Inferential**
 
@@ -30,7 +30,7 @@ output:
 
 # Libraries
 
-```{r}
+```{r results='hide', message=FALSE, warning=FALSE}
 # Importing libraries
 options(warn=-1)
 library(ggplot2)
@@ -156,34 +156,34 @@ paired_enc <- merge(initial_pre_enc, post_enc,
 
 # Utility Functions
 
+```{r}
+outliers_removal <- function(data, var) {
+  quartiles <- quantile(data[, var], 
+                        probs=c(.25, .75), na.rm = TRUE)
+  
+  IQR <- IQR(data[, var], na.rm = TRUE)
+  
+  Lower <- quartiles[1] - 1.5*IQR
+  Upper <- quartiles[2] + 1.5*IQR 
+  
+  data <- subset(data, 
+                 data[, var] > Lower &
+                 data[, var] < Upper)
+  return(data)
+}
+```
+
 ## Descriptive
 
 ```{r}
-get_stats <- function(data, ct, var_name,data_source,
+get_stats <- function(data_source, var_name,
                       remove_outliers = FALSE, 
                       exclude_zeros = FALSE) {
-  if (grepl("_pre", var_name, fixed = TRUE)){
-    country_data <- data %>% filter(country_pre == ct)
-  } else if (grepl("_post", var_name, fixed = TRUE)){
-    country_data <- data %>% filter(country_post == ct)
-  } else {country_data <- data %>% filter(country == ct)}
-    
   if (remove_outliers == TRUE) {
-    print("Excluding outliers")
-    quartiles <- quantile(country_data[, var_name], 
-                        probs=c(.25, .75), na.rm = TRUE)
-  
-    IQR <- IQR(country_data[, var_name], na.rm = TRUE)
-    
-    Lower <- quartiles[1] - 1.5*IQR
-    Upper <- quartiles[2] + 1.5*IQR 
-    
-    country_data <- subset(country_data, 
-                              country_data[, var_name] > Lower &
-                              country_data[, var_name] < Upper)
+    outliers_removal(data=data_source, var=var_name)
   } 
   
-  var <- country_data[, var_name]
+  var <- data[, var_name]
   
   if (exclude_zeros == TRUE) {
     print("Removing Zeros")
@@ -225,18 +225,9 @@ plot_func <- function(df, var_name, var_type,
   }
   
   if(remove_outliers == TRUE) {
-      quartiles <- quantile(df[, var_name], 
-                        probs=c(.25, .75), na.rm = TRUE)
+      outliers_removal(data=df, var=var_name)
+  }
   
-      IQR <- IQR(df[, var_name], na.rm = TRUE)
-      
-      Lower <- quartiles[1] - 1.5*IQR
-      Upper <- quartiles[2] + 1.5*IQR 
-      
-      df <- subset(df, 
-                     df[, var_name] > Lower &
-                     df[, var_name]< Upper)
-    }
   if(var_type == "non_cont") {
       var <- df[, var_name]
       var <- var[var != ""]
@@ -459,29 +450,19 @@ compare_paired <- function(data, var_name, view,
 ```{r}
 # Running the paired t-test
 paired_testing <- function(data, var_name, test_type, 
-                           plot_diff=FALSE, plot_title=NULL, 
+                           plot_diff=FALSE, plt_title=NULL, 
                            remove_outliers=FALSE) {
   pre_name <- paste(var_name, "pre", sep="_")
   post_name <- paste(var_name, "post", sep="_")
    
   if(remove_outliers==TRUE) {
     data$temp <- abs(data[, post_name] - data[, pre_name])
-    quartiles <- quantile(data$temp,
-                          probs=c(.25, .75), na.rm = TRUE)
-
-    IQR <- IQR(data$temp, na.rm = TRUE)
-
-    Lower <- quartiles[1] - 1.5*IQR
-    Upper <- quartiles[2] + 1.5*IQR
-
-    data <- subset(data,
-                   data$temp > Lower &
-                   data$temp < Upper)
+    outliers_removal(data=data, var_name=temp)
   }
   
   var_pre <- data[, pre_name]
   var_post <- data[, post_name]
-  diff <- var_post - var_pre
+  data$var_diff <- var_post - var_pre
   
   # Running the test
   if(test_type == "wilcoxon"){
@@ -499,13 +480,23 @@ paired_testing <- function(data, var_name, test_type,
     print(cross_tab)
     test <- mcnemar.test(cross_tab)
   }
-  
+  print(test)
   # Visualize distribution of score differences
   if(plot_diff == TRUE) {
-      hist(diff, main=plot_title)
+      plot <- plot_func(df=data, var_name="var_diff", var_type="cont", 
+                        plot_title=plt_title, plot_type="hist")
+      return(plot)
   }
-  return(test)
+  # return(test)
 }
+```
+
+```{r}
+## What is your average monthly household income?
+ctr <- "nigeria"
+country_df <- paired_clean %>% filter(country_post == ctr)
+paired_testing(country_df, var_name="avg_household_income",
+               test_type = "ttest", plot_diff=TRUE)
 ```
 
 ## Regression Testing
@@ -522,65 +513,45 @@ plot_reg <- function(data, feature, dependent,
   }
   
   if(remove_outliers == TRUE) {
-    if(which_outliers=="all") {
-      vars <- c(feature, dependent) 
-      for(var in vars){
-        quartiles <- quantile(data[, var], 
-                          probs=c(.25, .75), na.rm = TRUE)
-      
-        IQR <- IQR(data[, var], na.rm = TRUE)
+      if(which_outliers=="dependent"){
+        data <- outliers_removal(data=data, var_name=dependent)
         
-        Lower <- quartiles[1] - 1.5*IQR
-        Upper <- quartiles[2] + 1.5*IQR 
+      }else if(which_outliers=="feature"){
+        data <- outliers_removal(data=data, var_name=feature)
         
-        data <- subset(data, 
-                       data[, var] > Lower &
-                       data[, var] < Upper)
+      }else if(which_outliers=="all"){
+        temp <- outliers_removal(data=data, var_name=feature)
+        data <- outliers_removal(data=data, var_name=dependent)
       }
-    }else if(which_outliers=="dependent"){
-      var <- dependent
-      quartiles <- quantile(data[, var], 
-                            probs=c(.25, .75), na.rm = TRUE)
-      
-      IQR <- IQR(data[, var], na.rm = TRUE)
-      
-      Lower <- quartiles[1] - 1.5*IQR
-      Upper <- quartiles[2] + 1.5*IQR 
-      
-      data <- subset(data, 
-                     data[, var] > Lower &
-                     data[, var] < Upper)
-      
-    }else if(which_outliers=="feature"){
-      var <- feature
-      quartiles <- quantile(data[, var], 
-                          probs=c(.25, .75), na.rm = TRUE)
-      
-      IQR <- IQR(data[, var], na.rm = TRUE)
-      
-      Lower <- quartiles[1] - 1.5*IQR
-      Upper <- quartiles[2] + 1.5*IQR 
-      
-      data <- subset(data, 
-                     data[, var] > Lower &
-                     data[, var] < Upper)
-    }
   }
   
   if(reg_type == "linear") {
     plot <- ggplot(data,
                 aes(x=.data[[feature]], y=.data[[dependent]])) +
                 geom_point(color='blue') +
-                  geom_smooth(color='red', method = "lm", se = FALSE) +
+                  geom_smooth(color='red', method = "lm", se = TRUE) +
                 theme_classic()
+    
   } else if(reg_type == "logistic") {
     print(head(data))
      plot <- ggplot(data, 
                     aes(x=.data[[feature]], y=.data[[dependent]])) + 
-              geom_point(color='blue', alpha=.5) +
+              geom_jitter(width = 0.05, height = 0.05) +
+              #geom_point(color='blue', alpha=.5) +
              geom_smooth(method = "glm", color='red',
-                         method.args= list(family="binomial"), se=FALSE)
+                         method.args= list(binomial(link = 'logit')), se=FALSE)
                 theme_classic()
+                
+  }else if(reg_type == "poisson") {
+    print(head(data))
+     plot <- ggplot(data, 
+                    aes(x=.data[[feature]], y=.data[[dependent]])) + 
+              #geom_point(color='blue', alpha=.5) +
+              geom_jitter(width = 0.05, height = 0.05) +
+              geom_smooth(method = "glm", color='red',
+                         method.args= list(family="poisson"), se=TRUE)+
+                theme_classic()
+                
   }
  
   return(plot)
@@ -608,8 +579,10 @@ community_reg <- function(df, col_name, dep, title,
   
   if(var_type == "categorical") {
     data <- rownames_to_column(as.data.frame.matrix(
-                                  table(df[, "community"], 
-                                        df[, "col_reg"])), 
+                                  prop.table(table(
+                                      df[, "community"], 
+                                      df[, "col_reg"]),
+                                     margin = 1)), 
                                var = "community")
   } else if(var_type == "ratio") {
     data <- as.data.frame(rowsum(df[, "col_reg"], 
@@ -651,7 +624,7 @@ community_reg <- function(df, col_name, dep, title,
 ### Customer Consumption
 
 ```{r}
-consumption_reg <- function(df, dep, title, reg_type, 
+consumption_reg <- function(df, dep, ind="Energy.Consumption",title, reg_type, 
                             calc_diff=FALSE, 
                             exclude_outliers = FALSE,
                             outliers=NULL, 
@@ -670,7 +643,7 @@ consumption_reg <- function(df, dep, title, reg_type,
     model <- lm(df$col_reg ~ df$Energy.Consumption)
     print(summary(model))
     print(confint(model, level=0.95))
-    p <- plot_reg(data=df, feature="Energy.Consumption",  
+    p <- plot_reg(data=df, feature=ind,  
                   dependent="col_reg", reg_type="linear", 
                   remove_outliers=exclude_outliers, 
                   which_outliers = outliers,
@@ -682,11 +655,24 @@ consumption_reg <- function(df, dep, title, reg_type,
     
   } else if(reg_type == "logistic") {
     model <- glm(df$col_reg ~ df$Energy.Consumption, 
-               family=binomial)
+               family="binomial")
     print(summary(model))
     print(confint(model, level=0.95))
-    p <- plot_reg(data=df, feature="Energy.Consumption",  
+    p <- plot_reg(data=df, feature=ind,  
                   dependent="col_reg", reg_type="logistic", 
+                  remove_outliers=exclude_outliers,
+                  which_outliers = outliers,
+                  vals_remove=to_remove)
+    test <- wald.test(Sigma = vcov(model), 
+                      b = coef(model), Terms = 1)
+    print(test)
+  }else if(reg_type == "poisson") {
+    model <- glm(df$col_reg ~ df$Energy.Consumption, 
+               family="poisson")
+    print(summary(model))
+    print(confint(model, level=0.95))
+    p <- plot_reg(data=df, feature=ind,  
+                  dependent="col_reg", reg_type="poisson", 
                   remove_outliers=exclude_outliers,
                   which_outliers = outliers,
                   vals_remove=to_remove)
@@ -960,13 +946,14 @@ compare_paired(data=gender_paired,
 
 **Value (Encoding if applied)**: "Yes, it's decreased" = -1; "No, it's the same" = 0; "Yes, it's increased" = 1
 
-#### Girls' Schooling - Increase
+#### Girls' Schooling - Increase\*
 
 ```{r}
 # Check for increase
-community_reg(df=post_enc, outliers = "feature",
+community_reg(df=post_enc,
               col_name="girls_schooling_change", dep="1", 
               var_type="categorical",
+              exclude_outliers = TRUE, outliers = "feature",
               title="Counts of Increase in Girls' School Enrollment by Community")
 ```
 
@@ -974,19 +961,21 @@ community_reg(df=post_enc, outliers = "feature",
 
 ```{r}
 # Check for decrease
-community_reg(df=post_enc, outliers = "feature",
+community_reg(df=post_enc, 
               col_name="girls_schooling_change", dep="-1", 
               var_type="categorical",
+              exclude_outliers = TRUE, outliers = "feature",
               title="Counts of Decrease in Girls' School Enrollment by Community")
 ```
 
-#### Boys' Schooling - Increase
+#### Boys' Schooling - Increase\*
 
 ```{r}
 # Check for increase
-community_reg(df=post_enc, outliers = "feature",
+community_reg(df=post_enc, 
               col_name="boys_schooling_change", dep="1", 
               var_type="categorical",
+              exclude_outliers = TRUE, outliers = "feature",
               title="Counts of Increase in Boys' School Enrollment by Community")
 ```
 
@@ -994,9 +983,10 @@ community_reg(df=post_enc, outliers = "feature",
 
 ```{r}
 # Check for decrease
-community_reg(df=post_enc, outliers = "feature",
+community_reg(df=post_enc, 
               col_name="boys_schooling_change", dep="-1", 
               var_type="categorical",
+              exclude_outliers = TRUE, outliers = "feature",
               title="Counts of Increase in Boys' School Enrollment by Community")
 ```
 
@@ -1006,7 +996,7 @@ community_reg(df=post_enc, outliers = "feature",
 
 **Value (Encoding if applied)**: "less than 1 hour" = 1; "1-2 hours" = 2; "2-3 hours" = 3; "3-4 hours" = 4; "greater than 4 hours" = 5
 
-#### Wilcoxon Signed-Rank Test
+#### Wilcoxon Signed-Rank Test\*
 
 ```{r}
 # How long does the water collection process take on a daily basis?
@@ -1015,13 +1005,14 @@ paired_testing(paired_enc, var_name="water_collection_time",
                plot_title="Difference Pre-Post of Water Collection Times")
 ```
 
-#### Community Variables
+#### Community Variables\*
 
 ```{r}
 # Regression - Pre-Post Differences
-community_reg(df=paired_enc, outliers = "feature",
+community_reg(df=paired_enc, 
               col_name="water_collection_time", dep="V1", 
               var_type="ratio", calc_diff = TRUE,
+              exclude_outliers = TRUE, outliers = "all",
               title="Cumulative Difference in 
               Water COllection Difference by Community")
 ```
@@ -1032,7 +1023,7 @@ community_reg(df=paired_enc, outliers = "feature",
 # Regression - Pre-Post Differences
 consumption_reg(df = paired_enc, reg_type ="linear",
                 dep= "water_collection_time", calc_diff=TRUE,
-                title="Individual Difference in 
+                title="Individual Difference in
               Water COllection Difference by Community")
 ```
 
@@ -1042,34 +1033,35 @@ consumption_reg(df = paired_enc, reg_type ="linear",
 
 **Value (Encoding if applied)**: "No need to collect fuel" = 1; "less than 1 hour" = 2; "1-2 hours" =3; "3-5 hours" = 4; "greater than 4 hours" = 5
 
-#### Wilcoxon Signed-Rank Test
+#### Wilcoxon Signed-Rank Test\*
 
 ```{r}
 # How long does the cooking fuel collection process take on a daily basis?
 paired_testing(paired_enc, var_name="cooking_fuel_collection_time", 
                test_type = "wilcoxon", plot_diff=TRUE, 
-               plot_title="Difference Pre-Post of Water Collection Times")
+               plot_title="Difference Pre-Post of Cooking Fuel Collection Times")
 ```
 
 #### Community Variables
 
 ```{r}
 # Regression - Pre-Post Differences
-community_reg(df=paired_enc, outliers = "feature",
+community_reg(df=paired_enc, 
               col_name="cooking_fuel_collection_time", dep="V1", 
               var_type="ratio", calc_diff = TRUE,
-              title="Cumulative Difference in 
-              Cooking Fuel Collection Time Difference by Community")
+              exclude_outliers = TRUE, outliers = "feature",
+              title="Cumulative Differences in 
+              Cooking Fuel Collection Time by Community")
 ```
 
 #### Individual Consumption
 
 ```{r}
 # Regression - Pre-Post Differences
-consumption_reg(df = paired_enc, reg_type ="linear",
-                dep= "cooking_fuel_collection_time", calc_diff=TRUE,
-                title="Individual Difference in 
-                Cooking Fuel Collection Time Difference by Community")
+# consumption_reg(df = paired_enc, reg_type ="linear",
+#                 dep= "cooking_fuel_collection_time", calc_diff=TRUE,
+#                 title="Individual Difference in 
+#                 Cooking Fuel Collection Time Difference by Community")
 ```
 
 ### Women-led Business Ownership
@@ -1086,17 +1078,19 @@ paired_testing(paired_enc, var_name="business_owners_female",
 
 ```{r}
 # Regression - Pre-Post Differences
-community_reg(df=paired_enc, outliers = "feature",
+community_reg(df=paired_enc, 
               col_name="business_owners_female", dep="1", 
               var_type="categorical", calc_diff = TRUE,
+              exclude_outliers = TRUE, outliers = "feature",
               title="Increase in New Female Business Owners by Community")
 ```
 
 ```{r}
 # Regression - Pre-Post Differences
-community_reg(df=paired_enc, outliers = "feature",
+community_reg(df=paired_enc,
               col_name="business_owners_female", dep="-1", 
               var_type="categorical", calc_diff = TRUE,
+              exclude_outliers = TRUE, outliers = "feature",
               title="Decrease in New Female Business Owners by Community")
 ```
 
@@ -1136,7 +1130,7 @@ paired_testing(gender_paired, var_name="business_owners_female",
                test_type = "mcnemar", plot_diff=FALSE)
 ```
 
-### New Female workers
+### New Female workers\*
 
 **Data Source**: Commercial & Institution Post Survey
 
@@ -1147,17 +1141,18 @@ paired_testing(gender_paired, var_name="business_owners_female",
 # Check for increase
 community_reg(df=ci_enc, 
               col_name="workforce_change_female", dep="V1", 
-              title="New Female Workers Change by Community", 
-              outliers="all", var_type="ratio")
+              title="New Female Workers Change by Community",
+              exclude_outliers = TRUE, outliers = "feature",
+              var_type="ratio")
 ```
 
 ```{r}
 # Regression - Pre-Post Differences
-df_reg <- ci_enc %>% filter(workforce_change_female != 0)
+# df_reg <- ci_enc %>% filter(workforce_change_female != 0)
 consumption_reg(df = df_reg, reg_type ="linear",
                 dep= "workforce_change_female", 
                 exclude_outliers = TRUE, outliers = "feature",
-                title="New Female Workers Change by Community")
+                title="New Female Workers Change")
 ```
 
 # 2- Productivity
@@ -1363,9 +1358,6 @@ compare_paired(data=paired_clean,
 
 #### **TODO: Un-clean sources: Kerosene, Charcoal**
 
-```{r}
-```
-
 #### Time
 
 ```{r}
@@ -1453,7 +1445,7 @@ plot_func(df=ci_clean, var_name="ci_offering_change",
 
 ## B) Inferential
 
-### No. of Appliances\*
+### No. of Appliances
 
 **Data Source**: Paired Household Surveys (Pre & Post)
 
@@ -1475,11 +1467,12 @@ paired_testing(paired_enc, var_name = "appliances_count",
 ```{r}
 ## How many hours of light per day do you currently have at home?
 paired_testing(paired_enc, var_name = "light_hours_current", 
-               plot_diff = TRUE, plot_title = "Difference Pre-Post in Light Hours",
+               plot_diff = TRUE, 
+               plot_title = "Difference Pre-Post in Light Hours",
                test_type="ttest", remove_outliers=TRUE)
 ```
 
-### Business Operation Hours
+### Business Operation Hours\*
 
 **Data Source**: C&I Post-Survey
 
@@ -1488,8 +1481,9 @@ paired_testing(paired_enc, var_name = "light_hours_current",
 ```{r}
 ## Since connection to Renewvia mini-grid, have your hours of operation changed at all?
 # Check for increase
-community_reg(df=ci_enc, outliers = "feature",
+community_reg(df=ci_enc,
               col_name="operations_hours_change", dep="1", var_type="categorical",
+              exclude_outliers = TRUE, outliers = "feature",
               title="Increase in Business Hours by Community")
 ```
 
@@ -1501,20 +1495,13 @@ community_reg(df=ci_enc, outliers = "feature",
 
 ```{r}
 ## Have you seen a change in overall school performance?
-community_reg(df=ci_enc, outliers = "feature",
+community_reg(df=ci_enc, 
               col_name="school_performance", dep="1", var_type="categorical",
+              exclude_outliers = TRUE, outliers = "feature",
               title="Schools - Increase in Academic Performace by Community")
 ```
 
-```{r}
-# Encoding
-## Have you seen a change in overall school performance?
-# community_reg(df=ci_enc, outliers = "feature",
-#               col_name="school_performance", dep="-1", var_type="categorical",
-#               title="Schools - Increase in Academic Performace by Community")
-```
-
-### TODO: Household - Academic Performance
+### Household - Academic Performance
 
 **Data Source**: Household Post-Survey
 
@@ -1522,15 +1509,16 @@ community_reg(df=ci_enc, outliers = "feature",
 
 ```{r}
 # Encoding
-community_reg(df=post_enc, outliers = "feature",
+community_reg(df=post_enc, 
               col_name="school_performance_change",
               dep="1", var_type="categorical",
+              exclude_outliers = TRUE, outliers = "feature",
               title="Households - Increase in Academic Performace by Community")
 ```
 
 ### Commercial & Institution
 
-#### Operation Hours Change
+#### Operation Hours Change\*
 
 **Data Source**: C&I Post-Survey
 
@@ -1538,17 +1526,14 @@ community_reg(df=post_enc, outliers = "feature",
 
 ```{r}
 
-community_reg(df=ci_enc, outliers = "feature",
+community_reg(df=ci_enc, 
               col_name="operations_hours_change", 
               dep="1", var_type="categorical",
+              exclude_outliers = TRUE, outliers = "feature",
               title="Increase in C&I's Operation Hours by Community")
 ```
 
-```{r}
-# Consumption
-```
-
-#### Workforce Change
+#### Workforce Change\*
 
 **Data Source**: C&I Post-Survey
 
@@ -1556,13 +1541,14 @@ community_reg(df=ci_enc, outliers = "feature",
 
 ```{r}
 # Since connection to Renewvia mini-grid, have you had any change in number of workers/employees at your place of work?
-community_reg(df=ci_enc, outliers = "feature",
+community_reg(df=ci_enc, 
               col_name="workforce_change", 
               dep="1", var_type="categorical",
+              exclude_outliers = TRUE, outliers = "feature",
               title="Increase in C&I's Workforce by Community")
 ```
 
-#### Adding New Products/Services
+#### Adding New Products/Services\*
 
 **Data Source**: C&I Post-Survey
 
@@ -1570,15 +1556,21 @@ community_reg(df=ci_enc, outliers = "feature",
 
 ```{r}
 # Have you added any new products or services since connection to Renewvia minigrid?
-community_reg(df=ci_enc, outliers = "feature",
+community_reg(df=ci_enc, 
               col_name="ci_offering_change", 
               dep="1", var_type="categorical",
+              exclude_outliers = TRUE, outliers = "feature",
               title="C&I's Newly Added Offerings by Community")
 ```
 
 ```{r}
+# Multiply proportions by total numbers -> approximate the synthetic count by community
+# Assumptions
+```
+
+```{r}
 consumption_reg(df = ci_enc, reg_type ="logistic",
-                dep= "ci_offering_change", 
+                dep= "ci_offering_change",
                 exclude_outliers = TRUE, outliers = "feature",
                 title="Energy Consumption vs. Newly Added Offerings")
 ```
@@ -1755,7 +1747,7 @@ tab
 
 ## B) Inferential
 
-### Access to clean drinking water
+### Access to clean drinking water\*
 
 **Data Source**: Paired Household Surveys (Pre & Post)
 
@@ -1770,20 +1762,21 @@ paired_testing(paired_enc, var_name="clean_drinking_water",
 
 ```{r}
 # Regression - Pre-Post Differences
-community_reg(df=paired_enc, outliers = "feature",
+community_reg(df=paired_enc, 
               col_name="clean_drinking_water", dep="1", 
               var_type="categorical", calc_diff = TRUE,
+              exclude_outliers = TRUE, outliers = "feature",
               title="Increase in Access to clean drinking water by Community")
 ```
 
 ```{r}
-consumption_reg(df = paired_enc, reg_type ="logistic",
-                dep= "clean_drinking_water", 
-                calc_diff = TRUE,
-                # exclude_outliers = TRUE,
-                # outliers = "feature",
-                title="Energy Consumption vs. Increase in 
-                Access to clean drinking water")
+# consumption_reg(df = paired_enc, reg_type ="logistic",
+#                 dep= "clean_drinking_water",
+#                 calc_diff = TRUE,
+#                 exclude_outliers = TRUE,
+#                 outliers = "feature",
+#                 title="Energy Consumption vs. Increase in
+#                 Access to clean drinking water")
 ```
 
 ### Kerosene Lamps Count\*
@@ -1850,7 +1843,7 @@ consumption_reg(df = sub, reg_type ="linear",
                 title="Energy Consumption vs. New Health Services Offered")
 ```
 
-### Clinic Access To Electricity
+### Clinic Access To Electricity\*
 
 **Data Source**: Paired Household Surveys (Pre & Post)
 
@@ -1861,7 +1854,7 @@ paired_testing(paired_enc, var_name="clinic_electricity_access",
                test_type = "mcnemar", plot_diff=FALSE)
 ```
 
-### Clinic Access To Refrigeration
+### Clinic Access To Refrigeration\*
 
 **Data Source**: Paired Household Surveys (Pre & Post)
 
@@ -1874,7 +1867,7 @@ paired_testing(paired_enc, var_name="clinic_refrigeration_access",
                test_type = "mcnemar", plot_diff=FALSE)
 ```
 
-### Better access to healthcare
+### Better access to healthcare\*
 
 **Data Source**: Household Post-Survey
 
@@ -1993,6 +1986,42 @@ paired_testing(paired_enc, var_name="feel_safe_dark",
                test_type = "sign", plot_diff=TRUE)
 ```
 
+#### Subgroup Analysis - Country
+
+```{r}
+# Nigeria
+ctr <- 1
+country_paired <- paired_enc %>% filter(country_post == ctr)
+paired_testing(country_paired, var_name="feel_safe_dark", 
+               test_type = "sign", plot_diff=TRUE)
+```
+
+```{r}
+# Kenya
+ctr <- 2
+country_paired <- paired_enc %>% filter(country_post == ctr)
+paired_testing(country_paired, var_name="feel_safe_dark", 
+               test_type = "sign", plot_diff=TRUE)
+```
+
+#### Subgroup Analysis - Gender
+
+```{r}
+# Women
+gdr <- 1
+gender_paired <- paired_enc %>% filter(gender_post == gdr)
+paired_testing(gender_paired, var_name="feel_safe_dark", 
+               test_type = "mcnemar", plot_diff=TRUE)
+```
+
+```{r}
+# Men
+gdr <- 2
+gender_paired <- paired_enc %>% filter(gender_post == gdr)
+paired_testing(gender_paired, var_name="feel_safe_dark", 
+               test_type = "mcnemar", plot_diff=TRUE)
+```
+
 ```{r}
 # paired_enc$safe_diff <- ifelse(paired_enc$feel_safe_dark_pre < 
 #                                paired_enc$feel_safe_dark_post, 1, 
@@ -2015,7 +2044,7 @@ community_reg(df=paired_enc,
               var_type="categorical", calc_diff = TRUE)
 ```
 
-### Presence of Community Lights
+### Presence of Community Lights\*
 
 **Data Source**: Paired Household Surveys (Pre & Post)
 
@@ -2219,37 +2248,51 @@ plot_func(df=ci_clean, var_name="business_type",
 
 ```{r}
 ## What is your average monthly household income?
-nigeria_df <- paired_clean %>% filter(country_post == "nigeria")
-paired_testing(nigeria_df, var_name="avg_household_income",
+ctr <- "nigeria"
+country_df <- paired_clean %>% filter(country_post == ctr)
+paired_testing(country_df, var_name="avg_household_income",
                test_type = "ttest", plot_diff=TRUE)
+
+community_reg(df=country_df, 
+              col_name="avg_household_income", dep="V1", 
+              title="Avg. Household Income Differences", 
+              exclude_outliers = TRUE, outliers = "feature",
+              var_type="ratio", calc_diff = TRUE)
 
 # Nigerian Women
 gdr <- "female"
-women_paired <- nigeria_df %>% filter(gender_post == gdr)
+women_paired <- country_df %>% filter(gender_post == gdr)
 paired_testing(women_paired, var_name="avg_household_income",
                test_type = "ttest", plot_diff=TRUE)
 
 # Nigerian Men
 gdr <- "male"
-men_paired <- nigeria_df %>% filter(gender_post == gdr)
+men_paired <- country_df %>% filter(gender_post == gdr)
 paired_testing(men_paired, var_name="avg_household_income",
                test_type = "ttest", plot_diff=TRUE)
 ```
 
 ```{r}
-kenya_df <- paired_clean %>% filter(country_post == "kenya")
-paired_testing(kenya_df, var_name="avg_household_income", 
+ctr <- "kenya"
+country_df <- paired_clean %>% filter(country_post == ctr)
+paired_testing(country_df, var_name="avg_household_income", 
                test_type = "ttest", plot_diff=TRUE)
+
+community_reg(df=country_df, 
+              col_name="avg_household_income", dep="V1", 
+              title="Avg. Household Income Differences", 
+              exclude_outliers = TRUE, outliers = "feature",
+              var_type="ratio", calc_diff = TRUE)
 
 # Nigerian Women
 gdr <- "female"
-women_paired <- kenya_df %>% filter(gender_post == gdr)
+women_paired <- country_df %>% filter(gender_post == gdr)
 paired_testing(women_paired, var_name="avg_household_income",
                test_type = "ttest", plot_diff=TRUE)
 
 # Nigerian Men
 gdr <- "male"
-men_paired <- kenya_df %>% filter(gender_post == gdr)
+men_paired <- country_df %>% filter(gender_post == gdr)
 paired_testing(men_paired, var_name="avg_household_income",
                test_type = "ttest", plot_diff=TRUE)
 ```
@@ -2265,10 +2308,11 @@ paired_testing(men_paired, var_name="avg_household_income",
 community_reg(df=post_enc, 
               col_name="household_income_change", dep="1", 
               title="Household Income Increase by Community", 
+              exclude_outliers = TRUE, outliers = "feature",
               var_type="categorical", calc_diff = FALSE)
 ```
 
-### C&I - Earnings Change
+### C&I - Earnings Change\*
 
 **Data Source**: Household Post Survey
 
@@ -2279,20 +2323,21 @@ community_reg(df=post_enc,
 community_reg(df=ci_enc, 
               col_name="earnings_change", dep="1", 
               title="C&I Earnings Increase by Community", 
+              exclude_outliers = TRUE, outliers = "feature",
               var_type="categorical", calc_diff = FALSE)
 ```
 
 ```{r}
 # To fix, exclude outliers
-df_pos <- ci_enc %>% filter(earnings_change != -1)
-consumption_reg(df = df_pos, reg_type ="logistic",
-                dep= "earnings_change",  
-                exclude_outliers = TRUE,
-                outliers = "feature",
-                title="Energy Consumption vs. C&I Earnings Increase")
+# df_pos <- ci_enc %>% filter(earnings_change != -1)
+# consumption_reg(df = df_pos, reg_type ="logistic",
+#                 dep= "earnings_change",  
+#                 exclude_outliers = TRUE,
+#                 outliers = "feature",
+#                 title="Energy Consumption vs. C&I Earnings Increase")
 ```
 
-### Business Ownership
+### Business Ownership\*
 
 **Data Source**: Paired Household Surveys (Pre & Post)
 
@@ -2306,10 +2351,9 @@ paired_testing(paired_enc, var_name="business_owners_binary",
 ```
 
 ```{r}
-community_reg(df=paired_enc, outliers = "feature",
+community_reg(df=paired_enc, 
               col_name="business_owners_binary", dep="1", 
               title="Household Business Onwership by Community", 
+              exclude_outliers = TRUE, outliers = "feature",
               var_type="categorical", calc_diff =TRUE)
 ```
-
-### TODO: Regression with energy consumption in both directions (1, -1)
