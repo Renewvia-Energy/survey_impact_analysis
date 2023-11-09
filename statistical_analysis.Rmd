@@ -219,13 +219,14 @@ remove_x <- theme(
 plot_func <- function(df, var_name, var_type, 
                       plot_title, lgd, plot_type, 
                       char_remove=NULL,
-                      remove_outliers = FALSE) {
+                      remove_outliers = FALSE,
+                      x_axis=NULL, y_axis=NULL) {
   if(is.null(char_remove) == FALSE) {
     df <- df %>% filter(.data[[var_name]] != char_remove)
   }
   
   if(remove_outliers == TRUE) {
-      outliers_removal(data=df, var=var_name)
+      df <- outliers_removal(data=df, var=var_name)
   }
   
   if(var_type == "non_cont") {
@@ -266,7 +267,6 @@ plot_func <- function(df, var_name, var_type,
                             theme(legend.text=element_text(size=6))
          
       } else if(plot_type == "bar_stack"){
-        
          plot <- data_tab %>% ggplot(aes(x = "", y = counts, 
                                   fill = labels)) +
                       geom_col(width = 1, color = 1) +
@@ -283,27 +283,28 @@ plot_func <- function(df, var_name, var_type,
         else if (plot_type == "bar_discrete") {
           plot <- data %>% ggplot(aes(y=counts, x=labels)) + 
                             geom_col(width = 0.7) +
-                            labs(title=plot_title, x = var_name) 
+                            labs(title=plot_title, 
+                                 x=x_axis, y=y_axis) 
       } 
   }else if(var_type == "cont") {
       if(plot_type == "hist") {
         plot <- ggplot(df, aes(x=.data[[var_name]])) + 
-                      geom_histogram(
-                        # stat = "count", 
-                                     fill = 'yellow',
-                                     # alpha = 0.7,
+                      geom_histogram(fill = 'yellow',
                                      col = 'black', bins=10) +
                       geom_vline(xintercept = mean(df[,var_name], na.rm=TRUE),
                                  col="lightblue", lty=1, lwd = 1) +
                       geom_vline(xintercept = median(df[,var_name], na.rm=TRUE),
                                col="purple", lty=2, lwd = 1) +
                       theme_bw() +
-                      labs(title=plot_title) 
+                      labs(title=plot_title, 
+                           x=x_axis, y=y_axis) 
+        
       }else if(plot_type == "boxplot") {
         plot <- ggplot(df, aes(x=.data[[var_name]])) + 
                 geom_boxplot(outlier.colour="red",
                               outlier.size=4)+
-                labs(title=plot_title) +
+                labs(title=plot_title, 
+                     x=x_axis, y=y_axis) +
                 theme_void()
     }
   }
@@ -317,12 +318,14 @@ plot_func <- function(df, var_name, var_type,
 generic_compare <- function(data, var_type, var1, var2, 
                           var1_title, var2_title, 
                           subplot_type, plot_title,
-                          lgd_title, 
+                          lgd_title, x_axis=NULL, y_axis=NULL,
                           char_remove=NULL){
   var1_plot <- plot_func(data, var1, var_type, lgd = lgd_title,
-                          var1_title, subplot_type, char_remove)
+                         var1_title, subplot_type, char_remove,
+                         x_axis=x_axis, y_axis=y_axis)
   var2_plot <- plot_func(data, var2, var_type,lgd = lgd_title,
-                          var2_title, subplot_type, char_remove)
+                          var2_title, subplot_type, char_remove,
+                         x_axis=x_axis, y_axis=y_axis)
   if (subplot_type == "bar_simple" || subplot_type == "bar_stack") {
         plot <- ggarrange(var2_plot + remove_y, var1_plot + remove_y, 
                           ncol = 2,  nrow = 1, 
@@ -345,13 +348,16 @@ generic_compare <- function(data, var_type, var1, var2,
 compare_pre_post <- function(df_pre, df_post,
                              var_name, var_type, subplot_type, title, 
                              exclude_outliers = FALSE, lgd_title,
+                             x_axis=NULL, y_axis=NULL,
                              char_remove=NULL, shared_legend=TRUE) {
 
   pre_plot <- plot_func(df_pre, var_name, var_type,
                          "Initial", subplot_type, lgd = lgd_title,
+                        x_axis=x_axis, y_axis=y_axis,
                         char_remove, remove_outliers=exclude_outliers)
   post_plot <- plot_func(df_post, var_name, var_type,
                           "Post", subplot_type, lgd = lgd_title,
+                         x_axis=x_axis, y_axis=y_axis,
                          char_remove, remove_outliers=exclude_outliers)
   if (subplot_type == "bar_simple" || subplot_type == "bar_stack") {
         plot <- ggarrange(post_plot + remove_y, pre_plot + remove_y, 
@@ -359,9 +365,9 @@ compare_pre_post <- function(df_pre, df_post,
                           common.legend = shared_legend,legend="bottom")
   } else {
         plot <- ggarrange(post_plot, pre_plot, 
-                        ncol = 2, nrow = 1, 
-                        common.legend = shared_legend,
-                        legend="right")
+                          ncol = 2, nrow = 1, 
+                          common.legend = shared_legend,
+                          legend="right")
   }
       
   return(annotate_figure(plot, 
@@ -451,13 +457,13 @@ compare_paired <- function(data, var_name, view,
 # Running the paired t-test
 paired_testing <- function(data, var_name, test_type, 
                            plot_diff=FALSE, plt_title=NULL, 
-                           remove_outliers=FALSE) {
+                           remove_outliers=FALSE, x_axis, y_axis) {
   pre_name <- paste(var_name, "pre", sep="_")
   post_name <- paste(var_name, "post", sep="_")
    
   if(remove_outliers==TRUE) {
-    data$temp <- abs(data[, post_name] - data[, pre_name])
-    outliers_removal(data=data, var_name=temp)
+    data[, "diff_abs"] <- abs(data[, post_name] - data[, pre_name])
+    data <- outliers_removal(data=data, var="diff_abs")
   }
   
   var_pre <- data[, pre_name]
@@ -484,19 +490,12 @@ paired_testing <- function(data, var_name, test_type,
   # Visualize distribution of score differences
   if(plot_diff == TRUE) {
       plot <- plot_func(df=data, var_name="var_diff", var_type="cont", 
-                        plot_title=plt_title, plot_type="hist")
+                        plot_title=plt_title, plot_type="hist",
+                        x_axis=x_axis, y_axis=y_axis)
       return(plot)
   }
   # return(test)
 }
-```
-
-```{r}
-## What is your average monthly household income?
-ctr <- "nigeria"
-country_df <- paired_clean %>% filter(country_post == ctr)
-paired_testing(country_df, var_name="avg_household_income",
-               test_type = "ttest", plot_diff=TRUE)
 ```
 
 ## Regression Testing
@@ -514,14 +513,14 @@ plot_reg <- function(data, feature, dependent,
   
   if(remove_outliers == TRUE) {
       if(which_outliers=="dependent"){
-        data <- outliers_removal(data=data, var_name=dependent)
+        data <- outliers_removal(data=data, var=dependent)
         
       }else if(which_outliers=="feature"){
-        data <- outliers_removal(data=data, var_name=feature)
+        data <- outliers_removal(data=data, var=feature)
         
       }else if(which_outliers=="all"){
-        temp <- outliers_removal(data=data, var_name=feature)
-        data <- outliers_removal(data=data, var_name=dependent)
+        temp <- outliers_removal(data=data, var=feature)
+        data <- outliers_removal(data=data, var=dependent)
       }
   }
   
@@ -946,7 +945,7 @@ compare_paired(data=gender_paired,
 
 **Value (Encoding if applied)**: "Yes, it's decreased" = -1; "No, it's the same" = 0; "Yes, it's increased" = 1
 
-#### Girls' Schooling - Increase\*
+#### Girls' Schooling - Increase
 
 ```{r}
 # Check for increase
@@ -968,7 +967,7 @@ community_reg(df=post_enc,
               title="Counts of Decrease in Girls' School Enrollment by Community")
 ```
 
-#### Boys' Schooling - Increase\*
+#### Boys' Schooling - Increase
 
 ```{r}
 # Check for increase
@@ -1002,7 +1001,9 @@ community_reg(df=post_enc,
 # How long does the water collection process take on a daily basis?
 paired_testing(paired_enc, var_name="water_collection_time", 
                test_type = "wilcoxon", plot_diff=TRUE, 
-               plot_title="Difference Pre-Post of Water Collection Times")
+               x_axis="Differences", y_axis="Count",
+               # remove_outliers = TRUE,
+               plt_title="Difference Pre-Post of Water Collection Times")
 ```
 
 #### Community Variables\*
@@ -1039,7 +1040,8 @@ consumption_reg(df = paired_enc, reg_type ="linear",
 # How long does the cooking fuel collection process take on a daily basis?
 paired_testing(paired_enc, var_name="cooking_fuel_collection_time", 
                test_type = "wilcoxon", plot_diff=TRUE, 
-               plot_title="Difference Pre-Post of Cooking Fuel Collection Times")
+               x_axis="Differences", y_axis="Count",
+               plt_title="Difference Pre-Post of Cooking Fuel Collection Times")
 ```
 
 #### Community Variables
@@ -2247,54 +2249,96 @@ plot_func(df=ci_clean, var_name="business_type",
 **Value (Encoding if applied)**: Any numeric value
 
 ```{r}
-## What is your average monthly household income?
+# Unpaired
+ctr <- "nigeria"
+country_pre <- initial_pre %>% filter(country == ctr)
+country_post <- post_clean %>% filter(country == ctr)
+compare_pre_post(df_pre=country_pre, df_post=country_post, 
+                 var_name="avg_household_income", var_type="cont",
+                 subplot_type="hist", shared_legend=FALSE,
+                 # exclude_outliers = TRUE,
+                 x_axis="Value (₦ Naira)", y_axis="Count",
+                 title="Unpaired: Nigeria - Average Household Income")
+```
+
+```{r}
+## What is your average monthly household income? 
 ctr <- "nigeria"
 country_df <- paired_clean %>% filter(country_post == ctr)
 paired_testing(country_df, var_name="avg_household_income",
-               test_type = "ttest", plot_diff=TRUE)
+               test_type = "ttest", plot_diff=TRUE, 
+               remove_outliers = TRUE,
+               x_axis="Value (₦ Naira)", y_axis="Count",
+               plt_title="Nigeria - Income Differences")
 
-community_reg(df=country_df, 
-              col_name="avg_household_income", dep="V1", 
-              title="Avg. Household Income Differences", 
-              exclude_outliers = TRUE, outliers = "feature",
-              var_type="ratio", calc_diff = TRUE)
+# community_reg(df=country_df, 
+#               col_name="avg_household_income", dep="V1", 
+#               title="Avg. Household Income Differences", 
+#               exclude_outliers = TRUE, outliers = "feature",
+#               var_type="ratio", calc_diff = TRUE)
+# 
+# # Nigerian Women
+# gdr <- "female"
+# women_paired <- country_df %>% filter(gender_post == gdr)
+# paired_testing(women_paired, var_name="avg_household_income",
+#                test_type = "ttest", plot_diff=TRUE)
+# 
+# # Nigerian Men
+# gdr <- "male"
+# men_paired <- country_df %>% filter(gender_post == gdr)
+# paired_testing(men_paired, var_name="avg_household_income",
+#                test_type = "ttest", plot_diff=TRUE)
+```
 
-# Nigerian Women
-gdr <- "female"
-women_paired <- country_df %>% filter(gender_post == gdr)
-paired_testing(women_paired, var_name="avg_household_income",
-               test_type = "ttest", plot_diff=TRUE)
+```{r}
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
+                 var_name="avg_household_income", var_type="cont",
+                 subplot_type="hist", shared_legend=FALSE,
+                 exclude_outliers = TRUE,
+                 x_axis="Value (₦ Naira)", y_axis="Count",
+                 title="Unpaired: Nigeria - Average Household Income")
+```
 
-# Nigerian Men
-gdr <- "male"
-men_paired <- country_df %>% filter(gender_post == gdr)
-paired_testing(men_paired, var_name="avg_household_income",
-               test_type = "ttest", plot_diff=TRUE)
+```{r}
+# Unpaired
+ctr <- "kenya"
+country_pre <- initial_pre %>% filter(country == ctr)
+country_post <- post_clean %>% filter(country == ctr)
+compare_pre_post(df_pre=country_pre, df_post=country_post, 
+                 var_name="avg_household_income", var_type="cont",
+                 subplot_type="hist", shared_legend=FALSE,
+                 exclude_outliers = TRUE,
+                 x_axis="Value (Ksh)", y_axis="Count",
+                 title="Unpaired: Kenya - Average Household Income")
 ```
 
 ```{r}
 ctr <- "kenya"
 country_df <- paired_clean %>% filter(country_post == ctr)
 paired_testing(country_df, var_name="avg_household_income", 
-               test_type = "ttest", plot_diff=TRUE)
+               test_type = "ttest", plot_diff=TRUE,
+               remove_outliers = TRUE,
+               x_axis="Value (Ksh)", y_axis="Count",
+               plt_title="Kenya - Income Differences")
 
-community_reg(df=country_df, 
-              col_name="avg_household_income", dep="V1", 
-              title="Avg. Household Income Differences", 
-              exclude_outliers = TRUE, outliers = "feature",
-              var_type="ratio", calc_diff = TRUE)
-
-# Nigerian Women
-gdr <- "female"
-women_paired <- country_df %>% filter(gender_post == gdr)
-paired_testing(women_paired, var_name="avg_household_income",
-               test_type = "ttest", plot_diff=TRUE)
-
-# Nigerian Men
-gdr <- "male"
-men_paired <- country_df %>% filter(gender_post == gdr)
-paired_testing(men_paired, var_name="avg_household_income",
-               test_type = "ttest", plot_diff=TRUE)
+# community_reg(df=country_df, 
+#               col_name="avg_household_income", dep="V1", 
+#               title="Avg. Household Income Differences", 
+#               exclude_outliers = TRUE, outliers = "feature",
+#               var_type="ratio", calc_diff = TRUE)
+# 
+# # Nigerian Women
+# gdr <- "female"
+# women_paired <- country_df %>% filter(gender_post == gdr)
+# paired_testing(women_paired, var_name="avg_household_income",
+#                test_type = "ttest", plot_diff=TRUE)
+# 
+# # Nigerian Men
+# gdr <- "male"
+# men_paired <- country_df %>% filter(gender_post == gdr)
+# paired_testing(men_paired, var_name="avg_household_income",
+#                test_type = "ttest", plot_diff=TRUE)
 ```
 
 ### Household - Income Change
