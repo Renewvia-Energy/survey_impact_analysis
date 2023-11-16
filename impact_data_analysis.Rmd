@@ -626,6 +626,11 @@ community_reg <- function(df, col_name, dep, customer_type,
     names(community_data)[names(community_data) == "V1"] <- "target"
   }
   
+  
+  if(is.null(to_remove) == FALSE) {
+    #community_data <- community_data[!grepl(to_remove,data$target),]
+    community_data <- community_data %>% filter(!.data[["target"]] %in% to_remove)
+  }
   print(community_data)
   lst <- list()
   
@@ -635,8 +640,7 @@ community_reg <- function(df, col_name, dep, customer_type,
                       dependent="target", reg_type="linear",
                       remove_outliers = exclude_outliers,
                       which_outliers = outliers,
-                      y_axis=y_axis,
-                      vals_remove=to_remove)
+                      y_axis=y_axis)
         lst <- append(lst, list(p))
         pearson_test <- cor.test(community_data[, "target"], 
                                  community_data[,ind], 
@@ -991,7 +995,7 @@ compare_paired(data=gender_paired,
 #### Regression - Community (Girls)\*
 
 ```{r}
-## Girls
+## Has there been a change in the number of females in your household who attend school full time since connection to minigrid power?
 # Check for increase
 community_reg(df=post_enc,
               col_name="girls_schooling_change", dep="1", 
@@ -999,7 +1003,11 @@ community_reg(df=post_enc,
               exclude_outliers = TRUE, outliers = "feature",
               y_axis= "Households",
               title="Increase in Girls' School Enrollment by Community")
+```
 
+#### TODO: Investigate
+
+```{r}
 # Check for decrease
 community_reg(df=post_enc,
               col_name="girls_schooling_change", dep="-1", 
@@ -1012,6 +1020,7 @@ community_reg(df=post_enc,
 #### Regression - Community (Boys)\*
 
 ```{r}
+## Has there been a change in the number of males in your household who attend school FULL TIME since connection to minigrid power?
 # Check for increase
 community_reg(df=post_enc,
               col_name="boys_schooling_change", dep="1", 
@@ -1019,12 +1028,14 @@ community_reg(df=post_enc,
               exclude_outliers = TRUE, outliers = "feature",
               customer_type="hs", y_axis= "Households",
               title="Increase in Boys' School Enrollment by Community")
+```
 
+```{r}
 # Check for decrease
 community_reg(df=post_enc,
               col_name="boys_schooling_change", dep="-1", 
-              var_type="categorical", 
-              exclude_outliers = TRUE, outliers = "feature",
+              var_type="categorical", exclude_outliers = TRUE, 
+              outliers = "feature",
               customer_type="hs", y_axis= "Households",
               title="Decrease in Boys' School Enrollment by Community")
 ```
@@ -1198,7 +1209,7 @@ community_reg(df=ci_enc,
               col_name="workforce_change_female", 
               dep="V1", var_type="ratio", 
               exclude_outliers = TRUE, outliers = "feature",
-              customer_type="hs", y_axis= "Women Workers",
+              customer_type="ci", y_axis= "Women Workers",
               title="New Female Workers Change by Community")
 ```
 
@@ -1526,7 +1537,7 @@ paired_testing(paired_enc, var_name = "appliances_count",
 
 **Value (Encoding if applied)**: Any numeric value between 0 and 24
 
-#### Paired Test\*
+#### TODO: Paired Test\*
 
 ```{r}
 ## How many hours of light per day do you currently have at home?
@@ -1535,6 +1546,24 @@ paired_testing(paired_enc, var_name = "light_hours_current",
                test_type="ttest", remove_outliers=TRUE,
                x_axis="Differences", y_axis="Count",
                plt_title="Difference in Pre-Post House Light Hours")
+
+ctr <- "nigeria"
+print(ctr)
+country_df <- paired_clean %>% filter(country_post == ctr)
+paired_testing(country_df, var_name = "light_hours_current", 
+               plot_diff = TRUE, 
+               test_type="ttest", remove_outliers=TRUE,
+               x_axis="Differences", y_axis="Count",
+               plt_title="Nigeria: Difference in Pre-Post House Light Hours")
+
+ctr <- "kenya"
+print(ctr)
+country_df <- paired_clean %>% filter(country_post == ctr)
+paired_testing(country_df, var_name = "light_hours_current", 
+               plot_diff = TRUE, 
+               test_type="ttest", remove_outliers=TRUE,
+               x_axis="Differences", y_axis="Count",
+               plt_title="Kenya: Difference in Pre-Post House Light Hours")
 ```
 
 ### Households - Academic Performance
@@ -1546,7 +1575,7 @@ paired_testing(paired_enc, var_name = "light_hours_current",
 #### Regression - Community\*
 
 ```{r}
-# Change 
+# Has school performance changed since connection to minigrid?
 community_reg(df=post_enc, 
               col_name="school_performance_change", 
               dep="1", var_type="categorical",
@@ -1860,7 +1889,7 @@ community_reg(df=paired_enc,
               title="Difference in Kerosene Lamps by Community", 
               var_type="categorical", 
               calc_diff = TRUE, diff_type="direction",
-              exclude_outliers = TRUE, outliers = "feature",
+              # exclude_outliers = TRUE, outliers = "feature",
               customer_type="hs", y_axis= "Households")
 ```
 
@@ -1905,7 +1934,7 @@ community_reg(df=ci_enc,
               col_name="health_offering_change_count", dep="V1", 
               exclude_outliers = TRUE, outliers = "feature", 
               title="New Health Services Offered by Community", 
-              var_type="ratio",
+              var_type="ratio", to_remove =c(0),
               customer_type="ci", y_axis= "C&I")
 ```
 
@@ -1956,6 +1985,7 @@ paired_testing(paired_enc, var_name="clinic_refrigeration_access",
 #### Regression - Community\*
 
 ```{r}
+# Do you feel that you have better access to health services because of connection to minigrid?
 community_reg(df=post_enc, 
               col_name="better_access_health_minigrid", 
               dep="1", var_type="categorical",
@@ -2050,7 +2080,7 @@ plot_func(df=post_clean, var_name="exterior_lights_minigrid",
 
 ## B) Inferential
 
-### Feeling Safe
+### TODO: Feeling Safe
 
 **Data Source**: Paired Household Surveys (Pre & Post)
 
@@ -2449,8 +2479,8 @@ community_reg(df=ci_enc,
               title="C&I Earnings Increase by Community", 
               exclude_outliers = TRUE, outliers = "feature",
               var_type="categorical", calc_diff = FALSE,
-              diff_type="direction", customer_type="hs", 
-              y_axis= "Households")
+              diff_type="direction", customer_type="ci", 
+              y_axis= "C&I")
 ```
 
 ### Business Ownership\*
