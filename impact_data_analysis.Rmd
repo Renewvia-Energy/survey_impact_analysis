@@ -732,6 +732,10 @@ consumption_reg <- function(df, dep, ind, title, reg_type,
 }
 ```
 
+# TODO
+
+-   
+
 # 1- Gender Equality
 
 ## A) Descriptive
