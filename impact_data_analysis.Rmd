@@ -176,6 +176,8 @@ paired_enc <- merge(initial_pre_enc, post_enc,
 
 # Utility Functions
 
+## Remove Outliers
+
 ```{r}
 outliers_removal <- function(data, var) {
   quartiles <- quantile(data[, var], 
@@ -529,7 +531,7 @@ paired_testing <- function(data, var_name, test_type,
 
 ```{r}
 plot_reg <- function(data, feature, dependent, 
-                     remove_outliers, which_outliers=NULL,
+                     remove_outliers=FALSE, which_outliers=NULL,
                      reg_type, vals_remove=NULL,title=NULL,
                      x_axis=NULL, y_axis=NULL) {
   
@@ -631,15 +633,20 @@ community_reg <- function(df, col_name, dep, customer_type,
     #community_data <- community_data[!grepl(to_remove,data$target),]
     community_data <- community_data %>% filter(!.data[["target"]] %in% to_remove)
   }
+  
+
   print(community_data)
   lst <- list()
   
    for(ind in ind_vars) {
-        print(ind)
+       print(ind)
+       if(exclude_outliers == TRUE) {
+            community_data <- outliers_removal(data=community_data, var=ind)
+        }
         p <- plot_reg(data=community_data, feature=ind,  
                       dependent="target", reg_type="linear",
-                      remove_outliers = exclude_outliers,
-                      which_outliers = outliers,
+                      # remove_outliers = exclude_outliers,
+                      # which_outliers = outliers,
                       y_axis=y_axis)
         lst <- append(lst, list(p))
         pearson_test <- cor.test(community_data[, "target"], 
@@ -732,23 +739,67 @@ consumption_reg <- function(df, dep, ind, title, reg_type,
 }
 ```
 
-# TODO
+# 1- General
 
--   
-
-# 1- Gender Equality
-
-## A) Descriptive
-
-### Demographics
+## A) Gender
 
 ```{r}
-# What was the gender breakdown of survey respondents, pre and post?
+## What was the gender breakdown of survey respondents, pre and post?
+# Unpaired
 compare_pre_post(df_pre=initial_pre, df_post=post_clean,
                  var_name="gender", var_type="non_cont",
-                 lgd_title ="Reasons",
-                 subplot_type="pie", title="Gender Breakdown")
+                 lgd_title ="Gender",
+                 subplot_type="pie", title="Unpaired: Gender Breakdown")
+
+# Paired
+plot_func(df=paired_clean, 
+          var_name="gender_post", var_type="non_cont", lgd = "Gender",
+          plot_title="Paired: Gender Breakdown", 
+          plot_type="pie")
 ```
+
+## B) Age
+
+```{r}
+compare_pre_post(df_pre=initial_pre, df_post=post_clean,
+                 var_name="age", var_type="cont",
+                 subplot_type="hist", shared_legend=FALSE,
+                 exclude_outliers = TRUE,
+                 x_axis="Age", y_axis="Count",
+                 title="Unpaired: Age")
+
+# Paired
+plot_func(df=paired_clean, 
+          var_name="age_post", 
+          var_type="cont", lgd = "Gender",
+          plot_title="Paired: Age", 
+          remove_outliers = TRUE,
+          plot_type="hist")
+```
+
+## C) Occupation
+
+```{r}
+# Type of employment for Primary Provider
+# plot_func(df=initial_pre, var_name="primary_provider_occupation", 
+#           var_type="non_cont", lgd="Type",
+#           plot_title="Occupation of Primary Provider", 
+#           plot_type="bar_stack")
+```
+
+## D) Employment Type
+
+```{r}
+# Type of employment for Primary Provider
+plot_func(df=initial_pre, var_name="employement_type", 
+          var_type="non_cont", lgd="Type",
+          plot_title="Employement Type of Primary Provider", 
+          plot_type="pie")
+```
+
+# 2- Gender Equality
+
+## A) Descriptive
 
 ### Pre-Connection School Enrollment
 
@@ -764,6 +815,20 @@ vals <- c(girls, girls_in_school, enrollment_rate)
 tab <- as.data.frame(t(as.matrix(vals)))
 setnames(tab, old = c('V1','V2', 'V3'), 
           new = c("Girls", "Girls.In.School", "Enrollment.Rate"))
+```
+
+```{r}
+# What was school enrollment by gender pre-connection?
+boys <- sum(initial_pre$boys_headcount,na.rm = TRUE)
+boys_in_school <- sum(initial_pre$boys_schooling,na.rm = TRUE)
+enrollment_rate <- percent(boys_in_school/boys, accuracy = 0.01)
+
+vals <- c(boys, boys_in_school, enrollment_rate)
+
+# creating matrix
+tab <- as.data.frame(t(as.matrix(vals)))
+setnames(tab, old = c('V1','V2', 'V3'),
+          new = c("Boys", "Boys.In.School", "Enrollment.Rate"))
 tab
 ```
 
@@ -771,17 +836,27 @@ tab
 
 ```{r}
 # Was there a change in enrollment by gender afterwards?
+# Unpaired
 generic_compare(data=post_clean, var_type="non_cont",
                var1="girls_schooling_change", 
                var2="boys_schooling_change", 
                lgd_title ="Change",
                var1_title="Girls", var2_title="Boys", 
-               subplot_type="pie", plot_title="School Enrollment Change")
+               subplot_type="pie", plot_title="Unpaired: School Enrollment Change")
+
+# Paired
+generic_compare(data=paired_clean, var_type="non_cont",
+               var1="girls_schooling_change", 
+               var2="boys_schooling_change", 
+               lgd_title ="Change",
+               var1_title="Girls", var2_title="Boys", 
+               subplot_type="pie", 
+               plot_title="Paired: School Enrollment Change")
 ```
 
 ### Reasons for (un)enrollment
 
-#### Girls' Schooling
+#### TODO: Girls' Schooling
 
 ```{r}
 # Dirving factor for non-enrollment in school for boys and girls
@@ -844,28 +919,34 @@ compare_paired(data=paired_clean,
 #### Is the person responsible school-aged?
 
 ```{r}
+# What is the average age of the person in charge of water collection? Binarized as school-aged vs not
 # Unpaired
 compare_pre_post(df_pre=initial_pre, df_post=post_clean,
                  var_name="water_collection_school_aged", 
-                 var_type="non_cont",
-                 subplot_type="pie",
-                 lgd_title="Is the person responsible school-aged?",
-                 title="Unpaired: Shcool-Aged Person responsible 
-                 for Water Collection")
+                 var_type="non_cont", subplot_type="pie",
+                 lgd_title="School-Aged?",
+                 title="Unpaired: Water Collection Responsibility (School-Aged)")
+
+# Paired
+generic_compare(data=paired_clean, var_type="non_cont",
+               var1="water_collection_school_aged_pre", 
+               var2="water_collection_school_aged_post", 
+               lgd_title ="School-Aged?",
+               var1_title="Pre", var2_title="Post", 
+               subplot_type="pie", 
+               plot_title="Paired: Breakdown of Water Collection Responsibility (School-Aged)")
 
 # Paired
 compare_paired(data=paired_clean,
                var_name="water_collection_school_aged",
-               lgd_title="Is the person responsible school-aged?",
-               plot_title="Paired: Shcool-Aged Person responsible 
-                 for Water Collection")
+               lgd_title="School-Aged?",
+               plot_title="Paired: Change of Water Collection Responsibility (School-Aged)")
 ```
 
 #### Cooking Fuel Collection - Are men involved?
 
 ```{r}
-# unique(paired_clean$cooking_fuel_responsible_post)
-
+# Who is mainly responsible for cooking fuel collection on a daily basis? Binarized as presence of "adult_male" vs not
 # Unpaired
 compare_pre_post(df_pre=initial_pre, df_post=post_clean,
                  var_name="cooking_fuel_responsible_binary", 
@@ -1055,9 +1136,9 @@ community_reg(df=post_enc,
 ```{r}
 # How long does the water collection process take on a daily basis?
 paired_testing(paired_enc, var_name="water_collection_time", 
-               test_type = "wilcoxon", plot_diff=TRUE, 
+               test_type = "sign", plot_diff=TRUE, 
                x_axis="Differences", y_axis="Count",
-               # remove_outliers = TRUE,
+               remove_outliers = TRUE,
                plt_title="Difference in Pre-Post of Water Collection Time")
 ```
 
@@ -1096,6 +1177,31 @@ consumption_reg(df = paired_enc, reg_type ="linear",
                 title="Individual Differences vs Consumption")
 ```
 
+### Water Collection School-Aged
+
+**Data Source**: Paired Household Surveys (Pre & Post)
+
+**Value (Encoding if applied)**: "yes" = 1; "no" = 0
+
+#### Paired Test\*
+
+```{r}
+paired_testing(paired_enc, var_name="water_collection_school_aged", 
+               test_type = "mcnemar", plot_diff=FALSE)
+```
+
+#### Regression - Community\*
+
+```{r}
+community_reg(df=paired_enc, 
+              col_name="water_collection_school_aged", dep="-1", 
+              title="Water Collection Responsibility (School-Aged) by Community", 
+              exclude_outliers = TRUE, outliers = "feature",
+              var_type="categorical", calc_diff =TRUE,
+              diff_type="direction", customer_type="hs", 
+              y_axis= "Households")
+```
+
 ### Cooking Fuel Collection Time
 
 **Data Source**: Paired Household Surveys (Pre & Post)
@@ -1107,13 +1213,13 @@ consumption_reg(df = paired_enc, reg_type ="linear",
 ```{r}
 # How long does the cooking fuel collection process take on a daily basis?
 paired_testing(paired_enc, var_name="cooking_fuel_collection_time", 
-               test_type = "wilcoxon", plot_diff=TRUE, 
+               test_type = "sign", plot_diff=TRUE, 
                x_axis="Differences", y_axis="Count",
-               # remove_outliers = TRUE,
+               remove_outliers = TRUE,
                plt_title="Difference in Pre-Post Cooking Fuel Collection Times")
 ```
 
-#### Regression - Community\*
+#### Regression - Community
 
 ```{r}
 ## Community Paired Differences
@@ -1150,6 +1256,9 @@ consumption_reg(df = paired_enc, reg_type ="linear",
                 x_axis="Energy Consumption In Period (kwH)", 
                 y_axis="Cooking Fuel Collection Time",
                 title="Individual Differences vs. Consumption")
+
+# Monthly consumption between pre and post: 
+# avg_monthly_consumption = (365* (Consumption_period / no.of days))/12  
 ```
 
 ### Women-led Business Ownership
@@ -1213,7 +1322,7 @@ community_reg(df=ci_enc,
               col_name="workforce_change_female", 
               dep="V1", var_type="ratio", 
               exclude_outliers = TRUE, outliers = "feature",
-              customer_type="ci", y_axis= "Women Workers",
+              customer_type="ci", y_axis= "C&I",
               title="New Female Workers Change by Community")
 ```
 
@@ -1231,7 +1340,7 @@ consumption_reg(df = df_reg, reg_type ="linear",
                 title="New Female Workers vs. Consumption")
 ```
 
-# 2- Productivity
+# 3- Productivity
 
 ## A) Descriptive
 
@@ -1260,16 +1369,25 @@ compare_paired(data=paired_clean,
 ## What is your primary power source?
 # Unpaired
 compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
-                 lgd_title ="Is the source non-renewable?",
+                 lgd_title ="Non-renewable?",
                  var_name="power_sources_unclean", var_type="non_cont",
                  subplot_type="pie", 
-                 title="Unpaired: Usage of unclean sources")
+                 title="Unpaired: Breakdown of Power Sources (Non-Renewable)")
+
+# Paired
+generic_compare(data=paired_clean, var_type="non_cont",
+               var1="power_sources_unclean_pre", 
+               var2="power_sources_unclean_post", 
+               lgd_title ="Non-renewable?",
+               var1_title="Pre", var2_title="Post", 
+               subplot_type="pie", 
+               plot_title="Paired: Breakdown of Power Sources (Non-Renewable)")
 
 # Paired
 compare_paired(data=paired_clean,
                var_name="power_sources_unclean",
-               lgd_title="Is the source non-renewable?",
-               plot_title="Paired: Usage of unclean sources")
+               lgd_title="Non-renewable?",
+               plot_title="Paired: Change of Power Sources (Non-Renewable)")
 ```
 
 ### Light Hours
@@ -1454,9 +1572,16 @@ compare_paired(data=paired_clean,
 ### Households - Academic Performance
 
 ```{r}
+# Has school performance changed since connection to minigrid?
 plot_func(df=post_clean, var_name="school_performance_change", 
           var_type="non_cont", lgd = "Change",
-          plot_title="Household - Academic Performance", 
+          plot_title="Unpaired: Household - Academic Performance", 
+          plot_type="pie")
+
+# Paired
+plot_func(df=paired_clean, var_name="school_performance_change", 
+          var_type="non_cont", lgd = "Change",
+          plot_title="Paired: Household - Academic Performance", 
           plot_type="pie")
 ```
 
@@ -1518,6 +1643,32 @@ plot_func(df=ci_clean, var_name="ci_offering_change",
 -   For cooking energy sources, add the unclean sources: charcoal, firewood
 
 ## B) Inferential
+
+### Power Source
+
+**Data Source**: Paired Household Surveys (Pre & Post)
+
+**Value (Encoding if applied)**: "yes" = 1; "no" = 0
+
+#### Paired Test\*
+
+```{r}
+## What is your primary power source? Binarized as renewable vs. non-renewable sources (Diesel, Petrol, Kerosene)
+paired_testing(paired_enc, var_name="power_sources_unclean", 
+               test_type = "mcnemar", plot_diff=FALSE)
+```
+
+#### Regression - Community\*
+
+```{r}
+community_reg(df=paired_enc, 
+              col_name="power_sources_unclean", dep="-1", 
+              title="Power Source (Non-Renewable) by Community", 
+              exclude_outliers = TRUE, outliers = "feature",
+              var_type="categorical", calc_diff =TRUE,
+              diff_type="direction", customer_type="hs", 
+              y_axis= "Households")
+```
 
 ### No. of Appliances
 
@@ -1611,7 +1762,7 @@ community_reg(df=ci_enc,
 
 **Value (Encoding if applied)**: "Yes, they have increased" = 1, "Yes, they have decreased" = -1, "No, it is pretty much the same" = 0
 
-#### Regression - Community\*
+#### Regression - Community
 
 ```{r}
 ## Since connection to Renewvia mini-grid, have your hours of operation changed at all?
@@ -1670,7 +1821,7 @@ consumption_reg(df = ci_enc, reg_type ="logistic",
                 title="Newly Added Offerings vs. Energy Consumption")
 ```
 
-# 3- Health
+# 4- Health
 
 ## A) Descriptive
 
@@ -1702,14 +1853,23 @@ compare_paired(data=paired_clean,
 compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
                  var_name="clean_drinking_water", var_type="non_cont",
                  subplot_type="pie", 
-                 lgd_title = "Do you have clean drinking water?",
-                 title="Unpaired: Clean Drinking Water Access")
+                 lgd_title = "Accessible?",
+                 title="Unpaired: Breakdown of Clean Drinking Water Access")
+
+# Paired
+generic_compare(data=paired_clean, var_type="non_cont",
+               var1="clean_drinking_water_pre", 
+               var2="clean_drinking_water_post", 
+               lgd_title ="Accessible?",
+               var1_title="Pre", var2_title="Post", 
+               subplot_type="pie", 
+               plot_title="Paired: Breakdown of Clean Drinking Water Access")
 
 # Paired
 compare_paired(data=paired_clean,
                var_name="clean_drinking_water",
-               lgd_title="Do you have clean drinking water?",
-               plot_title="Paired: Clean Drinking Water Access")
+               lgd_title="Accessible?",
+               plot_title="Paired: Chnage in Clean Drinking Water Access")
 ```
 
 #### Clean Sources
@@ -1762,14 +1922,23 @@ plot_func(df=post_clean, var_name="kerosene_lamp_usage_change", lgd ="Change",
 compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
                  var_name="clinic_electricity_access", var_type="non_cont",
                  subplot_type="pie", 
-                 lgd_title = "Does the clinic have electricity?",
-                 title="Unpaired: Clinic Access To Electricity")
+                 lgd_title = "Electrified?",
+                 title="Unpaired: Breakdown of Clinic Access To Electricity")
+
+# Paired
+generic_compare(data=paired_clean, var_type="non_cont",
+               var1="clinic_electricity_access_pre", 
+               var2="clinic_electricity_access_post", 
+               lgd_title ="Electrified?",
+               var1_title="Pre", var2_title="Post", 
+               subplot_type="pie", 
+               plot_title="Paired: Breakdown of of Clinic Access To Electricity")
 
 # Paired
 compare_paired(data=paired_clean,
                var_name="clinic_electricity_access",
-               lgd_title="Does the clinic have electricity?",
-               plot_title="Paired: Clinic Access To Electricity")
+               lgd_title="Electrified?",
+               plot_title="Paired: Change in Clinic Access To Electricity")
 ```
 
 #### Clinic Travel Distance
@@ -1782,6 +1951,7 @@ compare_pre_post(df_pre=initial_pre, df_post=post_clean,
                  subplot_type="pie", 
                  lgd_title = "Distances",
                  title="Unpaired: Clinic Travel Distance")
+
 
 # Paired
 compare_paired(data=paired_clean,
@@ -1798,17 +1968,32 @@ compare_paired(data=paired_clean,
 compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
                  var_name="clinic_refrigeration_access", var_type="non_cont",
                  subplot_type="pie", 
-                 lgd_title = "Does the Clinic have access to refrigeration?",
+                 lgd_title = "Has refrigeration?",
                  title="Unpaired: Clinic Access to Refrigeration")
+
+# Paired
+generic_compare(data=paired_clean, var_type="non_cont",
+               var1="clinic_refrigeration_access_pre", 
+               var2="clinic_refrigeration_access_post", 
+               lgd_title ="Has refrigeration?",
+               var1_title="Pre", var2_title="Post", 
+               subplot_type="pie", 
+               plot_title="Paired: Breakdown of of Clinic Access to Refrigeration")
 
 # Paired
 compare_paired(data=paired_clean,
                var_name="clinic_refrigeration_access",
-               lgd_title="Does the Clinic have access to refrigeration?",
-               plot_title="Paired: Clinic Access to Refrigeration")
+               lgd_title="Has refrigeration?",
+               plot_title="Paired: Change in Clinic Access to Refrigeration")
 ```
 
 #### New Health Services
+
+```{r}
+plot_func(df=ci_clean, var_name="health_offering_change_count", 
+          var_type="non_cont", plot_title="No. of New Health Services", 
+          plot_type="pie", lgd="No. of Health Services", char_remove = 0)
+```
 
 ```{r}
 # What is the Clinic / Hospital able to offer or provide due to connection to Renewvia minigrid that it wasnt able to offer before?
@@ -1864,7 +2049,7 @@ community_reg(df=paired_enc,
               col_name="clean_drinking_water", dep="1", 
               var_type="categorical", 
               calc_diff = TRUE,diff_type="direction",
-              exclude_outliers = TRUE, outliers = "feature",
+              exclude_outliers = TRUE, 
               customer_type="hs", y_axis= "Households",
               title="Increase in Access to clean drinking water by Community")
 ```
@@ -1893,7 +2078,7 @@ community_reg(df=paired_enc,
               title="Difference in Kerosene Lamps by Community", 
               var_type="categorical", 
               calc_diff = TRUE, diff_type="direction",
-              # exclude_outliers = TRUE, outliers = "feature",
+              exclude_outliers = TRUE,
               customer_type="hs", y_axis= "Households")
 ```
 
@@ -1980,11 +2165,19 @@ paired_testing(paired_enc, var_name="clinic_refrigeration_access",
                test_type = "mcnemar", plot_diff=FALSE)
 ```
 
-### Better access to healthcare
+### TODO: Better access to healthcare
 
 **Data Source**: Household Post-Survey
 
 **Value (Encoding if applied)**: "yes" = 1; "no" = 0
+
+```{r}
+# post_enc$clinic_refrigeration_access <- as.factor(post_enc$clinic_refrigeration_access)
+# post_enc$better_access_health_minigrid <- as.factor(post_enc$better_access_health_minigrid)
+cross_tab <- table(post_enc$clinic_refrigeration_access,
+                   post_enc$better_access_health_minigrid)
+cross_tab
+```
 
 #### Regression - Community\*
 
@@ -1993,12 +2186,13 @@ paired_testing(paired_enc, var_name="clinic_refrigeration_access",
 community_reg(df=post_enc, 
               col_name="better_access_health_minigrid", 
               dep="1", var_type="categorical",
-              exclude_outliers = TRUE, outliers = "feature", 
+              exclude_outliers = TRUE, 
+              #  outliers = "feature", 
               title="Better Healthcare Access by Community",
               customer_type="hs", y_axis= "Households") 
 ```
 
-# 4- Safety
+# 5- Safety
 
 ## A) Descriptive
 
@@ -2034,6 +2228,14 @@ compare_paired(data=paired_clean,
                var_name="feel_unsafe_reasons",
                lgd_title="Reasons",
                plot_title="Paired: Reasons for Feeling unsafe")
+
+## Subgroup analysis using pre-survey reasons, what was their post-survey
+```
+
+```{r}
+as.data.frame.table(table(paired_clean$feel_unsafe_reasons_pre, 
+                        paired_clean$feel_unsafe_reasons_post)
+            )
 ```
 
 ### Presence of Community Lights
@@ -2044,14 +2246,23 @@ compare_paired(data=paired_clean,
 compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
                  var_name="community_lights", var_type="non_cont",
                  subplot_type="pie", 
-                 lgd_title = "Does the community have lights?",
+                 lgd_title = "Present?",
                  title="Unpaired: Presence of Community Lights")
+
+# Paired
+generic_compare(data=paired_clean, var_type="non_cont",
+               var1="community_lights_pre", 
+               var2="community_lights_post", 
+               lgd_title ="Present?",
+               var1_title="Pre", var2_title="Post", 
+               subplot_type="pie", 
+               plot_title="Paired: Presence of Community Lights")
 
 # Paired
 compare_paired(data=paired_clean,
                var_name="community_lights",
-               lgd_title="Does the community have lights?",
-               plot_title="Paired: Presence of Community Lights")
+               lgd_title="Present?",
+               plot_title="Paired: Change in Presence of Community Lights")
 ```
 
 ### Household - Exterior Lights
@@ -2063,13 +2274,21 @@ compare_pre_post(df_pre=initial_pre, df_post=post_clean,
                  var_name="home_exterior_lights", var_type="non_cont",
                  subplot_type="pie", 
                  lgd_title = "Does the home have exterior lights?",
-                 title="Unpaired: Home Exterior Lights")
+                 title="Unpaired: Presence of Home Exterior Lights")
+# Paired
+generic_compare(data=paired_clean, var_type="non_cont",
+               var1="home_exterior_lights_pre", 
+               var2="home_exterior_lights_post", 
+               lgd_title ="Present?",
+               var1_title="Pre", var2_title="Post", 
+               subplot_type="pie", 
+               plot_title="Paired: Presence of Home Exterior Lights")
 
 # Paired
 compare_paired(data=paired_clean,
                var_name="home_exterior_lights",
                lgd_title="Does the home have exterior lights?",
-               plot_title="Paired: Home Exterior Lights")
+               plot_title="Paired: Change in Presence of Home Exterior Lights")
 ```
 
 ### Exterior Lights By Mini-Grid
@@ -2084,7 +2303,7 @@ plot_func(df=post_clean, var_name="exterior_lights_minigrid",
 
 ## B) Inferential
 
-### TODO: Feeling Safe
+### Feeling Safe
 
 **Data Source**: Paired Household Surveys (Pre & Post)
 
@@ -2166,13 +2385,15 @@ community_reg(df=paired_enc,
 
 **Value (Encoding if applied)**: "Yes" = 1; "No" = 0
 
+#### Paired Test\*
+
 ```{r}
 # Does your community currently have outdoor community lights?
 paired_testing(paired_enc, var_name="community_lights", 
                test_type = "mcnemar", plot_diff=FALSE)
 ```
 
-#### Regression - Community\*
+#### Regression - Community
 
 ```{r}
 community_reg(df=paired_enc, 
@@ -2184,19 +2405,23 @@ community_reg(df=paired_enc,
               y_axis= "Households")
 ```
 
-# 5- Economic Activity
+### Presence of House Exterior Lights\*
 
-## A) Descriptive
+**Data Source**: Paired Household Surveys (Pre & Post)
 
-### Employment Type
+**Value (Encoding if applied)**: "Yes" = 1; "No" = 0
+
+#### Paired Test\*
 
 ```{r}
-# Type of employment for Primary Provider
-plot_func(df=initial_pre, var_name="employement_type", 
-          var_type="non_cont", lgd="Type",
-          plot_title="Employement Type of Primary Provider", 
-          plot_type="pie")
+# Does your home have exterior lighting?
+paired_testing(paired_enc, var_name="home_exterior_lights", 
+               test_type = "mcnemar", plot_diff=FALSE)
 ```
+
+# 6- Economic Activity
+
+## A) Descriptive
 
 ### Occupation Change
 
@@ -2332,12 +2557,19 @@ compare_pre_post(df_pre=initial_pre, df_post=post_clean,
                  var_name="business_owners_binary", var_type="non_cont",
                  subplot_type="pie", lgd_title = "Own a Business?",
                  title="Unpaired: Household Business Ownership")
-
+# Paired
+generic_compare(data=paired_clean, var_type="non_cont",
+               var1="business_owners_binary_pre", 
+               var2="business_owners_binary_post", 
+               lgd_title ="Own a Business?",
+               var1_title="Pre", var2_title="Post", 
+               subplot_type="pie", 
+               plot_title="Paired: Household Business Ownership")
 # Paired
 compare_paired(data=paired_clean,
                var_name="business_owners_binary",
                lgd_title="Own a Business?",
-               plot_title="Paired: Household Business Ownership")
+               plot_title="Paired: Change in Household Business Ownership")
 ```
 
 #### Recently Open
@@ -2501,7 +2733,7 @@ paired_testing(paired_enc, var_name="business_owners_binary",
                test_type = "mcnemar", plot_diff=FALSE)
 ```
 
-#### Regression - Community\*
+#### Regression - Community
 
 ```{r}
 community_reg(df=paired_enc, 
@@ -2511,4 +2743,11 @@ community_reg(df=paired_enc,
               var_type="categorical", calc_diff =TRUE,
               diff_type="direction", customer_type="hs", 
               y_axis= "Households")
+```
+
+### TODO
+
+```{r}
+# Phone Charging
+# Appliance, Cooking, Kerosene
 ```
