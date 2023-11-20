@@ -75,7 +75,7 @@ tmp <- merge(customer_info, consumption_period,
               by.y = 'Account.Number')  
 temp <- merge(tmp, consumption_all, 
               by.x = 'customerAccountNumber',
-              by.y = 'Account.Number')
+              by.y = 'Customer.Account.Number')
 # temp_group <- temp %>% 
 #                     group_by(projectName) %>% 
 #                     summarise(consumption = sum(Energy.Consumption, na.rm=TRUE))
@@ -1170,7 +1170,7 @@ community_reg(df=paired_enc,
 ```{r}
 ## Paired Individual Differences
 consumption_reg(df = paired_enc, reg_type ="linear",
-                dep= "water_collection_time", ind="consumption_period",
+                dep= "water_collection_time", ind="avg_mon_consumption_period",
                 calc_diff=TRUE, diff_type = "magnitude",
                 x_axis="Energy Consumption In Period (kwH)", 
                 y_axis="Water Collection Time",
@@ -1249,9 +1249,9 @@ community_reg(df=paired_enc,
 ```{r}
 # Regression - Pre-Post Differences
 consumption_reg(df = paired_enc, reg_type ="linear",
-                dep= "cooking_fuel_collection_time", 
-                ind="consumption_period",
-                calc_diff=TRUE, diff_type = "magnitude",
+                dep= "cooking_fuel_collection_time_post", 
+                ind="avg_mon_consumption_cum",
+                #calc_diff=TRUE, diff_type = "magnitude",
                 exclude_outliers = TRUE, outliers = "feature",
                 x_axis="Energy Consumption In Period (kwH)", 
                 y_axis="Cooking Fuel Collection Time",
