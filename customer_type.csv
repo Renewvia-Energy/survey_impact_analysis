@@ -1,0 +1,47 @@
+tariff,customerType
+Commercial,Shop
+Commercial,Bar/Restaurant
+Commercial,Kinyozi
+Residential,Residential
+Commercial,Workshop
+Commercial,"Video Hall"
+Commercial,Clinic/Hospital/Dispensary
+"Religious Institution",Church
+Free,"Metering Base Station"
+Commercial,Institution
+Commercial,"Guest House"
+NULL,NULL
+Commercial,School
+Commercial,"Telco Tower"
+Commercial,Banda
+Commercial,Kinyozi/Salon/Saloon
+Commercial,Church
+Commercial,"Local Government Office (BMU, Ranch, etc)"
+Commercial,NGO
+"Religious Institution","Religious Institution"
+Commercial,"Conference Hall"
+Commercial,"Health Clinic/Hospital/Dispensary"
+Free,School
+Free,NULL
+Commercial,Pump
+Commercial,BMU
+"Religious Institution",Mosque/Masjid
+Commercial,Icemaking
+Commercial,Mill
+"Religious Institution",Shop
+Commercial,Mosque/Masjid
+Free,"Base Station"
+Commercial,"Corpers Lodge"
+Commercial,"Public Lighting"
+Commercial,"Barbing Salon"
+Commercial,Saloon/Salon
+Commercial,"Water Treatment"
+Commercial,Restaurant
+Commercial,PUE
+Commercial,"Betting Shop"
+Commercial,Commercial
+Commercial,Restaurant/Bar
+Commercial,Residential
+Commercial,"Battery Charging"
+Commercial,"Pool Hall"
+Commercial,Police

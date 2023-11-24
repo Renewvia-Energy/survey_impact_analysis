@@ -28,7 +28,7 @@ output:
 
     -   Community: PV Size (kWh), No. of Customers, CAPEX (USD)
 
-    -   Individual: Energy Consumption (kWh)
+    -   Individual: Avg. Monthly Energy Consumption (kWh)
 
 -   For each dependent variables, we will run a uni-variate regression tests with each of independent variable. When applicable, we will have a Linear regression t-Test or Logistic regression Wald test
 
@@ -564,6 +564,7 @@ plot_reg <- function(data, feature, dependent,
       }
   }
   
+
   if(reg_type == "linear") {
     plot <- ggplot(data,
                 aes(x=.data[[feature]], y=.data[[dependent]])) +
@@ -572,7 +573,7 @@ plot_reg <- function(data, feature, dependent,
                 theme_classic()
     
   } else if(reg_type == "logistic") {
-    print(head(data))
+    
      plot <- ggplot(data, 
                     aes(x=.data[[feature]], y=.data[[dependent]])) + 
               geom_jitter(width = 0.05, height = 0.05) +
@@ -582,7 +583,6 @@ plot_reg <- function(data, feature, dependent,
                 theme_classic()
                 
   }else if(reg_type == "poisson") {
-    print(head(data))
      plot <- ggplot(data, 
                     aes(x=.data[[feature]], y=.data[[dependent]])) + 
               #geom_point(color='blue', alpha=.5) +
@@ -600,7 +600,7 @@ plot_reg <- function(data, feature, dependent,
 ### Regression - Community
 
 ```{r}
-ind_vars <- c("PV Size (kWp)",	"Customers",	"CAPEX ($USD)")
+ind_vars <- c("PV_Size_kWp",	"Customers",	"CAPEX_USD")
 
 community_reg <- function(df, col_name, dep, customer_type,
                           title, var_type, 
@@ -695,7 +695,7 @@ consumption_reg <- function(df, dep, ind, title, reg_type,
                             exclude_outliers = FALSE,
                             outliers=NULL, to_remove=NULL,
                             x_axis=NULL, y_axis=NULL,
-                            normalize=FALSE, 
+                            #normalize=FALSE, 
                             threshold=NULL, 
                             threshold_bound=NULL,
                             log_direction=NULL) {
@@ -722,11 +722,13 @@ consumption_reg <- function(df, dep, ind, title, reg_type,
     }
   }
       
-  if(normalize==TRUE) {
-    mu <- mean(df$col_reg, na.rm = TRUE)
-    std <- sd(df$col_reg, na.rm = TRUE)
-    df$col_reg <- (df$col_reg - mu) / std
-  }
+  # if(normalize==TRUE) {
+  #   mu <- mean(df$col_reg, na.rm = TRUE)
+  #   std <- sd(df$col_reg, na.rm = TRUE)
+  #   df$col_reg <- (df$col_reg - mu) / std
+  # }
+  print(dim(df))
+  print(head(df[, c(ind, "col_reg")]))
   
   if(reg_type == "linear") {
     model <- lm(df$col_reg ~ df[, ind])
@@ -1218,7 +1220,7 @@ community_reg(df=post_enc,
 consumption_reg(df = post_enc, reg_type ="logistic",
                 dep= "girls_schooling_change", ind="avg_mon_consumption_period",
                 calc_diff=FALSE, diff_type = "direction",
-                x_axis="Energy Consumption In Period (kwH)", 
+                x_axis="Avg. Monthly Energy Consumption Pre-Post Period (kwH)", 
                 y_axis="Water Collection Time", log_direction = 1,
                 exclude_outliers = TRUE, outliers = "feature",
                 title="Increase in Girls' School Enrollment vs Consumption")
@@ -1253,7 +1255,7 @@ community_reg(df=post_enc,
 consumption_reg(df = post_enc, reg_type ="logistic",
                 dep= "boys_schooling_change", ind="avg_mon_consumption_period",
                 calc_diff=FALSE, diff_type = "direction",
-                x_axis="Energy Consumption In Period (kwH)", 
+                x_axis="Avg. Monthly Energy Consumption Pre-Post Period (kwH)", 
                 y_axis="Water Collection Time", log_direction = 1,
                 exclude_outliers = TRUE, outliers = "feature",
                 title="Increase in Boys' School Enrollment vs Consumption")
@@ -1308,7 +1310,7 @@ community_reg(df=paired_enc,
 consumption_reg(df = paired_enc, reg_type ="linear",
                 dep= "water_collection_time", ind="avg_mon_consumption_period",
                 calc_diff=TRUE, diff_type = "magnitude",
-                x_axis="Energy Consumption In Period (kwH)", 
+                x_axis="Avg. Monthly Energy Consumption Pre-Post Period (kwH)", 
                 y_axis="Water Collection Time", 
                 threshold = 4, threshold_bound = "lower",
                 title="Individual Directional Change vs Consumption")
@@ -1320,7 +1322,7 @@ consumption_reg(df = paired_enc, reg_type ="linear",
 consumption_reg(df = paired_enc, reg_type ="logistic",
                 dep= "water_collection_time", ind="avg_mon_consumption_period",
                 calc_diff=TRUE, diff_type = "direction",
-                x_axis="Energy Consumption In Period (kwH)", 
+                x_axis="Avg. Monthly Energy Consumption Pre-Post Period (kwH)", 
                 y_axis="Water Collection Time", log_direction = -1,
                 exclude_outliers = TRUE, outliers = "feature",
                 title="Individual Directional Change vs Consumption")
@@ -1358,7 +1360,7 @@ consumption_reg(df = paired_enc, reg_type ="logistic",
                 dep= "water_collection_school_aged", 
                 ind="avg_mon_consumption_period",
                 calc_diff=TRUE, diff_type = "direction",
-                x_axis="Energy Consumption In Period (kwH)", 
+                x_axis="Avg. Monthly Energy Consumption Pre-Post Period (kwH)", 
                 y_axis="Water Collection Responsibility (School-Aged)",
                 log_direction = -1,
                 #exclude_outliers = TRUE, outliers = "feature",
@@ -1405,7 +1407,7 @@ consumption_reg(df = paired_enc, reg_type ="linear",
                 dep= "cooking_fuel_collection_time", 
                 ind="avg_mon_consumption_period",
                 calc_diff=TRUE, diff_type = "magnitude",
-                x_axis="Energy Consumption In Period (kwH)", 
+                x_axis="Avg. Monthly Energy Consumption Pre-Post Period (kwH)", 
                 y_axis="Water Collection Time", 
                 #threshold = 4, threshold_bound = "lower",
                 title="Individual Directional Change vs Consumption")
@@ -1419,7 +1421,7 @@ consumption_reg(df = paired_enc, reg_type ="logistic",
                 dep= "cooking_fuel_collection_time", 
                 ind="avg_mon_consumption_period",
                 calc_diff=TRUE, diff_type = "direction",
-                x_axis="Energy Consumption In Period (kwH)", 
+                x_axis="Avg. Monthly Energy Consumption Pre-Post Period (kwH)", 
                 y_axis="Cooking Fuel Collection Time",
                 log_direction = -1,
                 exclude_outliers = TRUE, outliers = "feature",
@@ -1493,7 +1495,7 @@ consumption_reg(df = paired_enc, reg_type ="logistic",
                 dep= "business_owners_female", 
                 ind="avg_mon_consumption_period",
                 calc_diff=TRUE, diff_type = "direction",
-                x_axis="Energy Consumption In Period (kwH)", 
+                x_axis="Avg. Monthly Energy Consumption Pre-Post Period (kwH)", 
                 y_axis="New Female Business Owners Change",
                 log_direction = 1,
                 #exclude_outliers = TRUE, outliers = "feature",
@@ -1530,7 +1532,7 @@ consumption_reg(df = ci_enc, reg_type ="linear",
                 ind="avg_mon_consumption_cum",
                 dep= "workforce_change_female", 
                 exclude_outliers = TRUE, outliers = "feature",
-                x_axis="Energy Consumption Cumulative (kwH)", 
+                x_axis="Avg. Monthly Energy Consumption Cumulative (kwH)", 
                 y_axis="Women Workers", to_remove=c(0),
                 threshold = 4, threshold_bound = "lower",
                 title="New Female Workers vs. Consumption")
@@ -1543,9 +1545,9 @@ consumption_reg(df = ci_enc, reg_type ="logistic",
                 dep= "hired_women", 
                 ind="avg_mon_consumption_cum",
                 calc_diff=FALSE, diff_type = "direction",
-                x_axis="Energy Consumption In Period (kwH)", 
+                x_axis="Avg. Monthly Energy Consumption Pre-Post Period (kwH)", 
                 y_axis="New Female Workers",
-                #log_direction = 1,
+                log_direction = 1,
                 exclude_outliers = TRUE, outliers = "feature",
                 title="Individual Directional Change vs Consumption")
 ```
@@ -1798,7 +1800,8 @@ plot_func(df=paired_clean, var_name="school_performance_change",
 ### Schools - Academic Performance
 
 ```{r}
-plot_func(df=ci_clean, var_name="school_performance", 
+schools_clean <- ci_clean %>% filter(business_type == "school")
+plot_func(df=schools_clean, var_name="school_performance", 
           var_type="non_cont", lgd = "Change",
           plot_title="Schools - Academic Performance", 
           plot_type="pie")
@@ -1889,7 +1892,7 @@ consumption_reg(df = paired_enc, reg_type ="logistic",
                 dep= "power_sources_unclean", 
                 ind="avg_mon_consumption_period",
                 calc_diff=TRUE, diff_type = "direction",
-                x_axis="Energy Consumption In Period (kwH)", 
+                x_axis="Avg. Monthly Energy Consumption Pre-Post Period (kwH)", 
                 y_axis="Unclean Power Sources",
                 log_direction = -1,
                 exclude_outliers = TRUE, outliers = "feature",
@@ -1919,7 +1922,7 @@ consumption_reg(df = paired_enc, reg_type ="logistic",
                 dep= "appliances_count", 
                 ind="avg_mon_consumption_period",
                 calc_diff=TRUE, diff_type = "direction",
-                x_axis="Energy Consumption In Period (kwH)", 
+                x_axis="Avg. Monthly Energy Consumption Pre-Post Period (kwH)", 
                 y_axis="No. of Appliances",
                 log_direction = 1,
                 exclude_outliers = TRUE, outliers = "feature",
@@ -1984,6 +1987,33 @@ community_reg(df=post_enc,
               title="Households - Increase in Academic Performace by Community")
 ```
 
+#### TODO: Logistic Regression - Individual\*
+
+```{r}
+# Found an undesired effect
+consumption_reg(df = post_enc, reg_type ="logistic",
+                dep= "school_performance_change", 
+                ind="avg_mon_consumption_period",
+                #calc_diff=FALSE, diff_type = "direction",
+                x_axis="Avg. Monthly Energy Consumption Pre-Post Period (kwH)", 
+                y_axis="Households - School Performance Change",
+                log_direction = 1,
+                exclude_outliers = TRUE, outliers = "feature",
+                title="Individual Directional Change vs Consumption")
+```
+
+```{r}
+consumption_reg(df = post_enc, reg_type ="logistic",
+                dep= "school_performance_change", 
+                ind="avg_mon_consumption_cum",
+                #calc_diff=FALSE, diff_type = "direction",
+                x_axis="Avg. Monthly Energy Consumption Cumulative (kwH)", 
+                y_axis="Households - School Performance Change",
+                log_direction = 1,
+                exclude_outliers = TRUE, outliers = "feature",
+                title="Individual Directional Change vs Consumption")
+```
+
 ### Schools - Academic Performance
 
 **Data Source**: C&I Post-Survey
@@ -1994,7 +2024,8 @@ community_reg(df=post_enc,
 
 ```{r}
 ## Have you seen a change in overall school performance?
-community_reg(df=ci_enc, 
+schools_enc <- ci_enc %>% filter(business_type == 3)
+community_reg(df=schools_enc, 
               col_name="school_performance", dep="1", var_type="categorical",
               exclude_outliers = TRUE, outliers = "feature",
               customer_type="ci", y_axis= "C&I",
@@ -2061,7 +2092,7 @@ community_reg(df=ci_enc,
 consumption_reg(df = ci_enc, reg_type ="logistic",
                 dep= "ci_offering_change", ind="avg_mon_consumption_cum",
                 exclude_outliers = TRUE, outliers = "feature",
-                x_axis="Energy Consumption Cumulative (kwH)", 
+                x_axis="Avg. Monthly Energy Consumption Cumulative (kwH)", 
                 y_axis="Change In C&I's Offering",
                 title="Newly Added Offerings vs. Energy Consumption")
 ```
@@ -2337,7 +2368,7 @@ consumption_reg(df = paired_enc, reg_type ="linear",
                 exclude_outliers = TRUE, outliers = "dependent", 
                 # to_remove = c(0),
                 # threshold = -4, threshold_bound = "higher",
-                title="Energy Consumption vs. Difference in No. of Kerosene Lamps")
+                title="Avg. Monthly Energy Consumption vs. Difference in No. of Kerosene Lamps")
 ```
 
 ### Kerosene Lamps Usage
@@ -2361,7 +2392,7 @@ community_reg(df=post_enc,
 consumption_reg(df = ci_enc, reg_type ="logistic",
                 dep= "ci_offering_change", ind="avg_mon_consumption_cum",
                 exclude_outliers = TRUE, outliers = "feature",
-                x_axis="Energy Consumption Cumulative (kwH)", 
+                x_axis="Avg. Monthly Energy Consumption Cumulative (kwH)", 
                 y_axis="Change In C&I's Offering",
                 title="Newly Added Offerings vs. Energy Consumption")
 ```
@@ -2391,7 +2422,7 @@ sub <- ci_enc %>% filter(health_offering_change_count != 0)
 consumption_reg(df = sub, reg_type ="linear", ind="avg_mon_consumption_cum",
                 dep= "health_offering_change_count", calc_diff=FALSE,
                 exclude_outliers = TRUE, outliers = "feature", 
-                title="Energy Consumption vs. New Health Services Offered")
+                title="Avg. Monthly Energy Consumption vs. New Health Services Offered")
 ```
 
 ### Clinic Access To Electricity
