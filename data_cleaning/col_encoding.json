@@ -167,6 +167,7 @@
         {
             "col_name": "applicances_charging_cost",
             "col_enc_map": {
+                "nothing": 0,
                 "nothing_we_use_minigrid_power": 0,
                 "0_150_nkes": 1,
                 "150_1000_nkes": 2,
@@ -178,6 +179,7 @@
         {
             "col_name": "applicances_charging_cost",
             "col_enc_map": {
+                "nothing": 0,
                 "nothing_we_use_minigrid_power": 0,
                 "0_150_nkes": 1,
                 "150_1000_nkes": 2,
@@ -501,12 +503,12 @@
         {
             "col_name": "cooking_energy_cost",
             "col_enc_map": {
-                "nothing": 1,
-                "0_1000_nkes": 2,
-                "1000_1500_nkes": 3,
-                "1500_2000_nkes": 4,
-                "2000_3000_nkes": 5,
-                "3000_4000_nkes": 6
+                "nothing": 0,
+                "0_1000_nkes": 1,
+                "1000_1500_nkes": 2,
+                "1500_2000_nkes": 3,
+                "2000_3000_nkes": 4,
+                "3000_4000_nkes": 5
             }
         },
         {
@@ -1215,7 +1217,7 @@
         {
             "col_name": "phone_charge_cost",
             "col_enc_map": {
-                "nothing_we_use_minigrid_power": 0,
+                "nothing": 0,
                 "0_100_nkes": 1,
                 "100_500_nkes": 2,
                 "500_750_nkes": 3,
@@ -1521,6 +1523,8 @@
         {
             "col_name": "water_collection_time",
             "col_enc_map": {
+                "nothing": 0,
+                "no_travel": 0,
                 "less_than_1_hour": 1,
                 "1_2_hours": 2,
                 "2_3_hours": 3,
@@ -1531,7 +1535,8 @@
         {
             "col_name": "water_collection_travel_distance",
             "col_enc_map": {
-                "no travel": 0,
+                "nothing": 0,
+                "no_travel": 0,
                 "less_than_1_km": 1,
                 "1_2_km": 2,
                 "2_5_km": 3,
@@ -1542,6 +1547,7 @@
         {
             "col_name": "water_cost",
             "col_enc_map": {
+                "nothing": 0,
                 "i_dont_pay_its_free": 0,
                 "0_500_nkes": 1,
                 "500_3000_nkes": 2,

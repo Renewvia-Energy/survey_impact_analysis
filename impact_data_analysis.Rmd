@@ -58,6 +58,9 @@ library(data.table)
 library(forcats)
 library(glue)
 library(aod)
+
+library(caret)
+library(corrplot)
 ```
 
 # Input Data
@@ -157,6 +160,10 @@ post_enc <- merge(post, temp,
                        by.x = 'renewvia_id', 
                        by.y = 'customerAccountNumber')  %>% 
                     filter(tariff == "Residential")
+
+paired_enc <- merge(initial_pre_enc, post_enc,
+                      suffix = c("_pre", "_post"),
+                      by= 'renewvia_id')
 ```
 
 ### Commercial & Institution
@@ -169,9 +176,7 @@ ci_enc <- merge(ci, temp,
                  by.x = 'renewvia_id', 
                  by.y = 'customerAccountNumber')
 
-paired_enc <- merge(initial_pre_enc, post_enc,
-                      suffix = c("_pre", "_post"),
-                      by= 'renewvia_id')
+
 ```
 
 # Utility Functions
@@ -312,29 +317,33 @@ plot_func <- function(df, var_name, var_type,
                                  x=x_axis, y=y_axis) 
       } 
   }else if(var_type == "cont") {
+        mu <- mean(df[,var_name], na.rm=TRUE)
+        med <- median(df[,var_name], na.rm=TRUE) 
       if(plot_type == "hist") {
+          
         plot <- ggplot(df, aes(x=.data[[var_name]])) + 
                       geom_histogram(fill = 'yellow',
-                                     col = 'black', bins=10) +
-                      geom_vline(xintercept = mean(df[,var_name], na.rm=TRUE),
-                                 col="lightblue", lty=1, lwd = 1) +
-                      geom_vline(xintercept = median(df[,var_name], na.rm=TRUE),
-                               col="purple", lty=2, lwd = 1) +
-                      theme_bw() +
-                      labs(title=plot_title, 
-                           x=x_axis, y=y_axis) 
+                                     col = 'black', bins=10) 
         
       }else if(plot_type == "boxplot") {
         plot <- ggplot(df, aes(x=.data[[var_name]])) + 
                 geom_boxplot(outlier.colour="red",
-                              outlier.size=4)+
+                              outlier.size=2)
+      }
+        plot <- plot +
+                geom_vline(xintercept = mu,
+                           col="lightblue", lty=1, lwd = 1) +
+                geom_vline(xintercept = med, 
+                         col="purple", lty=2, lwd = 1) +
+                theme_bw() +
                 labs(title=plot_title, 
-                     x=x_axis, y=y_axis) +
-                theme_void()
-    }
+                     subtitle = paste("Mean = ", round(mu, 0), 
+                                      "  Median = ", med), 
+                     x=x_axis, y=y_axis) 
   }
   return(plot)
 }
+
 ```
 
 ### General Comparison
@@ -487,6 +496,7 @@ paired_testing <- function(data, var_name, test_type,
                            remove_outliers=FALSE, x_axis, y_axis) {
   pre_name <- paste(var_name, "pre", sep="_")
   post_name <- paste(var_name, "post", sep="_")
+  
    
   if(remove_outliers==TRUE) {
     data[, "diff_abs"] <- abs(data[, post_name] - data[, pre_name])
@@ -497,6 +507,7 @@ paired_testing <- function(data, var_name, test_type,
   var_post <- data[, post_name]
   data$var_diff <- var_post - var_pre
   
+
   # Running the test
   if(test_type == "wilcoxon"){
     #Wilcoxon Signed-Rank Test
@@ -516,6 +527,7 @@ paired_testing <- function(data, var_name, test_type,
   print(test)
   # Visualize distribution of score differences
   if(plot_diff == TRUE) {
+      data$var_diff <- as.integer(data$var_diff)
       plot <- plot_func(df=data, var_name="var_diff", var_type="cont", 
                         plot_title=plt_title, plot_type="hist",
                         x_axis=x_axis, y_axis=y_axis)
@@ -525,7 +537,7 @@ paired_testing <- function(data, var_name, test_type,
 }
 ```
 
-## Regression Testing
+## Regression Analysis
 
 ### Plotting Scatter-plots
 
@@ -536,7 +548,7 @@ plot_reg <- function(data, feature, dependent,
                      x_axis=NULL, y_axis=NULL) {
   
   if(is.null(vals_remove) == FALSE) {
-    data <- data[!grepl(vals_remove,data$dependent),]
+    data <- data %>% filter(!.data[[dependent]] %in% vals_remove)
   }
   
   if(remove_outliers == TRUE) {
@@ -588,7 +600,7 @@ plot_reg <- function(data, feature, dependent,
 ### Regression - Community
 
 ```{r}
-ind_vars <- c("pv_size_kwh", "customer_count", "capex_usd")
+ind_vars <- c("PV Size (kWp)",	"Customers",	"CAPEX ($USD)")
 
 community_reg <- function(df, col_name, dep, customer_type,
                           title, var_type, 
@@ -636,7 +648,14 @@ community_reg <- function(df, col_name, dep, customer_type,
   
 
   print(community_data)
-  lst <- list()
+  target_dist_data <- outliers_removal(data=community_data, var="target")
+  dist <- plot_func(df=target_dist_data, var_name="target", var_type="cont", 
+                    plot_title="Dependent Variable Boxplot", plot_type="boxplot", 
+                    char_remove=NULL,
+                    remove_outliers = FALSE,
+                    x_axis=NULL, y_axis=NULL)
+  
+  lst <- list(dist)
   
    for(ind in ind_vars) {
        print(ind)
@@ -665,7 +684,7 @@ community_reg <- function(df, col_name, dep, customer_type,
                     legend="right")
   annotate_figure(plot, top = text_grob(title, 
                  color = "black", face = "bold", size = 12))
-}
+  }
 ```
 
 ### Regression - Consumption
@@ -675,7 +694,11 @@ consumption_reg <- function(df, dep, ind, title, reg_type,
                             calc_diff=FALSE, diff_type=NULL,
                             exclude_outliers = FALSE,
                             outliers=NULL, to_remove=NULL,
-                            x_axis=NULL, y_axis=NULL) {
+                            x_axis=NULL, y_axis=NULL,
+                            normalize=FALSE, 
+                            threshold=NULL, 
+                            threshold_bound=NULL,
+                            log_direction=NULL) {
 
   if (calc_diff == TRUE) {
       pre_name <- paste(dep, "pre", sep="_")
@@ -690,7 +713,21 @@ consumption_reg <- function(df, dep, ind, title, reg_type,
     } else {
       df$col_reg <- df[, dep]
     }
-  print(dim(df))
+  
+  if(is.null(threshold) == FALSE) {
+    if(threshold_bound == "lower"){
+      df <- df %>% filter(col_reg < threshold)
+    }else if(threshold_bound == "higher"){
+      df <- df %>% filter(col_reg > threshold)
+    }
+  }
+      
+  if(normalize==TRUE) {
+    mu <- mean(df$col_reg, na.rm = TRUE)
+    std <- sd(df$col_reg, na.rm = TRUE)
+    df$col_reg <- (df$col_reg - mu) / std
+  }
+  
   if(reg_type == "linear") {
     model <- lm(df$col_reg ~ df[, ind])
     print(summary(model))
@@ -706,6 +743,13 @@ consumption_reg <- function(df, dep, ind, title, reg_type,
     print(test)
     
   } else if(reg_type == "logistic") {
+    #if(calc_diff == TRUE) {
+    if(log_direction == 1) {
+      df <- df %>% filter(col_reg >= 0)
+    }else if(log_direction == -1) {
+      df <- df %>% filter(col_reg <= 0)
+      df$col_reg <- ifelse(df$col_reg == -1, 1, 0)
+    }
     model <- glm(df$col_reg ~ df[, ind], 
                family="binomial")
     print(summary(model))
@@ -737,6 +781,21 @@ consumption_reg <- function(df, dep, ind, title, reg_type,
   return(p)
   
 }
+```
+
+```{r}
+# rg <- preProcess(as.data.frame(paired_enc$kerosene_lamps_count_post), 
+#                    method=c("range"))
+#  
+# temp <- predict(rg, as.data.frame(paired_enc$kerosene_lamps_count_post))
+# temp$consumption <- paired_enc$avg_mon_consumption_period
+# paired_enc$test <- log(paired_enc$water_cost_post)
+# ggplot(paired_enc,
+#         aes(x=avg_mon_consumption_period, 
+#             y=test)) +
+#         geom_point(color='blue') +
+#           geom_smooth(color='red', method = "lm", se = TRUE) +
+#         theme_classic()
 ```
 
 # 1- General
@@ -795,6 +854,57 @@ plot_func(df=initial_pre, var_name="employement_type",
           var_type="non_cont", lgd="Type",
           plot_title="Employement Type of Primary Provider", 
           plot_type="pie")
+```
+
+## D) Correlation - Dependent Variables
+
+```{r}
+corr_simple <- function(data,sig=0.1){
+  #convert data to numeric in order to run correlations
+  #convert to factor first to keep the integrity of the data - each value will become a number rather than turn into NA
+  data <- data[, !names(data) %in% c("renewvia_id","X", 
+                                     "end", "end_date", "displayName",
+                                     "meterSerial", "projectName",
+                                     "Sum.of.kWh.Consumed.y",
+                                     "avg_mon_consumption_cum")]
+  df_cor <- data %>% mutate_if(is.character, as.factor)
+  df_cor <- df_cor %>% mutate_if(is.factor, as.numeric)
+  #run a correlation and drop the insignificant ones
+  corr <- cor(df_cor)
+  #prepare to drop duplicates and correlations of 1     
+  corr[lower.tri(corr,diag=TRUE)] <- NA 
+  #drop perfect correlations
+  corr[corr == 1] <- NA 
+  #turn into a 3-column table
+  corr <- as.data.frame(as.table(corr))
+  #remove the NA values from above 
+  corr <- na.omit(corr) 
+  #select significant values  
+  corr <- subset(corr, abs(Freq) > sig) 
+  #sort by highest correlation
+  corr <- corr[order(-abs(corr$Freq)),] 
+  #print table
+  print(corr)
+  #turn corr back into matrix in order to plot with corrplot
+  mtx_corr <- reshape2::acast(corr, Var1~Var2, value.var="Freq")
+  #plot correlations visually
+  corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
+}
+```
+
+```{r}
+# HS Pre-survey
+corr_simple(initial_enc)
+```
+
+```{r}
+# HS Post-survey
+corr_simple(post_enc)
+```
+
+```{r}
+# C&I Post-survey
+corr_simple(ci_enc)
 ```
 
 # 2- Gender Equality
@@ -1090,7 +1200,7 @@ community_reg(df=post_enc,
               title="Increase in Girls' School Enrollment by Community")
 ```
 
-#### TODO: Investigate
+#### TODO: Investigate, RESOLVED
 
 ```{r}
 # Check for decrease
@@ -1100,6 +1210,18 @@ community_reg(df=post_enc,
               exclude_outliers = TRUE, outliers = "feature",
               y_axis= "Households",
               title="Decrease in Girls' School Enrollment by Community")
+```
+
+#### Logistic Regression - Individual
+
+```{r}
+consumption_reg(df = post_enc, reg_type ="logistic",
+                dep= "girls_schooling_change", ind="avg_mon_consumption_period",
+                calc_diff=FALSE, diff_type = "direction",
+                x_axis="Energy Consumption In Period (kwH)", 
+                y_axis="Water Collection Time", log_direction = 1,
+                exclude_outliers = TRUE, outliers = "feature",
+                title="Increase in Girls' School Enrollment vs Consumption")
 ```
 
 #### Regression - Community (Boys)\*
@@ -1125,6 +1247,18 @@ community_reg(df=post_enc,
               title="Decrease in Boys' School Enrollment by Community")
 ```
 
+#### Logistic Regression - Individual
+
+```{r}
+consumption_reg(df = post_enc, reg_type ="logistic",
+                dep= "boys_schooling_change", ind="avg_mon_consumption_period",
+                calc_diff=FALSE, diff_type = "direction",
+                x_axis="Energy Consumption In Period (kwH)", 
+                y_axis="Water Collection Time", log_direction = 1,
+                exclude_outliers = TRUE, outliers = "feature",
+                title="Increase in Boys' School Enrollment vs Consumption")
+```
+
 ### Water Collection Time
 
 **Data Source**: Paired Household Surveys (Pre & Post)
@@ -1142,7 +1276,7 @@ paired_testing(paired_enc, var_name="water_collection_time",
                plt_title="Difference in Pre-Post of Water Collection Time")
 ```
 
-#### Regression - Community\*
+#### Linear Regression - Community\*
 
 ```{r}
 ## Community Paired Differences
@@ -1154,7 +1288,9 @@ community_reg(df=paired_enc,
               exclude_outliers = TRUE, outliers = "feature",
               customer_type="hs", y_axis= "Households",
               title="Decrease (Direction) in Water Collection Time by Community")
+```
 
+```{r}
 # Magnitude 
 community_reg(df=paired_enc, 
               col_name="water_collection_time", dep="target", 
@@ -1165,16 +1301,29 @@ community_reg(df=paired_enc,
               title="Decrease (Magnitude) in Water Collection Time by Community")
 ```
 
-#### Regression - Consumption
+#### Linear Regression - Individual
 
 ```{r}
-## Paired Individual Differences
+## Paired Individual Directional Change
 consumption_reg(df = paired_enc, reg_type ="linear",
                 dep= "water_collection_time", ind="avg_mon_consumption_period",
                 calc_diff=TRUE, diff_type = "magnitude",
                 x_axis="Energy Consumption In Period (kwH)", 
-                y_axis="Water Collection Time",
-                title="Individual Differences vs Consumption")
+                y_axis="Water Collection Time", 
+                threshold = 4, threshold_bound = "lower",
+                title="Individual Directional Change vs Consumption")
+```
+
+#### Logistic Regression - Individual
+
+```{r}
+consumption_reg(df = paired_enc, reg_type ="logistic",
+                dep= "water_collection_time", ind="avg_mon_consumption_period",
+                calc_diff=TRUE, diff_type = "direction",
+                x_axis="Energy Consumption In Period (kwH)", 
+                y_axis="Water Collection Time", log_direction = -1,
+                exclude_outliers = TRUE, outliers = "feature",
+                title="Individual Directional Change vs Consumption")
 ```
 
 ### Water Collection School-Aged
@@ -1202,6 +1351,20 @@ community_reg(df=paired_enc,
               y_axis= "Households")
 ```
 
+#### Logistic Regression - Individual
+
+```{r}
+consumption_reg(df = paired_enc, reg_type ="logistic",
+                dep= "water_collection_school_aged", 
+                ind="avg_mon_consumption_period",
+                calc_diff=TRUE, diff_type = "direction",
+                x_axis="Energy Consumption In Period (kwH)", 
+                y_axis="Water Collection Responsibility (School-Aged)",
+                log_direction = -1,
+                #exclude_outliers = TRUE, outliers = "feature",
+                title="Individual Directional Change vs Consumption")
+```
+
 ### Cooking Fuel Collection Time
 
 **Data Source**: Paired Household Surveys (Pre & Post)
@@ -1213,7 +1376,7 @@ community_reg(df=paired_enc,
 ```{r}
 # How long does the cooking fuel collection process take on a daily basis?
 paired_testing(paired_enc, var_name="cooking_fuel_collection_time", 
-               test_type = "sign", plot_diff=TRUE, 
+               test_type = "ttest", plot_diff=TRUE, 
                x_axis="Differences", y_axis="Count",
                remove_outliers = TRUE,
                plt_title="Difference in Pre-Post Cooking Fuel Collection Times")
@@ -1233,29 +1396,34 @@ community_reg(df=paired_enc,
               title="Decrease (Direction) in 
               Cooking Fuel Collection Time by Community")
 
-# Magnitude 
-community_reg(df=paired_enc, 
-              col_name="cooking_fuel_collection_time", 
-              dep="target", var_type="ratio", 
-              calc_diff = TRUE, diff_type = "magnitude",
-              exclude_outliers = TRUE, outliers = "feature",
-              customer_type="hs", y_axis= "Sum of Differences",
-              title="Decrease (Magnitude) in 
-              Cooking Fuel Collection Time by Community")
 ```
 
-#### Regression - Consumption
+#### Linear Regression - Individual
+
+```{r}
+consumption_reg(df = paired_enc, reg_type ="linear",
+                dep= "cooking_fuel_collection_time", 
+                ind="avg_mon_consumption_period",
+                calc_diff=TRUE, diff_type = "magnitude",
+                x_axis="Energy Consumption In Period (kwH)", 
+                y_axis="Water Collection Time", 
+                #threshold = 4, threshold_bound = "lower",
+                title="Individual Directional Change vs Consumption")
+```
+
+#### Logistic Regression - Individual
 
 ```{r}
 # Regression - Pre-Post Differences
-consumption_reg(df = paired_enc, reg_type ="linear",
-                dep= "cooking_fuel_collection_time_post", 
-                ind="avg_mon_consumption_cum",
-                #calc_diff=TRUE, diff_type = "magnitude",
-                exclude_outliers = TRUE, outliers = "feature",
+consumption_reg(df = paired_enc, reg_type ="logistic",
+                dep= "cooking_fuel_collection_time", 
+                ind="avg_mon_consumption_period",
+                calc_diff=TRUE, diff_type = "direction",
                 x_axis="Energy Consumption In Period (kwH)", 
                 y_axis="Cooking Fuel Collection Time",
-                title="Individual Differences vs. Consumption")
+                log_direction = -1,
+                exclude_outliers = TRUE, outliers = "feature",
+                title="Individual Directional Change vs Consumption")
 
 # Monthly consumption between pre and post: 
 # avg_monthly_consumption = (365* (Consumption_period / no.of days))/12  
@@ -1306,7 +1474,31 @@ paired_testing(gender_paired, var_name="business_owners_female",
                test_type = "mcnemar", plot_diff=FALSE)
 ```
 
-#### TODO: Further Investigation
+#### Regression - Community
+
+```{r}
+community_reg(df=paired_enc, 
+              col_name="business_owners_female", 
+              dep="1", var_type="categorical", 
+              calc_diff = TRUE, diff_type = "direction",
+              exclude_outliers = TRUE, outliers = "feature",
+              customer_type="hs", y_axis= "Households",
+              title="New Female Business Owners Change by Community")
+```
+
+#### Logistic Regression - Individual
+
+```{r}
+consumption_reg(df = paired_enc, reg_type ="logistic",
+                dep= "business_owners_female", 
+                ind="avg_mon_consumption_period",
+                calc_diff=TRUE, diff_type = "direction",
+                x_axis="Energy Consumption In Period (kwH)", 
+                y_axis="New Female Business Owners Change",
+                log_direction = 1,
+                #exclude_outliers = TRUE, outliers = "feature",
+                title="Individual Directional Change vs Consumption")
+```
 
 ### New Female workers
 
@@ -1317,27 +1509,45 @@ paired_testing(gender_paired, var_name="business_owners_female",
 #### Regression - Community\*
 
 ```{r}
+ci_enc$hired_women <- ifelse(ci_enc$workforce_change_female > 0, 1, 0)
+```
+
+```{r}
 # If you answered yes to adding new workers, how many new employees are female?
 community_reg(df=ci_enc, 
-              col_name="workforce_change_female", 
-              dep="V1", var_type="ratio", 
+              col_name="hired_women", 
+              dep="1", var_type="categorical", 
               exclude_outliers = TRUE, outliers = "feature",
               customer_type="ci", y_axis= "C&I",
               title="New Female Workers Change by Community")
 ```
 
-#### Regression - Consumption
+#### Linear Regression - Individual
 
 ```{r}
 # Regression - Pre-Post Differences
-df_reg <- ci_enc %>% filter(workforce_change_female != 0)
-consumption_reg(df = df_reg, reg_type ="linear",
-                ind="consumption_all",
+consumption_reg(df = ci_enc, reg_type ="linear",
+                ind="avg_mon_consumption_cum",
                 dep= "workforce_change_female", 
                 exclude_outliers = TRUE, outliers = "feature",
                 x_axis="Energy Consumption Cumulative (kwH)", 
-                y_axis="Women Workers",
+                y_axis="Women Workers", to_remove=c(0),
+                threshold = 4, threshold_bound = "lower",
                 title="New Female Workers vs. Consumption")
+```
+
+#### Logistic Regression - Individual
+
+```{r}
+consumption_reg(df = ci_enc, reg_type ="logistic",
+                dep= "hired_women", 
+                ind="avg_mon_consumption_cum",
+                calc_diff=FALSE, diff_type = "direction",
+                x_axis="Energy Consumption In Period (kwH)", 
+                y_axis="New Female Workers",
+                #log_direction = 1,
+                exclude_outliers = TRUE, outliers = "feature",
+                title="Individual Directional Change vs Consumption")
 ```
 
 # 3- Productivity
@@ -1670,6 +1880,22 @@ community_reg(df=paired_enc,
               y_axis= "Households")
 ```
 
+#### Linear Regression - Individual
+
+#### Logistic Regression - Individual
+
+```{r}
+consumption_reg(df = paired_enc, reg_type ="logistic",
+                dep= "power_sources_unclean", 
+                ind="avg_mon_consumption_period",
+                calc_diff=TRUE, diff_type = "direction",
+                x_axis="Energy Consumption In Period (kwH)", 
+                y_axis="Unclean Power Sources",
+                log_direction = -1,
+                exclude_outliers = TRUE, outliers = "feature",
+                title="Individual Directional Change vs Consumption")
+```
+
 ### No. of Appliances
 
 **Data Source**: Paired Household Surveys (Pre & Post)
@@ -1686,6 +1912,20 @@ paired_testing(paired_enc, var_name = "appliances_count",
                plt_title="Difference in Pre-Post House Appliances")
 ```
 
+#### Logistic Regression - Individual
+
+```{r}
+consumption_reg(df = paired_enc, reg_type ="logistic",
+                dep= "appliances_count", 
+                ind="avg_mon_consumption_period",
+                calc_diff=TRUE, diff_type = "direction",
+                x_axis="Energy Consumption In Period (kwH)", 
+                y_axis="No. of Appliances",
+                log_direction = 1,
+                exclude_outliers = TRUE, outliers = "feature",
+                title="Individual Directional Change vs Consumption")
+```
+
 ### Light Hours
 
 **Data Source**: Paired Household Surveys (Pre & Post)
@@ -1696,24 +1936,29 @@ paired_testing(paired_enc, var_name = "appliances_count",
 
 ```{r}
 ## How many hours of light per day do you currently have at home?
-paired_testing(paired_enc, var_name = "light_hours_current", 
+reg_temp <- paired_enc %>% filter(!light_hours_current_pre %in% c(46, 25) |
+                                  !light_hours_current_post %in% c(200))
+paired_testing(reg_temp, var_name = "light_hours_current", 
                plot_diff = TRUE, 
-               test_type="ttest", remove_outliers=TRUE,
+               test_type="ttest", 
+               remove_outliers=TRUE,
                x_axis="Differences", y_axis="Count",
                plt_title="Difference in Pre-Post House Light Hours")
 
 ctr <- "nigeria"
 print(ctr)
-country_df <- paired_clean %>% filter(country_post == ctr)
+country_df <- reg_temp %>% filter(country_post == 1)
 paired_testing(country_df, var_name = "light_hours_current", 
                plot_diff = TRUE, 
                test_type="ttest", remove_outliers=TRUE,
                x_axis="Differences", y_axis="Count",
                plt_title="Nigeria: Difference in Pre-Post House Light Hours")
 
+#country_df[, c("light_hours_current_pre", "light_hours_current_post")]
+
 ctr <- "kenya"
 print(ctr)
-country_df <- paired_clean %>% filter(country_post == ctr)
+country_df <- reg_temp %>% filter(country_post == 2)
 paired_testing(country_df, var_name = "light_hours_current", 
                plot_diff = TRUE, 
                test_type="ttest", remove_outliers=TRUE,
@@ -1745,7 +1990,7 @@ community_reg(df=post_enc,
 
 **Value (Encoding if applied)**: "Yes, they have increased" = 1, "Yes, they have decreased" = -1, "No, it is pretty much the same" = 0
 
-#### Regression - Community
+#### Regression - Community\*
 
 ```{r}
 ## Have you seen a change in overall school performance?
@@ -1814,7 +2059,7 @@ community_reg(df=ci_enc,
 
 ```{r}
 consumption_reg(df = ci_enc, reg_type ="logistic",
-                dep= "ci_offering_change", ind="consumption_all",
+                dep= "ci_offering_change", ind="avg_mon_consumption_cum",
                 exclude_outliers = TRUE, outliers = "feature",
                 x_axis="Energy Consumption Cumulative (kwH)", 
                 y_axis="Change In C&I's Offering",
@@ -2086,9 +2331,12 @@ community_reg(df=paired_enc,
 
 ```{r}
 consumption_reg(df = paired_enc, reg_type ="linear",
-                dep= "kerosene_lamps_count", ind="consumption_period",
+                dep= "kerosene_lamps_count", 
+                ind="avg_mon_consumption_cum",
                 calc_diff=TRUE, diff_type="magnitude",
-                exclude_outliers = TRUE, outliers = "all", 
+                exclude_outliers = TRUE, outliers = "dependent", 
+                # to_remove = c(0),
+                # threshold = -4, threshold_bound = "higher",
                 title="Energy Consumption vs. Difference in No. of Kerosene Lamps")
 ```
 
@@ -2107,6 +2355,15 @@ community_reg(df=post_enc,
               exclude_outliers = TRUE, outliers = "feature", 
               title="Decrease in Kerosene Lamps Usage by Community",
               customer_type="hs", y_axis= "Households")
+```
+
+```{r}
+consumption_reg(df = ci_enc, reg_type ="logistic",
+                dep= "ci_offering_change", ind="avg_mon_consumption_cum",
+                exclude_outliers = TRUE, outliers = "feature",
+                x_axis="Energy Consumption Cumulative (kwH)", 
+                y_axis="Change In C&I's Offering",
+                title="Newly Added Offerings vs. Energy Consumption")
 ```
 
 ### New Health Services
@@ -2131,7 +2388,7 @@ community_reg(df=ci_enc,
 
 ```{r}
 sub <- ci_enc %>% filter(health_offering_change_count != 0)
-consumption_reg(df = sub, reg_type ="linear", ind="consumption_all",
+consumption_reg(df = sub, reg_type ="linear", ind="avg_mon_consumption_cum",
                 dep= "health_offering_change_count", calc_diff=FALSE,
                 exclude_outliers = TRUE, outliers = "feature", 
                 title="Energy Consumption vs. New Health Services Offered")
@@ -2719,7 +2976,7 @@ community_reg(df=ci_enc,
               y_axis= "C&I")
 ```
 
-### Business Ownership\*
+### Business Ownership
 
 **Data Source**: Paired Household Surveys (Pre & Post)
 
@@ -2745,9 +3002,212 @@ community_reg(df=paired_enc,
               y_axis= "Households")
 ```
 
-### TODO
+### Phone Charging Cost
+
+**Data Source**: Paired Household Surveys (Pre & Post)
+
+**Value (Encoding if applied)**: "Nothing" = 0; "0_100_nkes" = 1, "100_500_nkes" = 2, "500_750_nkes": 3, "750_1000_nkes" = 4, "1000_nkes_and_above" = 5, "1000_n_and_above" = 5
+
+#### Paired Test\*
 
 ```{r}
 # Phone Charging
-# Appliance, Cooking, Kerosene
+# Nigeria
+ctr <- 1
+country_df <- paired_enc %>% filter(country_post == ctr)
+paired_testing(country_df, var_name="phone_charge_cost", 
+               test_type = "wilcoxon", x_axis="Differences", y_axis="Count",
+               plt_title="Nigeria: Difference in Pre-Post Phone Charging Cost",
+               plot_diff=TRUE, 
+               #remove_outliers = TRUE
+               )
+
+
+# Kenya
+ctr <- 2
+country_df <- paired_enc %>% filter(country_post == ctr)
+paired_testing(country_df, var_name="phone_charge_cost", 
+               test_type = "wilcoxon", x_axis="Differences", y_axis="Count",
+               plt_title="Kenya: Difference in Pre-Post Phone Charging Cost",
+               plot_diff=TRUE, 
+               #remove_outliers = TRUE
+               )
+```
+
+```{r}
+# ctr <- 1
+# country_df <- paired_enc %>% filter(country_post == ctr)
+community_reg(df=paired_enc, 
+              col_name="phone_charge_cost", dep="-1", 
+              title="Phone Charging Cost Savings by Community", 
+              exclude_outliers = TRUE, outliers = "feature",
+              var_type="categorical", calc_diff = TRUE,
+              diff_type="direction", customer_type="hs", 
+              y_axis= "Households")
+```
+
+### Applicance Charging Cost
+
+**Data Source**: Paired Household Surveys (Pre & Post)
+
+**Value (Encoding if applied)**: "nothing" = 0, "0_150_nkes" = 1, "150_1000_nkes" = 2, "1000_3000_nkes" = 3, "3000_4000_nkes" = 4, "4000_6000_nkes" = 5
+
+#### Paired Test\*
+
+```{r}
+# Nigeria
+ctr <- 1
+country_df <- paired_enc %>% filter(country_post == ctr)
+paired_testing(country_df, var_name="applicances_charging_cost", 
+               test_type = "sign", x_axis="Differences", y_axis="Count",
+               plt_title="Nigeria: Difference in Pre-Post Appliances Charging Cost",
+               plot_diff=TRUE, 
+               #remove_outliers = TRUE
+               )
+
+
+# Kenya
+ctr <- 2
+country_df <- paired_enc %>% filter(country_post == ctr)
+paired_testing(country_df, var_name="applicances_charging_cost", 
+               test_type = "sign", x_axis="Differences", y_axis="Count",
+               plt_title="Kenya: Difference in Pre-Post Appliances Charging Cost",
+               plot_diff=TRUE, 
+               #remove_outliers = TRUE
+)
+```
+
+#### Regression - Community
+
+```{r}
+community_reg(df=paired_enc, 
+              col_name="applicances_charging_cost", dep="-1", 
+              title="Appliance Charging Cost Savings by Community", 
+              exclude_outliers = TRUE, outliers = "feature",
+              var_type="categorical", calc_diff = TRUE,
+              diff_type="direction", customer_type="hs", 
+              y_axis= "Households")
+```
+
+### Cooking Energy Cost
+
+**Data Source**: Paired Household Surveys (Pre & Post)
+
+**Value (Encoding if applied)**: "nothing" = 0, "0_1000_nkes" = 1, "1000_1500_nkes" = 2, "1500_2000_nkes" = 3, "2000_3000_nkes" = 4, "3000_4000_nkes" = 5
+
+#### Paired Test\*
+
+```{r}
+# Nigeria
+ctr <- 1
+country_df <- paired_enc %>% filter(country_post == ctr)
+paired_testing(country_df, var_name="cooking_energy_cost", 
+               test_type = "sign", x_axis="Differences", y_axis="Count",
+               plt_title="Nigeria: Difference in Pre-Post Cooking Energy Cost",
+               plot_diff=TRUE, 
+               #remove_outliers = TRUE
+               )
+
+
+# Kenya
+ctr <- 2
+country_df <- paired_enc %>% filter(country_post == ctr)
+paired_testing(country_df, var_name="cooking_energy_cost", 
+               test_type = "sign", x_axis="Differences", y_axis="Count",
+               plt_title="Kenya: Difference in Pre-Post Cooking Energy Cost",
+               plot_diff=TRUE, 
+               #remove_outliers = TRUE
+               )
+```
+
+```{r}
+community_reg(df=paired_enc, 
+              col_name="cooking_energy_cost", dep="-1", 
+              title="Cooking Energy Cost Savings by Community", 
+              exclude_outliers = TRUE, outliers = "feature",
+              var_type="categorical", calc_diff = TRUE,
+              diff_type="direction", customer_type="hs", 
+              y_axis= "Households")
+```
+
+### Kerosene Lamps Cost
+
+**Data Source**: Paired Household Surveys (Pre & Post)
+
+**Value (Encoding if applied)**: "nothing" = 0,"0_200_nkes" = 1,"200_600_nkes" = 2,"600_1000_nkes" = 3,"1000_1400_nkes" = 4,"1400_nkes_and_above" = 5
+
+#### Paired Test\*
+
+```{r}
+# Nigeria
+ctr <- 1
+country_df <- paired_enc %>% filter(country_post == ctr)
+paired_testing(country_df, var_name="kerosene_lamps_cost", 
+               test_type = "sign", x_axis="Differences", y_axis="Count",
+               plt_title="Nigeria: Difference in Pre-Post Kerosene Lamps Cost",
+               plot_diff=TRUE, 
+               #remove_outliers = TRUE
+               )
+
+
+# Kenya
+ctr <- 2
+country_df <- paired_enc %>% filter(country_post == ctr)
+paired_testing(country_df, var_name="kerosene_lamps_cost", 
+               test_type = "sign", x_axis="Differences", y_axis="Count",
+               plt_title="Kenya: Difference in Pre-Post Kerosene Lamps Cost",
+               plot_diff=TRUE, 
+               #remove_outliers = TRUE
+               )
+```
+
+```{r}
+community_reg(df=paired_enc, 
+              col_name="kerosene_lamps_cost", dep="-1", 
+              title="Kerosene Lamps Cost Savings by Community", 
+              exclude_outliers = TRUE, outliers = "feature",
+              var_type="categorical", calc_diff = TRUE,
+              diff_type="direction", customer_type="hs", 
+              y_axis= "Households")
+```
+
+### Water Cost
+
+**Data Source**: Paired Household Surveys (Pre & Post)
+
+**Value (Encoding if applied)**: "nothing" = 0, "0_500_nkes" = 1, "500_3000_nkes" = 2, "3000_5000_nkes" = 3, "5000_nkes_and_above" = 4
+
+#### Paired Test\*
+
+```{r}
+# Nigeria
+ctr <- 1
+country_df <- paired_enc %>% filter(country_post == ctr)
+paired_testing(country_df, var_name="water_cost", 
+               test_type = "sign", x_axis="Differences", y_axis="Count",
+               plt_title="Nigeria: Difference in Pre-Post Water Cost",
+               plot_diff=TRUE, 
+               #remove_outliers = TRUE
+               )
+
+
+# Kenya
+ctr <- 2
+country_df <- paired_enc %>% filter(country_post == ctr)
+paired_testing(country_df, var_name="water_cost", 
+               test_type = "sign", x_axis="Differences", y_axis="Count",
+               plt_title="Kenya: Difference in Pre-Post Water Cost",
+               plot_diff=TRUE, 
+               #remove_outliers = TRUE
+               )
+```
+
+```{r}
+community_reg(df=paired_enc, 
+              col_name="water_cost", dep="-1", 
+              title="Water Cost Savings by Community", 
+              exclude_outliers = TRUE, outliers = "feature",
+              var_type="categorical", calc_diff = TRUE,
+              diff_type="direction", customer_type="hs", 
+              y_axis= "Households")
 ```

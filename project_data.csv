@@ -1,4 +1,4 @@
-﻿project_name,community,country,pv_size_kwp,customer_count,capex_usd,hs,ci
+﻿project_name,community,country,PV Size (kWp),Customers,CAPEX ($USD),hs,ci
 Akipelai,akipelai,Nigeria,67.32,353,323701,340,13
 Balep,balep,Nigeria,9.36,190,171150,183,7
 Bendeghe-Afi,bendeghe_afi,Nigeria,18.72,256,218907,250,6
