@@ -2028,7 +2028,7 @@ schools_enc <- ci_enc %>% filter(business_type == 3)
 community_reg(df=schools_enc, 
               col_name="school_performance", dep="1", var_type="categorical",
               exclude_outliers = TRUE, outliers = "feature",
-              customer_type="ci", y_axis= "C&I",
+              customer_type="school", y_axis= "Schools",
               title="Schools - Increase in Academic Performace by Community")
 ```
 
@@ -2501,6 +2501,14 @@ compare_paired(data=paired_clean,
                plot_title="Paired: Feeling Safe When Dark")
 ```
 
+```{r}
+safe_1 <- paired_enc %>% filter(feel_safe_dark_pre == 1)
+compare_paired(data=safe_1,
+               var_name="feel_safe_dark",
+               lgd_title="Score",
+               plot_title="Paired: Feeling Safe When Dark")
+```
+
 ### Reasons for Feeling Unsafe
 
 ```{r}
@@ -2665,6 +2673,9 @@ community_reg(df=paired_enc,
               var_type="categorical", calc_diff = TRUE,
               diff_type="direction", customer_type="hs", 
               y_axis= "Households")
+```
+
+```         
 ```
 
 ### Presence of Community Lights\*
