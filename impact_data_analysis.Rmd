@@ -1949,6 +1949,18 @@ paired_testing(paired_enc, var_name = "appliances_count",
                plt_title="Difference in Pre-Post House Appliances")
 ```
 
+#### Regression - Community\*
+
+```{r}
+community_reg(df=paired_enc, 
+              col_name="appliances_count", dep="1", 
+              title="Power Source (Non-Renewable) by Community", 
+              exclude_outliers = TRUE, outliers = "feature",
+              var_type="categorical", calc_diff =TRUE,
+              diff_type="direction", customer_type="hs", 
+              y_axis= "Households")
+```
+
 #### Logistic Regression - Individual
 
 ```{r}
@@ -1969,7 +1981,7 @@ consumption_reg(df = paired_enc, reg_type ="logistic",
 
 **Value (Encoding if applied)**: Any numeric value between 0 and 24
 
-#### TODO: Paired Test\*
+#### Paired Test\*
 
 ```{r}
 ## How many hours of light per day do you currently have at home?
@@ -1981,26 +1993,18 @@ paired_testing(reg_temp, var_name = "light_hours_current",
                remove_outliers=TRUE,
                x_axis="Differences", y_axis="Count",
                plt_title="Difference in Pre-Post House Light Hours")
+```
 
-ctr <- "nigeria"
-print(ctr)
-country_df <- reg_temp %>% filter(country_post == 1)
-paired_testing(country_df, var_name = "light_hours_current", 
-               plot_diff = TRUE, 
-               test_type="ttest", remove_outliers=TRUE,
-               x_axis="Differences", y_axis="Count",
-               plt_title="Nigeria: Difference in Pre-Post House Light Hours")
+#### Regression - Community\*
 
-#country_df[, c("light_hours_current_pre", "light_hours_current_post")]
-
-ctr <- "kenya"
-print(ctr)
-country_df <- reg_temp %>% filter(country_post == 2)
-paired_testing(country_df, var_name = "light_hours_current", 
-               plot_diff = TRUE, 
-               test_type="ttest", remove_outliers=TRUE,
-               x_axis="Differences", y_axis="Count",
-               plt_title="Kenya: Difference in Pre-Post House Light Hours")
+```{r}
+community_reg(df=paired_enc, 
+              col_name="light_hours_current", dep="1", 
+              title="Light Hours by Community", 
+              exclude_outliers = TRUE, outliers = "feature",
+              var_type="categorical", calc_diff =TRUE,
+              diff_type="direction", customer_type="hs", 
+              y_axis= "Households")
 ```
 
 ### Households - Academic Performance
