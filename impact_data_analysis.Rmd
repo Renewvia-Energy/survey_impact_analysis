@@ -154,10 +154,10 @@ initial_enc <- merge(initial_enc, customer_info,
                     filter(tariff == "Residential")
 # Pre-connection
 initial_pre_enc <- initial_enc %>%
-                    filter(status == 1)
+                    filter(status == 0)
 # Pre-connection
 initial_post_enc <- initial_enc %>%
-                    filter(status == 2)
+                    filter(status == 1)
 
 # Household Post-Survey
 post <- read.csv("data_cleaning/datasets_encoded/post_encoded.csv",
@@ -546,7 +546,8 @@ paired_testing <- function(data, var_name, test_type,
   } else if(test_type == "mcnemar") {
     cross_tab <- table(data[, pre_name], data[, post_name])
     print(cross_tab)
-    test <- mcnemar.test(cross_tab)
+    #test <- mcnemar.test(cross_tab) 
+    test <- mcnemar.exact(cross_tab)
   }
   print(test)
   # Visualize distribution of score differences
@@ -862,14 +863,15 @@ plot_func(df=paired_clean,
           plot_type="hist")
 ```
 
-## C) Occupation
+## C) Household Size
 
 ```{r}
 # Type of employment for Primary Provider
-# plot_func(df=initial_pre, var_name="primary_provider_occupation", 
-#           var_type="non_cont", lgd="Type",
-#           plot_title="Occupation of Primary Provider", 
-#           plot_type="bar_stack")
+plot_func(df=initial_pre, var_name="household_headcount",
+          var_type="cont", lgd = "Gender",
+          plot_title="Headcount", 
+          remove_outliers = TRUE,
+          plot_type="hist")
 ```
 
 ## D) Employment Type
@@ -1296,7 +1298,7 @@ consumption_reg(df = post_enc, reg_type ="logistic",
 ```{r}
 # How long does the water collection process take on a daily basis?
 paired_testing(paired_enc, var_name="water_collection_time", 
-               test_type = "sign", plot_diff=TRUE, 
+               test_type = "ttest", plot_diff=TRUE, 
                x_axis="Differences", y_axis="Count",
                remove_outliers = TRUE,
                plt_title="Difference in Pre-Post of Water Collection Time")
@@ -3188,9 +3190,8 @@ consumption_reg(df=nigeria_paired_enc,  reg_type ="logistic",
 #### TODO: Paired Testing\*
 
 ```{r}
-ctr <- "kenya"
-country_df <- paired_clean %>% filter(country_post == ctr)
-paired_testing(country_df, var_name="avg_household_income", 
+kenya_paired_enc <- paired_enc %>% filter(country_post == 2)
+paired_testing(kenya_paired_enc, var_name="avg_household_income", 
                test_type = "ttest", plot_diff=TRUE,
                remove_outliers = TRUE,
                x_axis="Value (Ksh)", y_axis="Count",
@@ -3260,10 +3261,6 @@ consumption_reg(df=nigeria_post_enc,  reg_type ="logistic",
                 x_axis="Avg. Monthly Energy Consumption Cumulative (kWh)", 
                 y_axis="Change (Increase)", log_direction = 1,
                 title="Nigeria - Household Income vs. Consumption")
-```
-
-```{r}
-
 ```
 
 ### C&I - Earnings Change
@@ -3383,9 +3380,7 @@ paired_testing(paired_enc, var_name="phone_charge_cost",
 ```{r}
 # Phone Charging
 # Nigeria
-ctr <- 1
-country_df <- paired_enc %>% filter(country_post == ctr)
-paired_testing(country_df, var_name="phone_charge_cost", 
+paired_testing(nigeria_paired_enc, var_name="phone_charge_cost", 
                test_type = "sign", x_axis="Differences", y_axis="Count",
                plt_title="Nigeria: Difference in Pre-Post Phone Charging Cost",
                plot_diff=TRUE, 
@@ -3394,17 +3389,15 @@ paired_testing(country_df, var_name="phone_charge_cost",
 
 
 # Kenya
-ctr <- 2
-country_df <- paired_enc %>% filter(country_post == ctr)
-paired_testing(country_df, var_name="phone_charge_cost", 
-               test_type = "wilcoxon", x_axis="Differences", y_axis="Count",
+paired_testing(kenya_paired_enc, var_name="phone_charge_cost", 
+               test_type = "sign", x_axis="Differences", y_axis="Count",
                plt_title="Kenya: Difference in Pre-Post Phone Charging Cost",
                plot_diff=TRUE, 
                #remove_outliers = TRUE
                )
 ```
 
-#### Regression - Community
+#### Regression - Community by Country
 
 ```{r}
 # ctr <- 1
@@ -3418,8 +3411,17 @@ community_reg(df=paired_enc,
               y_axis= "Households")
 ```
 
-```{r}
+#### Logistic Regression - Individual
 
+```{r}
+consumption_reg(df=paired_enc,  reg_type ="logistic",
+                dep="phone_charge_cost", 
+                ind="avg_mon_consumption_period",
+                exclude_outliers = TRUE, outliers = "feature",
+                calc_diff=TRUE, diff_type = "direction",
+                x_axis="Avg. Monthly Energy Consumption Pre-Post Period (kWh)", 
+                y_axis="Change (Decrease)", log_direction = -1,
+                title="Phone Charging Cost vs. Consumption")
 ```
 
 ### Appliance Charging Cost
@@ -3431,10 +3433,19 @@ community_reg(df=paired_enc,
 #### Paired Test\*
 
 ```{r}
+paired_testing(paired_enc, var_name="applicances_charging_cost", 
+               test_type = "sign", x_axis="Differences", y_axis="Count",
+               plt_title="Difference in Pre-Post Appliances Charging Cost",
+               plot_diff=TRUE, 
+               #remove_outliers = TRUE
+               )
+```
+
+#### Paired Test by Country\*
+
+```{r}
 # Nigeria
-ctr <- 1
-country_df <- paired_enc %>% filter(country_post == ctr)
-paired_testing(country_df, var_name="applicances_charging_cost", 
+paired_testing(nigeria_paired_enc, var_name="applicances_charging_cost", 
                test_type = "sign", x_axis="Differences", y_axis="Count",
                plt_title="Nigeria: Difference in Pre-Post Appliances Charging Cost",
                plot_diff=TRUE, 
@@ -3443,9 +3454,7 @@ paired_testing(country_df, var_name="applicances_charging_cost",
 
 
 # Kenya
-ctr <- 2
-country_df <- paired_enc %>% filter(country_post == ctr)
-paired_testing(country_df, var_name="applicances_charging_cost", 
+paired_testing(kenya_paired_enc, var_name="applicances_charging_cost", 
                test_type = "sign", x_axis="Differences", y_axis="Count",
                plt_title="Kenya: Difference in Pre-Post Appliances Charging Cost",
                plot_diff=TRUE, 
@@ -3465,6 +3474,19 @@ community_reg(df=paired_enc,
               y_axis= "Households")
 ```
 
+#### Logistic Regression - Individual
+
+```{r}
+consumption_reg(df=paired_enc,  reg_type ="logistic",
+                dep="applicances_charging_cost", 
+                ind="avg_mon_consumption_period",
+                exclude_outliers = TRUE, outliers = "feature",
+                calc_diff=TRUE, diff_type = "direction",
+                x_axis="Avg. Monthly Energy Consumption Pre-Post Period (kWh)", 
+                y_axis="Change (Decrease)", log_direction = -1,
+                title="Appliances Charging Cost vs. Consumption")
+```
+
 ### Cooking Energy Cost
 
 **Data Source**: Paired Household Surveys (Pre & Post)
@@ -3474,27 +3496,37 @@ community_reg(df=paired_enc,
 #### Paired Test\*
 
 ```{r}
+paired_testing(paired_enc, var_name="cooking_energy_cost", 
+               test_type = "wilcoxon", x_axis="Differences", y_axis="Count",
+               plt_title="Difference in Pre-Post Appliances Charging Cost",
+               plot_diff=TRUE, 
+               remove_outliers = TRUE
+               )
+```
+
+#### Paired Test by Country\*
+
+```{r}
 # Nigeria
-ctr <- 1
-country_df <- paired_enc %>% filter(country_post == ctr)
-paired_testing(country_df, var_name="cooking_energy_cost", 
+paired_testing(nigeria_paired_enc, var_name="cooking_energy_cost", 
                test_type = "sign", x_axis="Differences", y_axis="Count",
                plt_title="Nigeria: Difference in Pre-Post Cooking Energy Cost",
                plot_diff=TRUE, 
-               #remove_outliers = TRUE
+               remove_outliers = TRUE,
+               #threshold = 4, threshold_bound = "lower",
                )
 
 
 # Kenya
-ctr <- 2
-country_df <- paired_enc %>% filter(country_post == ctr)
-paired_testing(country_df, var_name="cooking_energy_cost", 
-               test_type = "sign", x_axis="Differences", y_axis="Count",
+paired_testing(kenya_paired_enc, var_name="cooking_energy_cost", 
+               test_type = "wilcoxon", x_axis="Differences", y_axis="Count",
                plt_title="Kenya: Difference in Pre-Post Cooking Energy Cost",
                plot_diff=TRUE, 
-               #remove_outliers = TRUE
+               remove_outliers = TRUE
                )
 ```
+
+#### Regression - Community
 
 ```{r}
 community_reg(df=paired_enc, 
@@ -3506,6 +3538,19 @@ community_reg(df=paired_enc,
               y_axis= "Households")
 ```
 
+#### Logistic Regression - Individual
+
+```{r}
+consumption_reg(df=paired_enc,  reg_type ="logistic",
+                dep="cooking_energy_cost", 
+                ind="avg_mon_consumption_period",
+                exclude_outliers = TRUE, outliers = "feature",
+                calc_diff=TRUE, diff_type = "direction",
+                x_axis="Avg. Monthly Energy Consumption Pre-Post Period (kWh)", 
+                y_axis="Change (Decrease)", log_direction = -1,
+                title="Cooking Energy Cost vs. Consumption")
+```
+
 ### Kerosene Lamps Cost
 
 **Data Source**: Paired Household Surveys (Pre & Post)
@@ -3515,10 +3560,19 @@ community_reg(df=paired_enc,
 #### Paired Test\*
 
 ```{r}
+paired_testing(paired_enc, var_name="kerosene_lamps_cost", 
+               test_type = "sign", x_axis="Differences", y_axis="Count",
+               plt_title="Difference in Pre-Post Kerosene Lamps Cost",
+               plot_diff=TRUE, 
+               #remove_outliers = TRUE
+               )
+```
+
+#### Paired Test by Country
+
+```{r}
 # Nigeria
-ctr <- 1
-country_df <- paired_enc %>% filter(country_post == ctr)
-paired_testing(country_df, var_name="kerosene_lamps_cost", 
+paired_testing(nigeria_paired_enc, var_name="kerosene_lamps_cost", 
                test_type = "sign", x_axis="Differences", y_axis="Count",
                plt_title="Nigeria: Difference in Pre-Post Kerosene Lamps Cost",
                plot_diff=TRUE, 
@@ -3527,15 +3581,15 @@ paired_testing(country_df, var_name="kerosene_lamps_cost",
 
 
 # Kenya
-ctr <- 2
-country_df <- paired_enc %>% filter(country_post == ctr)
-paired_testing(country_df, var_name="kerosene_lamps_cost", 
+paired_testing(kenya_paired_enc, var_name="kerosene_lamps_cost", 
                test_type = "sign", x_axis="Differences", y_axis="Count",
                plt_title="Kenya: Difference in Pre-Post Kerosene Lamps Cost",
                plot_diff=TRUE, 
                #remove_outliers = TRUE
                )
 ```
+
+#### Regression - Community
 
 ```{r}
 community_reg(df=paired_enc, 
@@ -3547,6 +3601,19 @@ community_reg(df=paired_enc,
               y_axis= "Households")
 ```
 
+#### Logistic Regression - Individual
+
+```{r}
+consumption_reg(df=paired_enc,  reg_type ="logistic",
+                dep="kerosene_lamps_cost", 
+                ind="avg_mon_consumption_period",
+                exclude_outliers = TRUE, outliers = "feature",
+                calc_diff=TRUE, diff_type = "direction",
+                x_axis="Avg. Monthly Energy Consumption Pre-Post Period (kWh)", 
+                y_axis="Change (Decrease)", log_direction = -1,
+                title="Kerosene Lamps Cost vs. Consumption")
+```
+
 ### Water Cost
 
 **Data Source**: Paired Household Surveys (Pre & Post)
@@ -3556,10 +3623,19 @@ community_reg(df=paired_enc,
 #### Paired Test\*
 
 ```{r}
+paired_testing(paired_enc, var_name="water_cost", 
+               test_type = "sign", x_axis="Differences", y_axis="Count",
+               plt_title="Nigeria: Difference in Pre-Post Water Cost",
+               plot_diff=TRUE, 
+               #remove_outliers = TRUE
+               )
+```
+
+#### Paired Test by Country\*
+
+```{r}
 # Nigeria
-ctr <- 1
-country_df <- paired_enc %>% filter(country_post == ctr)
-paired_testing(country_df, var_name="water_cost", 
+paired_testing(nigeria_paired_enc, var_name="water_cost", 
                test_type = "sign", x_axis="Differences", y_axis="Count",
                plt_title="Nigeria: Difference in Pre-Post Water Cost",
                plot_diff=TRUE, 
@@ -3568,15 +3644,15 @@ paired_testing(country_df, var_name="water_cost",
 
 
 # Kenya
-ctr <- 2
-country_df <- paired_enc %>% filter(country_post == ctr)
-paired_testing(country_df, var_name="water_cost", 
+paired_testing(kenya_paired_enc, var_name="water_cost", 
                test_type = "sign", x_axis="Differences", y_axis="Count",
                plt_title="Kenya: Difference in Pre-Post Water Cost",
                plot_diff=TRUE, 
                #remove_outliers = TRUE
                )
 ```
+
+#### Regression - Community\*
 
 ```{r}
 community_reg(df=paired_enc, 
@@ -3586,4 +3662,17 @@ community_reg(df=paired_enc,
               var_type="categorical", calc_diff = TRUE,
               diff_type="direction", customer_type="hs", 
               y_axis= "Households")
+```
+
+#### Logistic Regression - Individual
+
+```{r}
+consumption_reg(df=paired_enc,  reg_type ="logistic",
+                dep="water_cost", 
+                ind="avg_mon_consumption_period",
+                exclude_outliers = TRUE, outliers = "feature",
+                calc_diff=TRUE, diff_type = "direction",
+                x_axis="Avg. Monthly Energy Consumption Pre-Post Period (kWh)", 
+                y_axis="Change (Decrease)", log_direction = -1,
+                title="Water Cost vs. Consumption")
 ```
