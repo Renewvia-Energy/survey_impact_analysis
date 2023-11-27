@@ -170,6 +170,9 @@ post_enc <- merge(post, temp,
 paired_enc <- merge(initial_pre_enc, post_enc,
                       suffix = c("_pre", "_post"),
                       by= 'renewvia_id')
+
+nigeria_paired_enc <- paired_enc %>% filter(country_post == 1)
+kenya_paired_enc <- paired_enc %>% filter(country_post == 2)
 ```
 
 ### Commercial & Institution
@@ -787,8 +790,8 @@ consumption_reg <- function(df, dep, ind, title, reg_type,
                   which_outliers = outliers,
                   vals_remove=to_remove,
                   title=title, x_axi=x_axis, y_axis=y_axis)
-    test <- wald.test(Sigma = vcov(model), 
-                      b = coef(model), Terms = 1)
+    #test <- wald.test(Sigma = vcov(model), b = coef(model), Terms = 1)
+    test <- anova(model,test=c("LR"))
     print(test)
   }else if(reg_type == "poisson") {
     model <- glm(df$col_reg ~ df[, ind], 
@@ -801,8 +804,7 @@ consumption_reg <- function(df, dep, ind, title, reg_type,
                   which_outliers = outliers,
                   vals_remove=to_remove,
                   title=title, x_axi=x_axis, y_axis=y_axis)
-    test <- wald.test(Sigma = vcov(model), 
-                      b = coef(model), Terms = 1)
+    #test <- wald.test(Sigma = vcov(model), b = coef(model), Terms = 1)
     print(test)
   }
   return(p)
@@ -1244,10 +1246,11 @@ community_reg(df=post_enc,
 
 ```{r}
 consumption_reg(df = post_enc, reg_type ="logistic",
-                dep= "girls_schooling_change", ind="avg_mon_consumption_period",
+                dep= "girls_schooling_change", 
+                ind="avg_mon_consumption_cum",
                 calc_diff=FALSE, diff_type = "direction",
-                x_axis="Avg. Monthly Energy Consumption Pre-Post Period (kwH)", 
-                y_axis="Water Collection Time", log_direction = 1,
+                x_axis="Avg. Monthly Energy Consumption Cumulative (kwH)", 
+                y_axis="Change", log_direction = 1,
                 exclude_outliers = TRUE, outliers = "feature",
                 title="Increase in Girls' School Enrollment vs Consumption")
 ```
@@ -1342,16 +1345,18 @@ consumption_reg(df = paired_enc, reg_type ="linear",
                 title="Individual Directional Change vs Consumption")
 ```
 
-#### Logistic Regression - Individual
+#### TODO: Logistic Regression - Individual
 
 ```{r}
+# Undesired Effect
 consumption_reg(df = paired_enc, reg_type ="logistic",
-                dep= "water_collection_time", ind="avg_mon_consumption_period",
+                dep= "water_collection_time", 
+                ind="avg_mon_consumption_period",
                 calc_diff=TRUE, diff_type = "direction",
-                x_axis="Avg. Monthly Energy Consumption Pre-Post Period (kwH)", 
-                y_axis="Water Collection Time", log_direction = -1,
+                x_axis="Avg. Monthly Consumption Pre-Post Period (kwH)", 
+                y_axis="Change (Decrease)", log_direction = -1,
                 exclude_outliers = TRUE, outliers = "feature",
-                title="Individual Directional Change vs Consumption")
+                title="Water Collection Time Change vs Consumption")
 ```
 
 ### Water Collection School-Aged
@@ -1386,10 +1391,10 @@ consumption_reg(df = paired_enc, reg_type ="logistic",
                 dep= "water_collection_school_aged", 
                 ind="avg_mon_consumption_period",
                 calc_diff=TRUE, diff_type = "direction",
-                x_axis="Avg. Monthly Energy Consumption Pre-Post Period (kwH)", 
+                x_axis="Avg. Monthly Consumption Pre-Post Period (kwH)", 
                 y_axis="Water Collection Responsibility (School-Aged)",
                 log_direction = -1,
-                #exclude_outliers = TRUE, outliers = "feature",
+                exclude_outliers = TRUE, outliers = "feature",
                 title="Individual Directional Change vs Consumption")
 ```
 
@@ -1457,13 +1462,13 @@ consumption_reg(df = paired_enc, reg_type ="logistic",
 # avg_monthly_consumption = (365* (Consumption_period / no.of days))/12  
 ```
 
-### Women-led Business Ownership
+### TODO: Women-led Business Ownership
 
 **Data Source**: Paired Household Surveys (Pre & Post)
 
 **Value (Encoding if applied)**: Everything else = 0; "adult_female" = 1
 
-#### Paired Test\*
+#### Paired Test
 
 ```{r}
 # Are any household members business owners? Isolate for those with 'adult_'female
@@ -1471,21 +1476,38 @@ print("All")
 paired_testing(paired_enc, var_name="business_owners_female", 
                test_type = "mcnemar", plot_diff=FALSE)
 
+```
+
+#### Paired Test & Regression Community - Nigeria
+
+```{r}
 ## Subgroup Analysis: Country
 # Nigeria
 print("Nigeria")
-ctr <- 1
-country_paired <- paired_enc %>% filter(country_post == ctr)
-paired_testing(country_paired, var_name="business_owners_female", 
+paired_testing(nigeria_paired_enc, var_name="business_owners_female", 
                test_type = "mcnemar", plot_diff=FALSE)
+```
 
+#### Paired Test & Regression Community - Kenya
+
+```{r}
 # Kenya
 print("Kenya")
-ctr <- 2
-country_paired <- paired_enc %>% filter(country_post == ctr)
-paired_testing(country_paired, var_name="business_owners_female", 
+paired_testing(kenya_paired_enc, var_name="business_owners_female", 
                test_type = "mcnemar", plot_diff=FALSE)
 
+community_reg(df=kenya_paired_enc, 
+              col_name="business_owners_female", 
+              dep="1", var_type="categorical", 
+              calc_diff = TRUE, diff_type = "direction",
+              exclude_outliers = TRUE, outliers = "feature",
+              customer_type="hs", y_axis= "Households",
+              title="New Female Business Owners Change by Community")
+```
+
+#### Paired Test by Gender
+
+```{r}
 ## Subgroup Analysis: Country
 # Women
 print("Women")
@@ -1500,18 +1522,6 @@ gdr <- 2
 gender_paired <- paired_enc %>% filter(gender_post == gdr)
 paired_testing(gender_paired, var_name="business_owners_female", 
                test_type = "mcnemar", plot_diff=FALSE)
-```
-
-#### Regression - Community
-
-```{r}
-community_reg(df=paired_enc, 
-              col_name="business_owners_female", 
-              dep="1", var_type="categorical", 
-              calc_diff = TRUE, diff_type = "direction",
-              exclude_outliers = TRUE, outliers = "feature",
-              customer_type="hs", y_axis= "Households",
-              title="New Female Business Owners Change by Community")
 ```
 
 #### Logistic Regression - Individual
@@ -3138,7 +3148,7 @@ plot_func(df=ci_clean, var_name="business_type",
 ```{r}
 ## What is your average monthly household income? 
 ctr <- "nigeria"
-nigeria_paired_enc <- paired_enc %>% filter(country_post == 1)
+
 paired_testing(nigeria_paired_enc, var_name="avg_household_income",
                test_type = "ttest", plot_diff=TRUE, 
                remove_outliers = TRUE,
@@ -3190,7 +3200,7 @@ consumption_reg(df=nigeria_paired_enc,  reg_type ="logistic",
 #### TODO: Paired Testing\*
 
 ```{r}
-kenya_paired_enc <- paired_enc %>% filter(country_post == 2)
+
 paired_testing(kenya_paired_enc, var_name="avg_household_income", 
                test_type = "ttest", plot_diff=TRUE,
                remove_outliers = TRUE,
