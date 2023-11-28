@@ -2115,7 +2115,7 @@ community_reg(df=business_enc,
               col_name="workforce_change", 
               dep="1", var_type="categorical",
               exclude_outliers = TRUE, outliers = "feature",
-              customer_type="business", y_axis= "Businesses",
+              customer_type="ci", y_axis= "Organizations",
               title="Increase in C&I's Workforce by Community")
 ```
 
@@ -2163,7 +2163,7 @@ consumption_reg(df=ci_enc, reg_type ="logistic",
                 title="Newly Added Offerings vs. Energy Consumption")
 ```
 
-# 4- Health
+# 4- Health & Well-Being
 
 ## A) Descriptive
 
@@ -2365,6 +2365,15 @@ setnames(tab, old = c('V1'),
           new = c("Count"))
 # t(tab)
 tab
+```
+
+### Life Improvement
+
+```{r}
+# Would you say that having access to minigrid power has improved your quality of life?
+plot_func(df=post_clean, var_name="minigrid_access_life_improvement", 
+          var_type="non_cont", plot_title="Life Improvement", 
+          plot_type="pie", lgd="Any change?")
 ```
 
 ## B) Inferential
@@ -2623,6 +2632,37 @@ consumption_reg(df=post_enc,  reg_type ="logistic",
                 x_axis="Avg. Monthly Energy Consumption Cumulative (kWh)", 
                 y_axis="Access Change (Increase)", log_direction = 1,
                 title="Better Access To Healthcare vs. Consumption")
+```
+
+### Life Improvement
+
+**Data Source**: Household Post-Survey
+
+**Value (Encoding if applied)**: "yes" = 1; "no" = 0
+
+#### Regression - Community\*
+
+```{r}
+community_reg(df=post_enc, 
+              col_name="minigrid_access_life_improvement", 
+              dep="1", var_type="categorical",
+              exclude_outliers = TRUE, 
+              #  outliers = "feature", 
+              title="Life Improvement by Community",
+              customer_type="hs", y_axis= "Households") 
+```
+
+#### Logistic Regression - Individual
+
+```{r}
+consumption_reg(df=post_enc,  reg_type ="logistic",
+                dep="minigrid_access_life_improvement", 
+                ind="avg_mon_consumption_cum",
+                exclude_outliers = TRUE, outliers = "feature",
+                #calc_diff=TRUE, diff_type = "direction",
+                x_axis="Avg. Monthly Energy Consumption Cumulative (kWh)", 
+                y_axis="Change (Increase)", log_direction = 1,
+                title="Life Improvement vs. Consumption")
 ```
 
 # 5- Safety
