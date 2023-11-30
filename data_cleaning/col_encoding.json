@@ -1263,7 +1263,7 @@
         {
             "col_name": "phone_charge_travel_distance",
             "col_enc_map": {
-                "no travel": 0,
+                "no_travel": 0,
                 "less_than_1_km": 1,
                 "1_2_km": 2,
                 "2_5_km": 3,

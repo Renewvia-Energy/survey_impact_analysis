@@ -1777,6 +1777,23 @@ compare_paired(data=paired_clean,
                plot_title="Paired: Water Collection Time")
 ```
 
+### Clinic Travel Distance
+
+```{r}
+## How close is the nearest Health Center / Clinic
+# Unpaired
+compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
+                 var_name="clinic_travel_distance", var_type="non_cont",
+                 subplot_type="bar", lgd_title = "Distances",
+                 title="Travel Distance  To Nearest Clinic")
+
+# Paired
+compare_paired(data=paired_clean,
+               var_name="clinic_travel_distance",
+               lgd_title="Time Intervals",
+               plot_title="Paired: Travel Distance To Nearest Clinic")
+```
+
 ### Cooking Fuel
 
 #### Sources
@@ -2005,6 +2022,110 @@ community_reg(df=paired_enc,
               var_type="categorical", calc_diff =TRUE,
               diff_type="direction", customer_type="hs", 
               y_axis= "Households")
+```
+
+### Phone Charging Travel Distance
+
+**Data Source**: Paired Household Surveys (Pre & Post)
+
+**Value (Encoding if applied)**: "no_travel" = 0, "less_than_1_km" = 1, "1_2_km" = 2, "2_5_km"= 3, "5_10_km" = 4, "greater_than_10_km" = 5
+
+#### Paired Test\*
+
+unique(paired_enc\$phone_charge_travel_distance_post)
+
+```{r}
+paired_testing(paired_enc, var_name="phone_charge_travel_distance", 
+               test_type = "wilcoxon", x_axis="Differences", y_axis="Count",
+               plt_title="Difference in Pre-Post Phone Charging Traveling Distance",
+               plot_diff=TRUE, 
+               #remove_outliers = TRUE
+               )
+```
+
+#### Regression - Community
+
+```{r}
+community_reg(df=paired_enc, 
+              col_name="phone_charge_travel_distance", dep="-1", 
+              title="Phone Travel Distance by Community", 
+              exclude_outliers = TRUE, outliers = "feature",
+              var_type="categorical", calc_diff =TRUE,
+              diff_type="direction", customer_type="hs", 
+              y_axis= "Households")
+```
+
+#### Logistic Regression - Individual
+
+```{r}
+consumption_reg(df = paired_enc, reg_type ="logistic",
+                dep= "phone_charge_travel_distance", 
+                ind="avg_mon_consumption_period",
+                calc_diff=TRUE, diff_type = "direction",
+                x_axis="Avg. Monthly Energy Consumption Pre-Post Period (kwH)", 
+                y_axis="Change (Decrease)",
+                log_direction = -1,
+                exclude_outliers = TRUE, outliers = "feature",
+                title="Phone Charging Travel Distance vs Consumption")
+```
+
+### Water Collection Travel Distance
+
+**Data Source**: Paired Household Surveys (Pre & Post)
+
+**Value (Encoding if applied)**: "nothing" = 0, "no_travel" = 0, "less_than_1_km" = 1, "1_2_km" = 2, "2_5_km"= 3, "5_10_km" = 4, "greater_than_10_km" = 5
+
+#### Paired Test\*
+
+```{r}
+paired_testing(paired_enc, var_name="water_collection_travel_distance", 
+               test_type = "wilcoxon", x_axis="Differences", y_axis="Count",
+               plt_title="Difference in Pre-Post Water Collection Distance",
+               plot_diff=TRUE, 
+               #remove_outliers = TRUE
+               )
+```
+
+#### Regression - Community
+
+```{r}
+community_reg(df=paired_enc,                
+              col_name="water_collection_travel_distance", 
+              dep="-1", 
+              title="Water Collection Travel Distance (Decrease) by Community", 
+              exclude_outliers = TRUE, outliers = "feature",               
+              var_type="categorical", calc_diff =TRUE,               
+              diff_type="direction", customer_type="hs",                
+              y_axis= "Households")
+```
+
+#### Logistic Regression - Individual
+
+```{r}
+consumption_reg(df = paired_enc, reg_type ="logistic",
+                dep= "water_collection_travel_distance", 
+                ind="avg_mon_consumption_period",
+                calc_diff=TRUE, diff_type = "direction",
+                x_axis="Avg. Monthly Energy Consumption Pre-Post Period (kwH)", 
+                y_axis="Change (Decrease)",
+                log_direction = -1,
+                exclude_outliers = TRUE, outliers = "feature",
+                title="Water Collection Travel Distance vs Consumption")
+```
+
+### Clinic Travel Distance
+
+**Data Source**: Paired Household Surveys (Pre & Post)
+
+**Value (Encoding if applied)**: "no_travel" = 0,"less_than_1_km" = 1, "between_1_2_km" = 2, "between_2_3_km" = 3, "between_3_5_km" = 4, "greater_than_5_km" = 5
+
+#### Paired Test
+
+```{r}
+paired_testing(paired_enc, var_name="clinic_travel_distance", 
+               test_type = "wilcoxon", x_axis="Differences", y_axis="Count",
+               plt_title="Difference in Pre-Post Clinic Travel Distance",
+               plot_diff=TRUE, remove_outliers = TRUE)
 ```
 
 ### Households - Academic Performance
@@ -2867,7 +2988,7 @@ consumption_reg(df=paired_enc,  reg_type ="logistic",
                 title="Due To Travel vs. Consumption")
 ```
 
-### Communnity Lighting
+### Community Lighting
 
 **Data Source**: Paired Household Surveys (Pre & Post)
 
@@ -3423,7 +3544,7 @@ consumption_reg(df=paired_enc,  reg_type ="logistic",
 ```{r}
 paired_testing(paired_enc, var_name="phone_charge_cost", 
                test_type = "wilcoxon", x_axis="Differences", y_axis="Count",
-               plt_title="Nigeria: Difference in Pre-Post Phone Charging Cost",
+               plt_title="Difference in Pre-Post Phone Charging Cost",
                plot_diff=TRUE, 
                #remove_outliers = TRUE
                )
@@ -3488,10 +3609,10 @@ consumption_reg(df=paired_enc,  reg_type ="logistic",
 
 ```{r}
 paired_testing(paired_enc, var_name="applicances_charging_cost", 
-               test_type = "sign", x_axis="Differences", y_axis="Count",
+               test_type = "wilcoxon", x_axis="Differences", y_axis="Count",
                plt_title="Difference in Pre-Post Appliances Charging Cost",
                plot_diff=TRUE, 
-               #remove_outliers = TRUE
+               remove_outliers = TRUE
                )
 ```
 
@@ -3615,7 +3736,7 @@ consumption_reg(df=paired_enc,  reg_type ="logistic",
 
 ```{r}
 paired_testing(paired_enc, var_name="kerosene_lamps_cost", 
-               test_type = "sign", x_axis="Differences", y_axis="Count",
+               test_type = "wilcoxon", x_axis="Differences", y_axis="Count",
                plt_title="Difference in Pre-Post Kerosene Lamps Cost",
                plot_diff=TRUE, 
                #remove_outliers = TRUE
@@ -3678,7 +3799,7 @@ consumption_reg(df=paired_enc,  reg_type ="logistic",
 
 ```{r}
 paired_testing(paired_enc, var_name="water_cost", 
-               test_type = "sign", x_axis="Differences", y_axis="Count",
+               test_type = "wilcoxon", x_axis="Differences", y_axis="Count",
                plt_title="Nigeria: Difference in Pre-Post Water Cost",
                plot_diff=TRUE, 
                #remove_outliers = TRUE
