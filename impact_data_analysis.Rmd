@@ -58,9 +58,15 @@ library(data.table)
 library(forcats)
 library(glue)
 library(aod)
-
+library(datawizard)
 library(caret)
+library(purrr)
+library(Hmisc)
 library(corrplot)
+library(rempsyc)
+library(vioplot)
+library(ggthemes)
+library(lmtest)
 ```
 
 # Input Data
@@ -118,7 +124,12 @@ post_clean <- merge(post, temp,
 paired_clean <- merge(initial_pre, post_clean,
                       suffix = c("_pre", "_post"),
                       by= 'renewvia_id')
-
+income_rectified <- read.csv("kenya_incomes_rectified.csv")
+paired_clean <- merge(paired_clean, income_rectified,
+                          by.x = 'renewvia_id', 
+                          by.y = 'Customer.Account.Number')
+write.csv(paired_clean, file='paired_clean.csv',
+          fileEncoding = "UTF-8")
 ```
 
 ### Commercial & Institution
@@ -173,6 +184,12 @@ paired_enc <- merge(initial_pre_enc, post_enc,
 
 nigeria_paired_enc <- paired_enc %>% filter(country_post == 1)
 kenya_paired_enc <- paired_enc %>% filter(country_post == 2)
+kenya_paired_enc <- kenya_paired_enc[, !names(kenya_paired_enc) %in% c("avg_household_income_post")]
+# Rectified incomes
+income_rectified <- read.csv("kenya_incomes_rectified.csv")
+kenya_paired_enc <- merge(kenya_paired_enc, income_rectified,
+                          by.x = 'renewvia_id', 
+                          by.y = 'Customer.Account.Number')
 ```
 
 ### Commercial & Institution
@@ -258,7 +275,7 @@ remove_x <- theme(
 ### Plotting Graphs/Charts
 
 ```{r}
-# For pie and bar charts
+# For bar_simple and bar charts
 plot_func <- function(df, var_name, var_type, 
                       plot_title, lgd, plot_type, 
                       char_remove=NULL,
@@ -286,6 +303,7 @@ plot_func <- function(df, var_name, var_type,
                        pos = if_else(is.na(pos), counts/2, pos),
                        percentage = counts/sum(counts))
       data_tab$labels <- as.factor(data_tab$labels)
+      print(data_tab)
       if (plot_type == 'pie') {
           plot <- data_tab %>% ggplot(aes(x = "", y = counts, 
                                           fill = labels)) +
@@ -300,13 +318,12 @@ plot_func <- function(df, var_name, var_type,
                               theme_void() + 
                               theme(legend.text=element_text(size=6))
       } else if (plot_type == "bar_simple") {
-          plot <- data %>% ggplot(aes(y=counts,
-                                      x=reorder(labels, counts),
+          plot <- data_tab %>% ggplot(aes(y=percentage,
+                                      x=labels,
                                       fill=labels)) +
-                            geom_col(width = 0.7) +
-                            geom_text(aes(label=counts), vjust=-0.3, size=3)+
+                            geom_col(width = 0.7) 
                             labs(fill = lgd, title=plot_title) +
-                            coord_flip() +
+                            #coord_flip() +
                             theme(legend.text=element_text(size=6))
          
       } else if(plot_type == "bar_stack"){
@@ -335,7 +352,7 @@ plot_func <- function(df, var_name, var_type,
       if(plot_type == "hist") {
           
         plot <- ggplot(df, aes(x=.data[[var_name]])) + 
-                      geom_histogram(fill = 'yellow',
+                      geom_histogram(fill = "#f79d27",
                                      col = 'black', bins=10) 
         
       }else if(plot_type == "boxplot") {
@@ -345,9 +362,9 @@ plot_func <- function(df, var_name, var_type,
       }
         plot <- plot +
                 geom_vline(xintercept = mu,
-                           col="lightblue", lty=1, lwd = 1) +
+                           col="#228B22", lty=1, lwd = 1) +
                 geom_vline(xintercept = med, 
-                         col="purple", lty=2, lwd = 1) +
+                         col="#87CEEB", lty=2, lwd = 1) +
                 theme_bw() +
                 labs(title=plot_title, 
                      subtitle = paste("Mean = ", round(mu, 2), 
@@ -393,13 +410,13 @@ generic_compare <- function(data, var_type, var1, var2,
 
 ```{r}
 compare_pre_post <- function(df_pre, df_post,
-                             var_name, var_type, subplot_type, title, 
+                             var_name, var_type, subplot_type, title=NULL, 
                              exclude_outliers = FALSE, lgd_title,
                              x_axis=NULL, y_axis=NULL,
                              char_remove=NULL, shared_legend=TRUE) {
 
   pre_plot <- plot_func(df_pre, var_name, var_type,
-                         "Initial", subplot_type, lgd = lgd_title,
+                         "Pre", subplot_type, lgd = lgd_title,
                         x_axis=x_axis, y_axis=y_axis,
                         char_remove=char_remove, 
                         remove_outliers=exclude_outliers)
@@ -408,8 +425,12 @@ compare_pre_post <- function(df_pre, df_post,
                          x_axis=x_axis, y_axis=y_axis,
                          char_remove=char_remove, 
                          remove_outliers=exclude_outliers)
-  if (subplot_type == "bar_simple" || subplot_type == "bar_stack") {
+  if (subplot_type == "bar_stack") {
         plot <- ggarrange(post_plot + remove_y, pre_plot + remove_y, 
+                          ncol = 2,  nrow = 1, 
+                          common.legend = shared_legend,legend="bottom")
+  }else if (subplot_type == "bar_simple") {
+        plot <- ggarrange(post_plot, pre_plot + remove_y, 
                           ncol = 2,  nrow = 1, 
                           common.legend = shared_legend,legend="bottom")
   } else {
@@ -465,6 +486,10 @@ compare_paired <- function(data, var_name, view,
     merged$count_change <- merged$diff_counts/merged$counts_pre
     print(merged)
     
+    if(is.null(char_remove) == FALSE) {
+      merged <- merged %>% filter(!.data[['labels']] %in% char_remove)
+      }
+    
     # side_plot <- 
     count_plot <- merged %>% ggplot(aes(x = labels, y = diff_counts)) +
                       geom_bar(aes(fill = labels), stat="identity") +
@@ -497,6 +522,75 @@ compare_paired <- function(data, var_name, view,
     print(annotate_figure(plot, 
                          top = text_grob(plot_title, color = "black", 
                                          face = "bold", size = 12)))
+}
+```
+
+### Violin Plots
+
+```{r}
+violins <- function(data, var_names, show_median, new_names, title=NULL){
+  
+  cols <- c("renewvia_id")
+  for(var in var_names) {
+    pre_name <- paste(var, "pre", sep="_")
+    post_name <- paste(var, "post", sep="_")
+    cols <- c(cols,pre_name, post_name)
+  }
+  
+  test_paired <- data[, cols]
+  # Split the data in two groups
+  #test_paired <- outliers_removal(test_paired, pre_name)
+  #test_paired <- outliers_removal(test_paired, post_name)
+  test_paired_longer <- test_paired %>%
+                                pivot_longer(
+                                  cols = -renewvia_id,
+                                  #names_to = "when",
+                                  # names_prefix = var_name,
+                                  # values_to = var_name,
+                                  # values_drop_na = TRUE,
+                                  # names_transform = list(var_name = as.numeric)
+                                  names_to = c(".value","when"), 
+                                  names_pattern =  "(\\w+)_(pre|post)"
+                                )
+  #test_paired_longer
+  #var_norm <- paste(var_name, "normalized", sep="_")
+  test_paired_longer[, var_names] <- normalize(test_paired_longer[, var_names])
+  print(test_paired_longer)
+  df_pre <- test_paired_longer %>% filter(when == "pre")
+  df_post <- test_paired_longer %>% filter(when == "post")
+  # Plot each side and join them
+  
+  vioplot(df_pre,
+          #horizontal=TRUE, 
+          wex=1.2,
+          plotCentre = show_median, # Median with a line
+          side = "left",     # Left side
+          rectCol = NA, lineCol = NA,
+          colMed="forestgreen", 
+          h=0.25,
+          names=new_names,
+          main=title,
+          ylab = "Normalized Value", 
+          col = "#ef641e", ylim=c(0,1))        
+  
+  vioplot(df_post,
+          #horizontal=TRUE,
+          wex=1.2,
+          plotCentre = show_median, # Median with a line
+          side = "right",   # Right side
+          col = "#87CEEB",
+          ylim = c(0,1),
+          colMed="forestgreen",
+          h=0.25,
+          rectCol = NA, lineCol = NA,
+          add = TRUE)  # Color for the right side
+  
+  legend("topleft",
+         legend = c("Pre", "Post"),
+         fill = c("#ef641e", "#87CEEB"))
+  
+  # title(main=title, #xlab = "Variables", 
+  #       ylab = "Normalized Value")
 }
 ```
 
@@ -573,7 +667,7 @@ paired_testing <- function(data, var_name, test_type,
 plot_reg <- function(data, feature, dependent, 
                      remove_outliers=FALSE, which_outliers=NULL,
                      reg_type, vals_remove=NULL,title=NULL,
-                     x_axis=NULL, y_axis=NULL) {
+                     x_axis=NULL, y_axis=NULL, p_val=NULL, est=NULL) {
   
   if(is.null(vals_remove) == FALSE) {
     data <- data %>% filter(!.data[[dependent]] %in% vals_remove)
@@ -596,31 +690,32 @@ plot_reg <- function(data, feature, dependent,
   if(reg_type == "linear") {
     plot <- ggplot(data,
                 aes(x=.data[[feature]], y=.data[[dependent]])) +
-                geom_point(color='blue') +
-                  geom_smooth(color='red', method = "lm", se = TRUE) +
-                theme_classic()
+                geom_point(color= "#ef641e") +
+                  geom_smooth(color="#87CEEB", method = "lm", se = FALSE) 
     
   } else if(reg_type == "logistic") {
     
      plot <- ggplot(data, 
                     aes(x=.data[[feature]], y=.data[[dependent]])) + 
-              geom_jitter(width = 0.05, height = 0.05) +
+              geom_jitter(width = 0.05, height = 0.05, color= "#ef641e") +
               #geom_point(color='blue', alpha=.5) +
-             geom_smooth(method = "glm", color='red',
+             geom_smooth(method = "glm", color="#87CEEB",
                          method.args= list(binomial(link = 'logit')), se=FALSE)
-                theme_classic()
                 
   }else if(reg_type == "poisson") {
      plot <- ggplot(data, 
                     aes(x=.data[[feature]], y=.data[[dependent]])) + 
               #geom_point(color='blue', alpha=.5) +
               geom_jitter(width = 0.05, height = 0.05) +
-              geom_smooth(method = "glm", color='red',
-                         method.args= list(family="poisson"), se=TRUE)+
-                theme_classic()
+              geom_smooth(method = "glm", color="#87CEEB",
+                         method.args= list(family="poisson"), se=TRUE)
                 
   }
-  plot <- plot + labs(title=title, y=y_axis) 
+  
+  plot <- plot + 
+          labs(subtitle = paste("Estimate = ",est, " , ", 
+                                    'p-value = ', p_val), 
+                      y=y_axis, x=x_axis) + theme_classic()
   return(plot)
 }
 ```
@@ -629,9 +724,23 @@ plot_reg <- function(data, feature, dependent,
 
 ```{r}
 ind_vars <- c("PV_Size_kWp",	"Customers",	"CAPEX_USD")
-
+axes_names <- c("PV Size [kWp]",	"No. of Customers",	"CAPEX [$USD]")
+extract_p_reg <- function (modelobject) {
+   if (class(modelobject) != "lm") {
+     stop("Not an object of class 'lm' ")
+     
+   }else {
+       f <- summary(modelobject)$fstatistic
+       p <- pf(f[1],f[2],f[3],lower.tail=F)
+       attributes(p) <- NULL
+       return(p)
+     }
+   
+}
 community_reg <- function(df, col_name, dep, customer_type,
-                          title, var_type, 
+                          title, 
+                          #title_sig, 
+                          var_type, 
                           calc_diff=FALSE, diff_type=NULL,
                           to_remove=NULL, exclude_outliers = FALSE, 
                           outliers=NULL, y_axis=NULL) {
@@ -684,34 +793,71 @@ community_reg <- function(df, col_name, dep, customer_type,
                     x_axis=NULL, y_axis=NULL)
   
   lst <- list(dist)
-  
-   for(ind in ind_vars) {
-       print(ind)
-       if(exclude_outliers == TRUE) {
-            community_data <- outliers_removal(data=community_data, var=ind)
-        }
-        p <- plot_reg(data=community_data, feature=ind,  
-                      dependent="target", reg_type="linear",
-                      # remove_outliers = exclude_outliers,
-                      # which_outliers = outliers,
-                      y_axis=y_axis)
-        lst <- append(lst, list(p))
-        pearson_test <- cor.test(community_data[, "target"], 
-                                 community_data[,ind], 
-                                 method="pearson")
-        print(pearson_test)
-        
-        lm <- lm(community_data[,"target"] ~ community_data[,ind])
-        details <- summary(lm)
-        print(details)
-        print(confint(lm, level=0.95))
+  lst_sig <- list()  
+  for(i in seq_along(ind_vars)) {
+     ind <- ind_vars[i]
+     print(ind)
+     if(exclude_outliers == TRUE) {
+          community_data <- outliers_removal(data=community_data, var=ind)
+     }
+          
+      lm <- lm(community_data[,"target"] ~ community_data[,ind])
+      details <- summary(lm)
+      # f <- summary(lm)$fstatistic
+      # p_value <- pf(f[1],f[2],f[3],lower.tail=F)
+      # attributes(p_value) <- NULL
+      p_value <- summary(lm)$coefficients["community_data[, ind]", "Pr(>|t|)"]
+      estimate <- summary(lm)$coefficients["community_data[, ind]", "Estimate"]
+      #reg_title <- expression("This is regular"~italic("this is italic"))
+      print(details)
+      print(confint(lm, level=0.95))
+      if (col_name == "better_access_health_minigrid"){
+        p_value_sci <- formatC(p_value, format = "e", digits = 2)
+        plt <- plot_reg(data=community_data, feature=ind,  
+              dependent="target", reg_type="linear",
+              # remove_outliers = exclude_outliers,
+              # which_outliers = outliers,
+              est = round(estimate,4),
+              p_val = p_value_sci,
+              x_axis = axes_names[i],
+              y_axis=y_axis)
+      } else {
+        plt <- plot_reg(data=community_data, feature=ind,  
+              dependent="target", reg_type="linear",
+              # remove_outliers = exclude_outliers,
+              # which_outliers = outliers,
+              est = round(estimate,4),
+              p_val = round(p_value,4),
+              x_axis = axes_names[i],
+              y_axis=y_axis)
       }
+
+      lst <- append(lst, list(plt))
+      pearson_test <- cor.test(community_data[, "target"], 
+                               community_data[,ind], 
+                               method="pearson")
+      print(pearson_test)
+      if(p_value < 0.05) {
+        lst_sig <- append(lst_sig, list(plt))
+      }
+
+    }
   plot <- ggarrange(plotlist = lst, 
                     ncol = 2, nrow = 2, 
                     common.legend = TRUE,
                     legend="right")
   annotate_figure(plot, top = text_grob(title, 
                  color = "black", face = "bold", size = 12))
+  
+  vars_sig <- length(lst_sig)
+  print(vars_sig)
+  if (vars_sig > 0) {
+      sig_plots <- ggarrange(plotlist = lst_sig, 
+                    ncol = vars_sig, nrow = 1)
+      ggsave(paste(col_name, "_regression_community.pdf"), sig_plots)
+      sig_plots
+  }
+
   }
 ```
 
@@ -723,7 +869,7 @@ consumption_reg <- function(df, dep, ind, title, reg_type,
                             exclude_outliers = FALSE,
                             outliers=NULL, to_remove=NULL,
                             x_axis=NULL, y_axis=NULL,
-                            #normalize=FALSE, 
+                            normalize=FALSE, 
                             threshold=NULL, 
                             threshold_bound=NULL,
                             log_direction=NULL) {
@@ -750,11 +896,9 @@ consumption_reg <- function(df, dep, ind, title, reg_type,
     }
   }
       
-  # if(normalize==TRUE) {
-  #   mu <- mean(df$col_reg, na.rm = TRUE)
-  #   std <- sd(df$col_reg, na.rm = TRUE)
-  #   df$col_reg <- (df$col_reg - mu) / std
-  # }
+  if(normalize==TRUE) {
+    df$col_reg <- normalize(df$col_reg)
+  }
   print(dim(df))
   print(head(df[, c(ind, "col_reg")]))
   
@@ -829,40 +973,114 @@ consumption_reg <- function(df, dep, ind, title, reg_type,
 
 # 1- General
 
+## A) Question
+
+```{r, fig.width=8, fig.height=8}
+q_dist <- read.csv("q_dist_per.csv")
+q_dist$per <- round(q_dist$per * 100)
+survey_names <- c(
+                    `hs_pre` = "Household Pre-Survey",
+                    `hs_post` = "Household Post-Survey",
+                    `ci_post` = "Commercial & Institution Post-Survey"
+                    )
+q_plot <- q_dist %>% ggplot(aes(y=per, x=Axis, fill=Axis)) +
+                              geom_col(width = 0.7) +
+                              ylim(0, 50) +
+                              geom_label_repel(
+                                aes(label = glue("({per}%)"),
+                                     fill = Axis),
+                                    show.legend = FALSE) +
+                              labs(fill = "Survey", y="Percent of Respondents (%)"
+                                   #title="Distribution of Survey Questions"
+                                   )+ 
+                              #coord_flip() +
+                              facet_grid(
+                                         ~factor(survey,
+                                                 levels=c("hs_pre", "hs_post",
+                                                          "ci_post")),
+                                         labeller = as_labeller(survey_names),
+                                         switch = "both") 
+                              #theme(legend.text=element_text(size=6))
+q_plot <- q_plot + theme_classic() +
+    #scale_fill_manual() +
+    scale_fill_manual(name = "", values=c("#ef641e","#f79d27", 
+                               "#228B22", "#b2713d", "#87CEEB")) +
+                        theme(legend.position = 'top', 
+                       legend.text=element_text(size=8),
+                       strip.background = element_blank(),
+                       strip.text = element_text(size = 8),
+                       axis.text=element_text(size=8),
+                       axis.title=element_text(size=8)) +
+                        remove_x 
+
+ggsave("questions_distribution_plot.pdf", q_plot)
+q_plot
+```
+
 ## A) Gender
 
-```{r}
+```{r, fig.width=8, fig.height=8}
 ## What was the gender breakdown of survey respondents, pre and post?
 # Unpaired
-compare_pre_post(df_pre=initial_pre, df_post=post_clean,
-                 var_name="gender", var_type="non_cont",
-                 lgd_title ="Gender",
-                 subplot_type="pie", title="Unpaired: Gender Breakdown")
 
-# Paired
-plot_func(df=paired_clean, 
-          var_name="gender_post", var_type="non_cont", lgd = "Gender",
-          plot_title="Paired: Gender Breakdown", 
-          plot_type="pie")
+g_dist <- read.csv("gender_dist_per.csv")
+g_dist$per <- round(g_dist$per * 100)
+survey_names <- c(
+                    `hs_pre` = "Household Pre-Survey",
+                    `hs_post` = "Household Post-Survey"
+                    )
+g_plot <- g_dist %>% ggplot(aes(y=per, x=Gender, fill=Gender)) +
+                              geom_col(width = 0.7) +
+                              ylim(0, 100) +
+                              geom_label_repel(
+                                aes(label = glue("({per}%)"),
+                                     fill = Gender),
+                                    show.legend = FALSE) +
+                              labs(y="Percenta of Respondents (%)"
+                                   #title="Distribution of Survey Questions"
+                                   )+ 
+                              #coord_flip() +
+                              facet_grid(
+                                         ~factor(survey,
+                                                 levels=c("hs_pre", "hs_post")),
+                                         labeller = as_labeller(survey_names),
+                                         switch = "both") 
+                              #theme(legend.text=element_text(size=6))
+g_plot <- g_plot + theme_classic() +
+    #scale_fill_manual() +
+    scale_fill_manual(name="", values=c("#ef641e", "#87CEEB" 
+                               #"#228B22", "#b2713d", "#87CEEB"
+                               )) +
+                        theme(legend.position = 'top', 
+                       legend.text=element_text(size=8),
+                       strip.background = element_blank(),
+                       strip.text = element_text(size = 8),
+                       axis.text=element_text(size=8),
+                       axis.title=element_text(size=8)) +
+                        remove_x 
+ggsave("gender_distribution_plot.pdf", g_plot)
 ```
 
 ## B) Age
 
 ```{r}
-compare_pre_post(df_pre=initial_pre, df_post=post_clean,
+age_plot <- compare_pre_post(df_pre=initial_pre, df_post=post_clean,
                  var_name="age", var_type="cont",
                  subplot_type="hist", shared_legend=FALSE,
                  exclude_outliers = TRUE,
                  x_axis="Age", y_axis="Count",
-                 title="Unpaired: Age")
+                 #title="Age Distrbution"
+                 )
 
 # Paired
-plot_func(df=paired_clean, 
-          var_name="age_post", 
-          var_type="cont", lgd = "Gender",
-          plot_title="Paired: Age", 
-          remove_outliers = TRUE,
-          plot_type="hist")
+# plot_func(df=paired_clean, 
+#           var_name="age_post", 
+#           var_type="cont", lgd = "Gender",
+#           plot_title="Paired: Age", 
+#           remove_outliers = TRUE,
+#           plot_type="hist")
+#age_plot
+ggsave("age_plot.pdf", age_plot)
 ```
 
 ## C) Household Size
@@ -883,7 +1101,7 @@ plot_func(df=initial_pre, var_name="household_headcount",
 plot_func(df=initial_pre, var_name="employement_type", 
           var_type="non_cont", lgd="Type",
           plot_title="Employement Type of Primary Provider", 
-          plot_type="pie")
+          plot_type="bar_simple")
 ```
 
 ## E) Correlation - Dependent Variables
@@ -897,44 +1115,117 @@ corr_simple <- function(data,sig=0){
                                      "meterSerial", "projectName",
                                      "Sum.of.kWh.Consumed.y",
                                      "avg_mon_consumption_cum")]
-  df_cor <- data %>% mutate_if(is.character, as.factor)
-  df_cor <- df_cor %>% mutate_if(is.factor, as.numeric)
+  #df_cor <- data %>% mutate_if(is.character, as.factor)
+  # df_cor <- df_cor %>% mutate_if(is.factor, as.numeric)
+  df_cor <- data %>% keep(is.numeric)
   #run a correlation and drop the insignificant ones
-  corr <- cor(df_cor)
+  #corr <- cor(df_cor)
+  #corr <- rcorr(as.matrix(df_cor))
   #prepare to drop duplicates and correlations of 1     
-  corr[lower.tri(corr,diag=TRUE)] <- NA 
-  #drop perfect correlations
-  corr[corr == 1] <- NA 
+  # corr[lower.tri(corr,diag=TRUE)] <- NA 
+  # #drop perfect correlations
+  #corr[corr == 1] <- NA 
   #turn into a 3-column table
-  corr <- as.data.frame(as.table(corr))
+  #corr <- as.data.frame(corr)
   #remove the NA values from above 
-  corr <- na.omit(corr) 
+  # corr <- na.omit(corr) 
   #select significant values  
-  corr <- subset(corr, abs(Freq) > sig) 
-  #sort by highest correlation
-  corr <- corr[order(-abs(corr$Freq)),] 
+  # corr <- subset(corr, abs(Freq) > sig) 
+  # #sort by highest correlation
+  # corr <- corr[order(-abs(corr$Freq)),] 
   #print table
-  print(corr)
-  #turn corr back into matrix in order to plot with corrplot
-  mtx_corr <- reshape2::acast(corr, Var1~Var2, value.var="Freq")
-  #plot correlations visually
-  corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
+  return(corrplot(cor(df_cor), method="number", tl.pos='n'))
+  # #turn corr back into matrix in order to plot with corrplot
+  # mtx_corr <- reshape2::acast(corr, Var1~Var2, value.var="Freq")
+  # #plot correlations visually
+  # corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 }
 ```
 
-```{r}
-# HS Pre-survey
-corr_simple(initial_enc)
+```{r, fig.width=16, fig.height=16}
+vars_pre_cor <- c(
+  'age', 'avg_household_income', 'household_headcount',
+  'adult_headcount', 'girls_headcount', 'boys_headcount', 
+  'appliances_count', 'cellphones_count', 'light_hours_current',
+  'kerosene_lamps_count',
+  'kerosene_lamp_usage_time', 'kerosene_lamps_cost', 
+  'cooking_fuel_collection_time', 
+  'cooking_energy_cost', 
+  'applicances_charging_cost', 'phone_charge_frequency',
+  'phone_charge_cost', 'phone_charge_travel_distance', 'water_collection_travel_distance',
+  'water_collection_time', 
+  'avg_person_age_water_collection', 'water_cost',
+  'clinic_travel_distance'
+)
+df_cor <- initial_enc %>% keep(is.numeric)
+pre_cor <- initial_enc[, vars_pre_cor]
+
+pdf("hs_pre_corr_plot.pdf")
+corrplot(res_pre$r, type="lower", order="hclust", 
+         p.mat = res_pre$P, sig.level = 0.05, 
+         #tl.cex = 2.0, 
+         tl.col="#b2713d",
+         col = colorRampPalette(c("#ef641e","#f79d27","#228B22"))(10), insig = "blank")
+dev.off()
+# ggsave(, pre_cor_plot)
 ```
 
-```{r}
+```{r, fig.width=16, fig.height=16}
 # HS Post-survey
-corr_simple(post_enc)
+vars_post_cor <- c(
+'age',
+'avg_household_income',
+'appliances_count', 'cellphones_count',
+'light_hours_current', 
+'kerosene_lamps_count',
+'kerosene_lamps_cost', 
+'cooking_fuel_collection_time',
+'cooking_energy_cost', 
+'applicances_charging_cost', 
+'phone_charge_frequency', 'phone_charge_cost',
+'phone_charge_travel_distance', 
+'water_collection_travel_distance', 'water_collection_time',
+'water_cost', 'clinic_travel_distance'
+)
+#df_cor <- post_enc %>% keep(is.numeric)
+post_cor <- post_enc[, vars_post_cor]
+res_post <- rcorr(as.matrix(post_cor))
+
+pdf("hs_post_corr_plot.pdf")
+corrplot(res_post$r, type="lower", order="hclust", 
+         p.mat = res_post$P, sig.level = 0.05, 
+         #tl.cex = 2.0, 
+         tl.col="#b2713d",
+         col = colorRampPalette(c("#ef641e","#f79d27","#228B22"))(10), insig = "blank")
+dev.off()
+```
+
+```{r, fig.width=8, fig.height=8}
+# C&I Post-survey
+# HS Post-survey
+vars_post_cor <- c(
+'business_hours_increase',
+ 'appliances_addition_count',
+ 'health_offering_change_count'
+)
+
+post_cor <- ci_enc[, vars_post_cor]
+res_post <- rcorr(as.matrix(post_cor))
+
+pdf("ci_post_corr_plot.pdf")
+corrplot(res_post$r, type="lower", order="hclust", 
+         p.mat = res_post$P, sig.level = 0.05, 
+         #tl.cex = 1.0, 
+         tl.col="#b2713d",
+         col = colorRampPalette(c("#ef641e","#f79d27","#228B22"))(10), insig = "blank")
+dev.off()
 ```
 
 ```{r}
-# C&I Post-survey
-corr_simple(ci_enc)
+# computing p values of the data loaded
+# p_values <- rcorr(as.matrix(initial_enc))
+# print(p_values)
+#corrplot(initial_enc, method="number")
 ```
 
 # 2- Gender Equality
@@ -982,7 +1273,7 @@ generic_compare(data=post_clean, var_type="non_cont",
                var2="boys_schooling_change", 
                lgd_title ="Change",
                var1_title="Girls", var2_title="Boys", 
-               subplot_type="pie", plot_title="Unpaired: School Enrollment Change")
+               subplot_type="bar_stack", plot_title="Post: School Enrollment Change")
 
 # Paired
 generic_compare(data=paired_clean, var_type="non_cont",
@@ -990,7 +1281,7 @@ generic_compare(data=paired_clean, var_type="non_cont",
                var2="boys_schooling_change", 
                lgd_title ="Change",
                var1_title="Girls", var2_title="Boys", 
-               subplot_type="pie", 
+               subplot_type="bar_stack", 
                plot_title="Paired: School Enrollment Change")
 ```
 
@@ -1005,13 +1296,17 @@ compare_pre_post(df_pre=initial_pre, df_post=post_clean,
                  var_name="girls_unschooled_reasons", 
                  var_type="non_cont",
                  lgd_title ="Reasons",
-                 subplot_type="bar_simple", 
+                 subplot_type="bar_stack",
+                 char_remove = c("they_all_attend_school", 
+                 "they_all_attend_school_full_time"),
                  title="Unpaired - Girls Schooling: Reasons for non-enrollment")
 
 # For Girls
 compare_paired(data=paired_clean,
                var_name="girls_unschooled_reasons",
                lgd_title="Reasons",
+               char_remove = c("they_all_attend_school", 
+                 "they_all_attend_school_full_time"),
                plot_title="Girls Schooling: Reasons for non-enrollment")
 ```
 
@@ -1024,12 +1319,16 @@ compare_pre_post(df_pre=initial_pre, df_post=post_clean,
                  var_name="boys_unschooled_reasons", 
                  var_type="non_cont",lgd_title ="Reasons",
                  subplot_type="bar_simple", 
+                 char_remove = c("they_all_attend_school", 
+                 "they_all_attend_school_full_time"),
                  title="Unpaired - Boys Schooling: Reasons for non-enrollment")
 
 # Paired
 compare_paired(data=paired_clean,
                var_name="boys_unschooled_reasons",
                lgd_title="Reasons",
+               char_remove = c("they_all_attend_school", 
+                 "they_all_attend_school_full_time"),
                plot_title="Paired - Boys Schooling: Reasons for non-enrollment")
 ```
 
@@ -1063,7 +1362,7 @@ compare_paired(data=paired_clean,
 # Unpaired
 compare_pre_post(df_pre=initial_pre, df_post=post_clean,
                  var_name="water_collection_school_aged", 
-                 var_type="non_cont", subplot_type="pie",
+                 var_type="non_cont", subplot_type="bar_simple",
                  lgd_title="School-Aged?",
                  title="Unpaired: Water Collection Responsibility (School-Aged)")
 
@@ -1073,7 +1372,7 @@ generic_compare(data=paired_clean, var_type="non_cont",
                var2="water_collection_school_aged_post", 
                lgd_title ="School-Aged?",
                var1_title="Pre", var2_title="Post", 
-               subplot_type="pie", 
+               subplot_type="bar_simple", 
                plot_title="Paired: Breakdown of Water Collection Responsibility (School-Aged)")
 
 # Paired
@@ -1091,7 +1390,7 @@ compare_paired(data=paired_clean,
 compare_pre_post(df_pre=initial_pre, df_post=post_clean,
                  var_name="cooking_fuel_responsible_binary", 
                  var_type="non_cont",
-                 subplot_type="pie",
+                 subplot_type="bar_simple",
                  lgd_title="Are men involved?",
                  title="Unpaired: Shcool-Aged Person responsible 
                  for Cooking Fuel Collection")
@@ -1113,7 +1412,7 @@ compare_pre_post(df_pre=initial_pre, df_post=post_clean,
                  var_name="business_owners_female", 
                  var_type="non_cont", 
                  lgd_title = "Is there a woman business owner?",
-                  subplot_type="pie", 
+                  subplot_type="bar_simple", 
                   title="Unpaired - Women Business Owners")
 
 # Paired
@@ -1133,7 +1432,7 @@ compare_pre_post(df_pre=country_pre, df_post=country_post,
                  var_name="business_owners_female", 
                  var_type="non_cont", 
                  lgd_title = "Is there a woman business owner?",
-                  subplot_type="pie", 
+                  subplot_type="bar_simple", 
                   title="Nigeria Unpaired: Women Business Owners")
 
 # Paired
@@ -1152,7 +1451,7 @@ compare_pre_post(df_pre=country_pre, df_post=country_post,
                  var_name="business_owners_female", 
                  var_type="non_cont", 
                  lgd_title = "Is there a woman business owner?",
-                  subplot_type="pie", 
+                  subplot_type="bar_simple", 
                   title="Kenya Unpaired: Women Business Owners")
 
 # Paired
@@ -1173,7 +1472,7 @@ compare_pre_post(df_pre=gender_pre, df_post=gender_post,
                  var_name="business_owners_female", 
                  var_type="non_cont", 
                  lgd_title = "Is there a woman business owner?",
-                  subplot_type="pie", 
+                  subplot_type="bar_simple", 
                   title="Men Unpaired: Women Business Owners")
 
 # Paired
@@ -1192,7 +1491,7 @@ compare_pre_post(df_pre=gender_pre, df_post=gender_post,
                  var_name="business_owners_female", 
                  var_type="non_cont", 
                  lgd_title = "Is there a woman business owner?",
-                  subplot_type="pie", 
+                  subplot_type="bar_simple", 
                   title="Women Unpaired: Women Business Owners")
 
 # Paired
@@ -1201,6 +1500,16 @@ compare_paired(data=gender_paired,
                var_name="business_owners_female",
                lgd_title="Is there a woman business owner?",
                plot_title="Women Paired: Women Business Owners")
+```
+
+### New Female Workers
+
+```{r}
+ci_enc$hired_women <- ifelse(ci_enc$workforce_change_female > 0, 1, 0)
+plot_func(df=ci_enc, var_name="hired_women", 
+          var_type="non_cont", lgd="Change",
+          plot_title="Hiring Women Employees", 
+          plot_type="bar_simple")
 ```
 
 ### TODO
@@ -1227,7 +1536,9 @@ community_reg(df=post_enc,
               var_type="categorical", customer_type="hs",
               exclude_outliers = TRUE, outliers = "feature",
               y_axis= "Households",
-              title="Increase in Girls' School Enrollment by Community")
+              title="Increase in Girls' School Enrollment by Community",
+              #title_sig="Increase of Girls Schooling in Communities"
+              )
 ```
 
 #### TODO: Investigate, RESOLVED
@@ -1265,7 +1576,9 @@ community_reg(df=post_enc,
               var_type="categorical", 
               exclude_outliers = TRUE, outliers = "feature",
               customer_type="hs", y_axis= "Households",
-              title="Increase in Boys' School Enrollment by Community")
+              title="Increase in Boys' School Enrollment by Community"
+              #title_sig="Increase of Boys Schooling in Communities"
+              )
 ```
 
 ```{r}
@@ -1318,7 +1631,9 @@ community_reg(df=paired_enc,
               calc_diff = TRUE, diff_type = "direction",
               exclude_outliers = TRUE, outliers = "feature",
               customer_type="hs", y_axis= "Households",
-              title="Decrease (Direction) in Water Collection Time by Community")
+              title="Decrease (Direction) in Water Collection Time by Community"
+              #,title_sig="Decrease of Water Collection Time in Communities"
+              )
 ```
 
 ```{r}
@@ -1341,7 +1656,8 @@ consumption_reg(df = paired_enc, reg_type ="linear",
                 calc_diff=TRUE, diff_type = "magnitude",
                 x_axis="Avg. Monthly Energy Consumption Pre-Post Period (kwH)", 
                 y_axis="Water Collection Time", 
-                threshold = 4, threshold_bound = "lower",
+                normalize = TRUE,
+                #threshold = 4, threshold_bound = "lower",
                 title="Individual Directional Change vs Consumption")
 ```
 
@@ -1370,6 +1686,10 @@ consumption_reg(df = paired_enc, reg_type ="logistic",
 ```{r}
 paired_testing(paired_enc, var_name="water_collection_school_aged", 
                test_type = "mcnemar", plot_diff=FALSE)
+```
+
+```{r}
+mcne
 ```
 
 #### Regression - Community\*
@@ -1557,7 +1877,9 @@ community_reg(df=ci_enc,
               dep="1", var_type="categorical", 
               exclude_outliers = TRUE, outliers = "feature",
               customer_type="ci", y_axis= "C&I",
-              title="New Female Workers Change by Community")
+              title="New Female Workers Change by Community"
+              #,title_sig="Increase in Employment For Women in Communities"
+              )
 ```
 
 #### Linear Regression - Individual
@@ -1668,7 +1990,7 @@ compare_pre_post(df_pre=initial_pre, df_post=post_clean,
 plot_func(df=post_clean, var_name="appliances_count_change", 
           var_type="non_cont", lgd = "Change",
           plot_title="Change in No. of Appliances", 
-          plot_type="pie")
+          plot_type="bar_simple")
 ```
 
 #### Charging Sources
@@ -1712,7 +2034,7 @@ compare_paired(data=paired_clean,
 # Unpaired
 compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
                  var_name="phone_charge_location", var_type="non_cont",
-                 subplot_type="pie", lgd_title = "Places",
+                 subplot_type="bar_simple", lgd_title = "Places",
                  title="Unpaired: Location of Phone Charging")
 
 # Paired
@@ -1748,9 +2070,8 @@ compare_paired(data=paired_clean,
 # Unpaired
 compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
                  var_name="water_collection_travel_distance", var_type="non_cont",
-                 subplot_type="bar", lgd_title = "Distances",
-                 title="Travel Distance for Water Collection",
-                 char_remove=NULL)
+                 subplot_type="bar_simple", lgd_title = "Distances",
+                 title="Travel Distance for Water Collection")
 
 # Paired
 compare_paired(data=paired_clean,
@@ -1766,7 +2087,7 @@ compare_paired(data=paired_clean,
 compare_pre_post(df_pre=initial_pre, df_post=post_clean,
                  var_name="water_collection_time", 
                  var_type="non_cont",
-                 subplot_type="bar_simple",
+                 subplot_type="pie",
                  lgd_title="Time Intervals",
                  title="Unpaired: Water Collection Time")
 
@@ -1784,7 +2105,7 @@ compare_paired(data=paired_clean,
 # Unpaired
 compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
                  var_name="clinic_travel_distance", var_type="non_cont",
-                 subplot_type="bar", lgd_title = "Distances",
+                 subplot_type="bar_simple", lgd_title = "Distances",
                  title="Travel Distance  To Nearest Clinic")
 
 # Paired
@@ -1803,7 +2124,7 @@ compare_paired(data=paired_clean,
 # Unpaired
 compare_pre_post(df_pre=initial_pre, df_post=post_clean, lgd_title ="Types",
                  var_name="cooking_energy_sources", var_type="non_cont",
-                 subplot_type="pie", 
+                 subplot_type="bar_simple", 
                  title="Unpaired: Cooking Energy Sources")
 
 # Paired
@@ -1823,7 +2144,7 @@ compare_paired(data=paired_clean,
 compare_pre_post(df_pre=initial_pre, df_post=post_clean,
                  var_name="cooking_fuel_collection_time", 
                  var_type="non_cont",
-                 subplot_type="bar_simple",
+                 subplot_type="pie",
                  lgd_title="Time Intervals",
                  title="Unpaired: Cooking Fuel Collection Time")
 
@@ -1841,13 +2162,13 @@ compare_paired(data=paired_clean,
 plot_func(df=post_clean, var_name="school_performance_change", 
           var_type="non_cont", lgd = "Change",
           plot_title="Unpaired: Household - Academic Performance", 
-          plot_type="pie")
+          plot_type="bar_simple")
 
 # Paired
 plot_func(df=paired_clean, var_name="school_performance_change", 
           var_type="non_cont", lgd = "Change",
           plot_title="Paired: Household - Academic Performance", 
-          plot_type="pie")
+          plot_type="bar_simple")
 ```
 
 ### Schools - Academic Performance
@@ -1856,7 +2177,7 @@ plot_func(df=paired_clean, var_name="school_performance_change",
 plot_func(df=schools_clean, var_name="school_performance", 
           var_type="non_cont", lgd = "Change",
           plot_title="Schools - Academic Performance", 
-          plot_type="pie")
+          plot_type="bar_simple")
 ```
 
 ### Commercial & Institution
@@ -1868,7 +2189,7 @@ plot_func(df=schools_clean, var_name="school_performance",
 plot_func(df=ci_clean, var_name="operations_hours_change", 
           var_type="non_cont", lgd="Change",
           plot_title="Change in C&I Business Hours", 
-          plot_type="pie")
+          plot_type="bar_simple")
 ```
 
 #### Additional Operation Hours
@@ -1877,7 +2198,7 @@ plot_func(df=ci_clean, var_name="operations_hours_change",
 plot_func(df=ci_clean, var_name="business_hours_increase", 
           var_type="non_cont", lgd="By how much?",
           plot_title="C&I Added Operation Hours", 
-          plot_type="pie")
+          plot_type="bar_simple")
 ```
 
 #### Change in Workforce
@@ -1887,7 +2208,7 @@ plot_func(df=ci_clean, var_name="business_hours_increase",
 plot_func(df=business_clean, var_name="workforce_change", 
           var_type="non_cont", lgd="Change",
           plot_title="Change in C&I Workforce", 
-          plot_type="pie")
+          plot_type="bar_simple")
 ```
 
 #### Adding New Products/Services
@@ -1897,7 +2218,7 @@ plot_func(df=business_clean, var_name="workforce_change",
 plot_func(df=ci_clean, var_name="ci_offering_change", 
           var_type="non_cont", lgd="Change",
           plot_title="Change in C&I Products/Services", 
-          plot_type="pie")
+          plot_type="bar_simple")
 ```
 
 ### TODO
@@ -1905,6 +2226,8 @@ plot_func(df=ci_clean, var_name="ci_offering_change",
 -   Annotation & encoding of "light_primary_source"
 
 -   For cooking energy sources, add the unclean sources: charcoal, firewood
+
+### 
 
 ## B) Inferential
 
@@ -1931,7 +2254,9 @@ community_reg(df=paired_enc,
               exclude_outliers = TRUE, outliers = "feature",
               var_type="categorical", calc_diff =TRUE,
               diff_type="direction", customer_type="hs", 
-              y_axis= "Households")
+              y_axis= "Households"
+              #<title_sig="Decrease of Non-Renewable Power Sources Usage in Communities"
+              )
 ```
 
 #### Linear Regression - Individual
@@ -1956,7 +2281,7 @@ consumption_reg(df = paired_enc, reg_type ="logistic",
 
 **Value (Encoding if applied)**: Any numeric value
 
-#### Paired Test
+#### Paired Test\*
 
 ```{r}
 paired_testing(paired_enc, var_name = "appliances_count", 
@@ -1975,7 +2300,9 @@ community_reg(df=paired_enc,
               exclude_outliers = TRUE, outliers = "feature",
               var_type="categorical", calc_diff =TRUE,
               diff_type="direction", customer_type="hs", 
-              y_axis= "Households")
+              y_axis= "Households"
+              #title_sig="Increase of Appliances Owned in Communities"
+              )
 ```
 
 #### Logistic Regression - Individual
@@ -2143,7 +2470,9 @@ community_reg(df=post_enc,
               dep="1", var_type="categorical",
               exclude_outliers = TRUE, outliers = "feature",
               customer_type="hs", y_axis= "Households",
-              title="Households - Increase in Academic Performace by Community")
+              title="Households - Increase in Academic Performace by Community"
+              #title_sig="Increase of Academic Performance in Communities"
+              )
 ```
 
 #### TODO: Logistic Regression - Individual\*
@@ -2187,7 +2516,9 @@ community_reg(df=schools_enc,
               col_name="school_performance", dep="1", var_type="categorical",
               exclude_outliers = TRUE, outliers = "feature",
               customer_type="school", y_axis= "Schools",
-              title="Schools - Increase in Academic Performace by Community")
+              title="Schools - Increase in Academic Performace by Community"
+              #title_sig="Increase of Academic Performance in Communities"
+              )
 ```
 
 ### Operation Hours Change
@@ -2269,7 +2600,9 @@ community_reg(df=ci_enc,
               dep="1", var_type="categorical",
               exclude_outliers = TRUE, outliers = "feature",
               customer_type="ci", y_axis= "C&I",
-              title="Newly Added Offerings by Community")
+              title="Newly Added Offerings by Community"
+              #title_sig="Increase of  Business Offering in Communities"
+              )
 ```
 
 #### Logistic Regression - Individual
@@ -2282,6 +2615,16 @@ consumption_reg(df=ci_enc, reg_type ="logistic",
                 x_axis="Avg. Monthly Energy Consumption Cumulative (kwH)", 
                 y_axis="Product Offering Change", log_direction = 1,
                 title="Newly Added Offerings vs. Energy Consumption")
+```
+
+### Visualize Significant Results
+
+```{r, fig.width=12, fig.height=8}
+violins(data = paired_enc, 
+        var_names = c("light_hours_current", 
+                      "appliances_count",
+                      "phone_charge_travel_distance",
+                      "water_collection_travel_distance"))
 ```
 
 # 4- Health & Well-Being
@@ -2297,7 +2640,7 @@ consumption_reg(df=ci_enc, reg_type ="logistic",
 # Unpaired
 compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
                  var_name="water_source", var_type="non_cont",
-                 subplot_type="pie", lgd_title = "Sources",
+                 subplot_type="bar_simple", lgd_title = "Sources",
                  title="Unpaired: Water Sources",
                  char_remove=NULL)
 
@@ -2342,7 +2685,7 @@ compare_paired(data=paired_clean,
 # Unpaired
 compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
                  var_name="clean_drinking_water_source", var_type="non_cont",
-                 subplot_type="pie", 
+                 subplot_type="bar_simple", 
                  lgd_title = "Do you have clean drinking water?",
                  title="Unpaired: Clean Drinking Water Sources")
 
@@ -2372,7 +2715,7 @@ compare_pre_post(df_pre=initial_pre, df_post=post_clean,
 # Has the number of kerosene lamps in your household changed since connection to minigrid?
 plot_func(df=post_clean, var_name="kerosene_lamp_usage_change", lgd ="Change", 
           var_type="non_cont", plot_title="Kerosene Lamps Usage", 
-          plot_type="pie")
+          plot_type="bar_simple")
 ```
 
 ### Healthcare
@@ -2411,7 +2754,7 @@ compare_paired(data=paired_clean,
 # Unpaired
 compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
                  var_name="clinic_travel_distance", var_type="non_cont",
-                 subplot_type="pie", 
+                 subplot_type="bar_simple", 
                  lgd_title = "Distances",
                  title="Unpaired: Clinic Travel Distance")
 
@@ -2453,16 +2796,18 @@ compare_paired(data=paired_clean,
 #### New Health Services
 
 ```{r}
-plot_func(df=ci_clean, var_name="health_offering_change_count", 
+plot_func(df=clinic_clean, var_name="health_offering_change_count", 
           var_type="non_cont", plot_title="No. of New Health Services", 
-          plot_type="pie", lgd="No. of Health Services", char_remove = 0)
+          plot_type="bar_simple", lgd="No. of Health Services" 
+          #char_remove = 0
+          )
 ```
 
 ```{r}
 # What is the Clinic / Hospital able to offer or provide due to connection to Renewvia minigrid that it wasnt able to offer before?
-plot_func(df=ci_clean, var_name="health_offering_change_count", 
+plot_func(df=clinic_clean, var_name="health_offering_change_count", 
           var_type="cont", plot_title="No. of New Health Services", 
-          plot_type="hist", char_remove = 0)
+          plot_type="hist")
 ```
 
 #### Types of Services
@@ -2494,7 +2839,7 @@ tab
 # Would you say that having access to minigrid power has improved your quality of life?
 plot_func(df=post_clean, var_name="minigrid_access_life_improvement", 
           var_type="non_cont", plot_title="Life Improvement", 
-          plot_type="pie", lgd="Any change?")
+          plot_type="bar_simple", lgd="Any change?")
 ```
 
 ## B) Inferential
@@ -2622,7 +2967,9 @@ community_reg(df=post_enc,
               var_type="categorical",
               exclude_outliers = TRUE, outliers = "feature", 
               title="Decrease in Kerosene Lamps Usage by Community",
-              customer_type="hs", y_axis= "Households")
+              customer_type="hs", y_axis= "Households"
+                #title_sig="Decrease of Kerosene Lamps Usage in Communities"
+              )
 ```
 
 #### Logistic Regression - Individual
@@ -2739,7 +3086,9 @@ community_reg(df=post_enc,
               exclude_outliers = TRUE, 
               #  outliers = "feature", 
               title="Better Healthcare Access by Community",
-              customer_type="hs", y_axis= "Households") 
+              customer_type="hs", y_axis= "Households"
+                #title_sig="Better Access To Healthcare in Communities"
+              ) 
 ```
 
 #### Logistic Regression - Individual
@@ -2786,6 +3135,9 @@ consumption_reg(df=post_enc,  reg_type ="logistic",
                 title="Life Improvement vs. Consumption")
 ```
 
+```         
+```
+
 # 5- Safety
 
 ## A) Descriptive
@@ -2824,7 +3176,7 @@ for(i in 1: 5) {
 # Unpaired
 compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
                  var_name="feel_unsafe_reasons", var_type="non_cont",
-                 subplot_type="pie", lgd_title = "Reasons",
+                 subplot_type="bar_simple", lgd_title = "Reasons",
                  title="Unpaired: Reasons for Feeling unsafe")
 
 # Paired
@@ -2849,7 +3201,7 @@ as.data.frame.matrix(table(paired_enc$feel_safe_levels_pre,
 # Unpaired
 compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
                  var_name="community_lights", var_type="non_cont",
-                 subplot_type="pie", 
+                 subplot_type="bar_simple", 
                  lgd_title = "Present?",
                  title="Unpaired: Presence of Community Lights")
 
@@ -2876,7 +3228,7 @@ compare_paired(data=paired_clean,
 # Unpaired
 compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
                  var_name="home_exterior_lights", var_type="non_cont",
-                 subplot_type="pie", 
+                 subplot_type="bar_simple", 
                  lgd_title = "Does the home have exterior lights?",
                  title="Unpaired: Presence of Home Exterior Lights")
 # Paired
@@ -2885,7 +3237,7 @@ generic_compare(data=paired_clean, var_type="non_cont",
                var2="home_exterior_lights_post", 
                lgd_title ="Present?",
                var1_title="Pre", var2_title="Post", 
-               subplot_type="pie", 
+               subplot_type="bar_simple", 
                plot_title="Paired: Presence of Home Exterior Lights")
 
 # Paired
@@ -2902,12 +3254,12 @@ compare_paired(data=paired_clean,
 plot_func(df=post_clean, var_name="exterior_lights_minigrid", 
           var_type="non_cont", lgd="Powered by Mini-Grid",
           plot_title="Households - Exterior Lights Powered by Mini-Grid", 
-          plot_type="pie")
+          plot_type="bar_simple")
 ```
 
 ## B) Inferential
 
-### Feeling Safe
+### TODO: Feeling Safe
 
 **Data Source**: Paired Household Surveys (Pre & Post)
 
@@ -2918,36 +3270,36 @@ plot_func(df=post_clean, var_name="exterior_lights_minigrid",
 ```{r}
 # # How safe do you feel outside your home when it is dark?
 print("All")
-paired_testing(paired_enc, var_name="feel_safe_levels", 
-               test_type = "sign", plot_diff=TRUE, diff_type = "direction",
+paired_testing(paired_enc, var_name="feel_safe_dark", 
+               test_type = "wilcoxon", plot_diff=TRUE, diff_type = "magnitude",
                #remove_outliers = TRUE, 
-               #threshold = 4, threshold_bound = "lower",
+               threshold = 4, threshold_bound = "lower",
                x_axis="Differences", y_axis="Count",
                plt_title="All - Difference in Pre-Post Safety Scores")
 
 ## Subgroup Analysis - Country
 # Nigeria
-print("Nigeria")
-ctr <- 1
-country_paired <- paired_enc %>% filter(country_post == ctr)
-paired_testing(country_paired, var_name="feel_safe_levels", 
-               test_type = "sign", plot_diff=TRUE,
-               diff_type = "direction",
-               #remove_outliers = TRUE, 
-              # threshold = 4, threshold_bound = "lower",
-               x_axis="Differences", y_axis="Count",
-               plt_title="Nigeria - Difference in Pre-Post Safety Scores")
-# Kenya
-print("Kenya")
-ctr <- 2
-country_paired <- paired_enc %>% filter(country_post == ctr)
-paired_testing(country_paired, var_name="feel_safe_levels", 
-               test_type = "sign", plot_diff=TRUE,
-               diff_type = "direction",
-               #remove_outliers = TRUE, 
-               #threshold = 4, threshold_bound = "lower",
-               x_axis="Differences", y_axis="Count",
-               plt_title="Kenya - Difference in Pre-Post Safety Scores")
+# print("Nigeria")
+# ctr <- 1
+# country_paired <- paired_enc %>% filter(country_post == ctr)
+# paired_testing(country_paired, var_name="feel_safe_dark", 
+#                test_type = "wilcoxon", plot_diff=TRUE,
+#                diff_type = "magnitude",
+#                #remove_outliers = TRUE, 
+#                threshold = 4, threshold_bound = "lower",
+#                x_axis="Differences", y_axis="Count",
+#                plt_title="Nigeria - Difference in Pre-Post Safety Scores")
+# # Kenya
+# print("Kenya")
+# ctr <- 2
+# country_paired <- paired_enc %>% filter(country_post == ctr)
+# paired_testing(country_paired, var_name="feel_safe_dark", 
+#                test_type = "wilcoxon", plot_diff=TRUE,
+#                diff_type = "magnitude",
+#                #remove_outliers = TRUE, 
+#                threshold = 4, threshold_bound = "lower",
+#                x_axis="Differences", y_axis="Count",
+#                plt_title="Kenya - Difference in Pre-Post Safety Scores")
 ```
 
 ### Unsafe Travel
@@ -3116,7 +3468,7 @@ consumption_reg(df=paired_enc,  reg_type ="logistic",
 plot_func(df=post_clean, var_name="occupation_change", 
           var_type="non_cont", lgd="Change in Occupation?",
           plot_title="Change in Occupation of Primary Provider", 
-          plot_type="pie")
+          plot_type="bar_simple")
 ```
 
 ### Household Income
@@ -3149,6 +3501,7 @@ compare_pre_post(df_pre=country_pre, df_post=country_post,
                  subplot_type="hist", shared_legend=FALSE,
                  exclude_outliers = TRUE,
                  x_axis="Value (Ksh)", y_axis="Count",
+                 char_remove = c(0),
                  title="Unpaired: Kenya - Average Household Income")
 ```
 
@@ -3159,7 +3512,7 @@ compare_pre_post(df_pre=country_pre, df_post=country_post,
 plot_func(df=post_clean, var_name="household_income_change", 
           var_type="non_cont", lgd="Change",
           plot_title="Change in Household Income", 
-          plot_type="pie")
+          plot_type="bar_simple")
 ```
 
 ### Household Expenses
@@ -3171,7 +3524,7 @@ plot_func(df=post_clean, var_name="household_income_change",
 # Unpaired
 compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
                  var_name="phone_charge_cost", var_type="non_cont",
-                 subplot_type="pie", lgd_title = "Costs",
+                 subplot_type="bar_simple", lgd_title = "Costs",
                  title="Unpaired: Phone Charging Cost")
 
 # Paired
@@ -3188,7 +3541,7 @@ compare_paired(data=paired_clean,
 # Unpaired
 compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
                  var_name="applicances_charging_cost", var_type="non_cont",
-                 subplot_type="pie", lgd_title = "Costs",
+                 subplot_type="bar_simple", lgd_title = "Costs",
                  title="Unpaired: Appliances Charging Cost")
 
 # Paired
@@ -3205,7 +3558,7 @@ compare_paired(data=paired_clean,
 # Unpaired
 compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
                  var_name="cooking_energy_cost", var_type="non_cont",
-                 subplot_type="pie", lgd_title = "Costs",
+                 subplot_type="bar_simple", lgd_title = "Costs",
                  title="Unpaired: Cooking Energy Cost")
 
 # Paired
@@ -3222,7 +3575,7 @@ compare_paired(data=paired_clean,
 # Unpaired
 compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
                  var_name="kerosene_lamps_cost", var_type="non_cont",
-                 subplot_type="pie", lgd_title = "Costs",
+                 subplot_type="bar_simple", lgd_title = "Costs",
                  title="Unpaired: Kerosene Lamps Cost")
 
 # Paired
@@ -3241,7 +3594,7 @@ compare_paired(data=paired_clean,
 # Unpaired
 compare_pre_post(df_pre=initial_pre, df_post=post_clean, 
                  var_name="business_owners_binary", var_type="non_cont",
-                 subplot_type="pie", lgd_title = "Own a Business?",
+                 subplot_type="bar_simple", lgd_title = "Own a Business?",
                  title="Unpaired: Household Business Ownership")
 # Paired
 generic_compare(data=paired_clean, var_type="non_cont",
@@ -3249,7 +3602,7 @@ generic_compare(data=paired_clean, var_type="non_cont",
                var2="business_owners_binary_post", 
                lgd_title ="Own a Business?",
                var1_title="Pre", var2_title="Post", 
-               subplot_type="pie", 
+               subplot_type="bar_simple", 
                plot_title="Paired: Household Business Ownership")
 # Paired
 compare_paired(data=paired_clean,
@@ -3265,7 +3618,7 @@ compare_paired(data=paired_clean,
 plot_func(df=post_clean, var_name="business_recent", 
           var_type="non_cont", lgd="Recent?",
           plot_title="Recent Business Ownership", 
-          plot_type="pie")
+          plot_type="bar_simple")
 ```
 
 #### Mini-grid related
@@ -3275,7 +3628,7 @@ plot_func(df=post_clean, var_name="business_recent",
 plot_func(df=post_clean, var_name="business_use_minigrid", 
           var_type="non_cont", lgd="Recent?",
           plot_title="Business, A Result From Mini-Grid", 
-          plot_type="pie")
+          plot_type="bar_simple")
 ```
 
 ### C&I
@@ -3287,7 +3640,7 @@ plot_func(df=post_clean, var_name="business_use_minigrid",
 plot_func(df=ci_clean, var_name="operation_status", 
           var_type="non_cont", lgd = "Status",
           plot_title="C&I - Type", 
-          plot_type="pie")
+          plot_type="bar_simple")
 ```
 
 #### Business Type
@@ -3297,7 +3650,16 @@ plot_func(df=ci_clean, var_name="operation_status",
 plot_func(df=ci_clean, var_name="business_type", 
           var_type="non_cont", lgd = "Business Type",
           plot_title="C&I - Type", 
-          plot_type="pie")
+          plot_type="bar_simple")
+```
+
+#### Earnings Change
+
+```{r}
+plot_func(df=ci_clean, var_name="earnings_change", 
+          var_type="non_cont", lgd = "Change in Earnings?",
+          plot_title="C&I - Type", 
+          plot_type="bar_simple")
 ```
 
 ## B) Inferential
@@ -3319,6 +3681,10 @@ paired_testing(nigeria_paired_enc, var_name="avg_household_income",
                remove_outliers = TRUE,
                x_axis="Value (₦ Naira)", y_axis="Count",
                plt_title="Nigeria - Income Differences")
+```
+
+```{r}
+
 ```
 
 #### Linear Regression - Individual\*
@@ -3373,6 +3739,33 @@ paired_testing(kenya_paired_enc, var_name="avg_household_income",
                plt_title="Kenya - Income Differences")
 ```
 
+#### Regression - Community
+
+```{r}
+community_reg(df=kenya_paired_enc, 
+              col_name="avg_household_income", dep="1", 
+              title="Household Income Increase by Community", 
+              exclude_outliers = TRUE, outliers = "feature",
+              var_type="categorical", calc_diff = TRUE,
+              diff_type="direction", customer_type="hs", 
+              y_axis= "Households",
+              title_sig="Increase of Avg. Household Income in Communities") 
+```
+
+#### Linear Regression - Individual
+
+```{r}
+kenya_temp <- kenya_paired_enc %>% filter(avg_mon_consumption_period < 2)
+consumption_reg(df=kenya_temp,  reg_type ="linear",
+                dep="avg_household_income_post", 
+                ind="avg_mon_consumption_cum",
+                exclude_outliers = TRUE, outliers = "dependent",
+                #calc_diff=TRUE, diff_type = "magnitude",
+                x_axis="Avg. Monthly Energy Consumption Cumulative (kWh)", 
+                y_axis="Income (Increase)", 
+                title="Avg. Household Income vs. Consumption")
+```
+
 ### Household - Income Change
 
 **Data Source**: Household Post Survey
@@ -3400,7 +3793,8 @@ community_reg(df=nigeria_post_enc,
               exclude_outliers = TRUE, outliers = "feature",
               var_type="categorical", calc_diff = FALSE,
               diff_type="direction", customer_type="hs", 
-              y_axis= "Households")
+              y_axis= "Households",
+              title_sig="Increase of Avg. Household Income in Nigerian Communities") 
 ```
 
 ```{r}
@@ -3411,7 +3805,8 @@ community_reg(df=kenya_post_enc,
               exclude_outliers = TRUE, outliers = "feature",
               var_type="categorical", calc_diff = FALSE,
               diff_type="direction", customer_type="hs", 
-              y_axis= "Households")
+              y_axis= "Households", 
+                title="Avg. Household Income vs. Consumption")
 ```
 
 #### Logistic Regression - Individual
@@ -3454,7 +3849,9 @@ community_reg(df=ci_enc,
               exclude_outliers = TRUE, outliers = "feature",
               var_type="categorical", calc_diff = FALSE,
               diff_type="direction", customer_type="ci", 
-              y_axis= "C&I")
+              y_axis= "C&I"
+              #title_sig="Increase of Earnings for Organizations in Communities"
+              )
 ```
 
 #### Logistic Regression - Individual
@@ -3555,17 +3952,19 @@ paired_testing(paired_enc, var_name="phone_charge_cost",
 ```{r}
 # Phone Charging
 # Nigeria
+print("Nigeria")
 paired_testing(nigeria_paired_enc, var_name="phone_charge_cost", 
                test_type = "sign", x_axis="Differences", y_axis="Count",
                plt_title="Nigeria: Difference in Pre-Post Phone Charging Cost",
-               plot_diff=TRUE, 
+               plot_diff=TRUE,  
                #remove_outliers = TRUE
                )
 
 
 # Kenya
+print("Kenya")
 paired_testing(kenya_paired_enc, var_name="phone_charge_cost", 
-               test_type = "sign", x_axis="Differences", y_axis="Count",
+               test_type = "wilcoxon", x_axis="Differences", y_axis="Count",
                plt_title="Kenya: Difference in Pre-Post Phone Charging Cost",
                plot_diff=TRUE, 
                #remove_outliers = TRUE
@@ -3630,7 +4029,7 @@ paired_testing(nigeria_paired_enc, var_name="applicances_charging_cost",
 
 # Kenya
 paired_testing(kenya_paired_enc, var_name="applicances_charging_cost", 
-               test_type = "sign", x_axis="Differences", y_axis="Count",
+               test_type = "wilcoxon", x_axis="Differences", y_axis="Count",
                plt_title="Kenya: Difference in Pre-Post Appliances Charging Cost",
                plot_diff=TRUE, 
                #remove_outliers = TRUE
@@ -3684,7 +4083,7 @@ paired_testing(paired_enc, var_name="cooking_energy_cost",
 ```{r}
 # Nigeria
 paired_testing(nigeria_paired_enc, var_name="cooking_energy_cost", 
-               test_type = "sign", x_axis="Differences", y_axis="Count",
+               test_type = "wilcoxon", x_axis="Differences", y_axis="Count",
                plt_title="Nigeria: Difference in Pre-Post Cooking Energy Cost",
                plot_diff=TRUE, 
                remove_outliers = TRUE,
@@ -3850,4 +4249,541 @@ consumption_reg(df=paired_enc,  reg_type ="logistic",
                 x_axis="Avg. Monthly Energy Consumption Pre-Post Period (kWh)", 
                 y_axis="Change (Decrease)", log_direction = -1,
                 title="Water Cost vs. Consumption")
+```
+
+# Output
+
+```{r}
+# income_rectified <- read.csv("kenya_incomes_rectified.csv")
+# paired_enc_df <- merge(paired_enc, income_rectified,
+#                           by.x = 'renewvia_id', 
+#                           by.y = 'Customer.Account.Number')
+# write.csv(paired_enc_df, file='paired_enc_rect.csv',
+#           fileEncoding = "UTF-8")
+```
+
+```{r}
+# write.csv(ci_enc, file='ci_enc_rect.csv',
+#           fileEncoding = "UTF-8")
+```
+
+### Visualize Significant Results
+
+```{r, fig.width=8, fig.height=8}
+cols <- c("renewvia_id")
+var_names <- c("water_collection_time", 
+                      "cooking_fuel_collection_time"
+                      )
+for(var in var_names) {
+  pre_name <- paste(var, "pre", sep="_")
+  post_name <- paste(var, "post", sep="_")
+  cols <- c(cols,pre_name, post_name)
+}
+
+test_paired <- paired_enc[, cols]
+# Split the data in two groups
+#test_paired <- outliers_removal(test_paired, pre_name)
+#test_paired <- outliers_removal(test_paired, post_name)
+test_paired_longer <- test_paired %>%
+                              pivot_longer(
+                                cols = -renewvia_id,
+                                #names_to = "when",
+                                # names_prefix = var_name,
+                                # values_to = var_name,
+                                # values_drop_na = TRUE,
+                                # names_transform = list(var_name = as.numeric)
+                                names_to = c(".value","Period"), 
+                                names_pattern =  "(\\w+)_(pre|post)"
+                              )
+#test_paired_longer
+#var_norm <- paste(var_name, "normalized", sep="_")
+test_paired_longer[, var_names] <- normalize(test_paired_longer[, var_names])
+box_data <- test_paired_longer  %>%
+                        pivot_longer(
+                          cols = -c("renewvia_id", "Period"),
+                          #names_to = "when",
+                          # names_prefix = var_name,
+                          # values_to = var_name,
+                          # values_drop_na = TRUE,
+                          # names_transform = list(var_name = as.numeric)
+                          names_to = c("var"), 
+                          #names_pattern =  "(\\w+)_(pre|post)"
+                        )
+re_names <- c(`water_collection_time` = "Water Collection Time",
+              `cooking_fuel_collection_time` = "Cooking Fuel Collection Time")
+re_names <- c(
+  `water_collection_time` = "Water Collection Time", 
+  `cooking_fuel_collection_time` = "Cooking Fuel Collection Time"
+                    )
+box_data$Period <- factor(box_data$Period , levels=c("pre", "post"))
+box_plot <- box_data %>% ggplot(aes(x = Period, 
+                                    y = value, fill=Period)) + 
+                        geom_boxplot(position = position_dodge()) +
+                        labs(y="Normalized Value", 
+                             title = "Gender Equality - Paired Testing Results") + 
+                        facet_grid(~factor(var,
+                                           levels=var_names),
+                                   labeller = as_labeller(re_names)) 
+                        #theme(legend.text=element_text(size=6))
+box_plot + remove_x + theme(legend.position = 'bottom', 
+                        legend.text=element_text(size=6)) +
+  scale_fill_manual(values=c("#f79d27", "#ef641e")) + 
+  theme_classic()
+```
+
+```{r, fig.width=8, fig.height=8}
+cols <- c("renewvia_id")
+var_names <- c("water_collection_time", 
+                      "cooking_fuel_collection_time"
+                      )
+for(var in var_names) {
+  pre_name <- paste(var, "pre", sep="_")
+  post_name <- paste(var, "post", sep="_")
+  cols <- c(cols,pre_name, post_name)
+}
+
+test_paired <- paired_enc[, cols]
+# Split the data in two groups
+#test_paired <- outliers_removal(test_paired, pre_name)
+#test_paired <- outliers_removal(test_paired, post_name)
+test_paired_longer <- test_paired %>%
+                              pivot_longer(
+                                cols = -renewvia_id,
+                                #names_to = "when",
+                                # names_prefix = var_name,
+                                # values_to = var_name,
+                                # values_drop_na = TRUE,
+                                # names_transform = list(var_name = as.numeric)
+                                names_to = c(".value","Period"), 
+                                names_pattern =  "(\\w+)_(pre|post)"
+                              )
+#test_paired_longer
+#var_norm <- paste(var_name, "normalized", sep="_")
+test_paired_longer[, var_names] <- normalize(test_paired_longer[, var_names])
+box_data <- test_paired_longer  %>%
+                        pivot_longer(
+                          cols = -c("renewvia_id", "Period"),
+                          #names_to = "when",
+                          # names_prefix = var_name,
+                          # values_to = var_name,
+                          # values_drop_na = TRUE,
+                          # names_transform = list(var_name = as.numeric)
+                          names_to = c("var"), 
+                          #names_pattern =  "(\\w+)_(pre|post)"
+                        )
+re_names <- c(`water_collection_time` = "Water Collection Time",
+              `cooking_fuel_collection_time` = "Cooking Fuel Collection Time")
+re_names <- c(
+  `water_collection_time` = "Water Collection Time", 
+  `cooking_fuel_collection_time` = "Cooking Fuel Collection Time"
+                    )
+box_data$Period <- factor(box_data$Period , levels=c("pre", "post"))
+box_plot <- box_data %>% ggplot(aes(x = Period, 
+                                    y = value, fill=Period)) + 
+                        geom_boxplot(position = position_dodge(),
+                                     outlier.shape = NA) +
+                        labs(y="Normalized Value"
+                             #title = "Gender Equality - Paired Testing Results"
+                             ) + 
+                        facet_grid(~factor(var,
+                                           levels=var_names),
+                                   labeller = as_labeller(re_names),
+                                   switch = "both") + 
+                        theme_classic() +
+                        scale_fill_manual(values=c("#ef641e", "#87CEEB")) +
+                        theme(legend.position = 'top', 
+                       legend.text=element_text(size=12),
+                       strip.background = element_blank(),
+                       strip.text = element_text(size = 12),
+                       axis.text=element_text(size=12), #change font size of axis text
+                       axis.title=element_text(size=12)) + remove_x
+
+ggsave("gender_equality_paired_results.pdf", box_plot)
+box_plot 
+```
+
+```{r, fig.width=10, fig.height=10}
+# Gender Equality
+violins(data = paired_enc, 
+        var_names = c("water_collection_time", 
+                      "cooking_fuel_collection_time"
+                      ),
+        new_names = c("Water Collection Time", 
+                      "Cooking Fuel Collection Time"),
+        show_median = "point"
+        #title="Gender Equality - Paired Testing Results"
+        )
+```
+
+```{r, fig.width=10, fig.height=10}
+cols <- c("renewvia_id")
+var_names <- c("light_hours_current", 
+                "appliances_count",
+                "phone_charge_travel_distance",
+                "water_collection_travel_distance"
+                )
+for(var in var_names) {
+  pre_name <- paste(var, "pre", sep="_")
+  post_name <- paste(var, "post", sep="_")
+  cols <- c(cols,pre_name, post_name)
+}
+
+test_paired <- paired_enc[, cols]
+# Split the data in two groups
+#test_paired <- outliers_removal(test_paired, pre_name)
+#test_paired <- outliers_removal(test_paired, post_name)
+test_paired_longer <- test_paired %>%
+                              pivot_longer(
+                                cols = -renewvia_id,
+                                #names_to = "when",
+                                # names_prefix = var_name,
+                                # values_to = var_name,
+                                # values_drop_na = TRUE,
+                                # names_transform = list(var_name = as.numeric)
+                                names_to = c(".value","Period"), 
+                                names_pattern =  "(\\w+)_(pre|post)"
+                              )
+#test_paired_longer
+#var_norm <- paste(var_name, "normalized", sep="_")
+test_paired_longer[, var_names] <- normalize(test_paired_longer[, var_names])
+box_data <- test_paired_longer  %>%
+                        pivot_longer(
+                          cols = -c("renewvia_id", "Period"),
+                          #names_to = "when",
+                          # names_prefix = var_name,
+                          # values_to = var_name,
+                          # values_drop_na = TRUE,
+                          # names_transform = list(var_name = as.numeric)
+                          names_to = c("var"), 
+                          #names_pattern =  "(\\w+)_(pre|post)"
+                        )
+re_names <- c(`water_collection_time` = "Water Collection Time",
+              `cooking_fuel_collection_time` = "Cooking Fuel Collection Time")
+re_names <- c(
+  `light_hours_current` = "Light Hours", 
+  `appliances_count` = "No. of Appliances", 
+  `phone_charge_travel_distance` = "Phone Charging Distance",
+  `water_collection_travel_distance` = "Water Collection Distance"
+                    )
+box_data$Period <- factor(box_data$Period , levels=c("pre", "post"))
+box_plot <- box_data %>% ggplot(aes(x = Period, 
+                                    y = value, fill=Period)) + 
+                        geom_boxplot(position = position_dodge(),
+                                     outlier.shape = NA) +
+                        labs(y="Normalized Value"
+                             #title = "Productivity - Paired Testing Results"
+                             ) + 
+                        facet_grid(~factor(var,
+                                           levels=var_names),
+                                   labeller = as_labeller(re_names),
+                                   switch = "both") + 
+                        theme_classic() +
+                        scale_fill_manual(values=c("#ef641e", "#87CEEB")) +
+                        theme(legend.position = 'top', 
+                       legend.text=element_text(size=8),
+                       strip.background = element_blank(),
+                       strip.text = element_text(size = 8),
+                       axis.text=element_text(size=8), #change font size of axis text
+                       axis.title=element_text(size=8)) + remove_x
+
+ggsave("productivity_paired_results.pdf", box_plot)
+box_plot 
+```
+
+```{r}
+cols <- c("renewvia_id")
+var_names <- c("kerosene_lamps_count"
+                )
+for(var in var_names) {
+  pre_name <- paste(var, "pre", sep="_")
+  post_name <- paste(var, "post", sep="_")
+  cols <- c(cols,pre_name, post_name)
+}
+
+test_paired <- paired_enc[, cols]
+# Split the data in two groups
+#test_paired <- outliers_removal(test_paired, pre_name)
+#test_paired <- outliers_removal(test_paired, post_name)
+test_paired_longer <- test_paired %>%
+                              pivot_longer(
+                                cols = -renewvia_id,
+                                #names_to = "when",
+                                # names_prefix = var_name,
+                                # values_to = var_name,
+                                # values_drop_na = TRUE,
+                                # names_transform = list(var_name = as.numeric)
+                                names_to = c(".value","Period"), 
+                                names_pattern =  "(\\w+)_(pre|post)"
+                              )
+#test_paired_longer
+#var_norm <- paste(var_name, "normalized", sep="_")
+test_paired_longer[, var_names] <- normalize(test_paired_longer[, var_names])
+box_data <- test_paired_longer  %>%
+                        pivot_longer(
+                          cols = -c("renewvia_id", "Period"),
+                          #names_to = "when",
+                          # names_prefix = var_name,
+                          # values_to = var_name,
+                          # values_drop_na = TRUE,
+                          # names_transform = list(var_name = as.numeric)
+                          names_to = c("var"), 
+                          #names_pattern =  "(\\w+)_(pre|post)"
+                        )
+#re_names <- c(`water_collection_time` = "Water Collection Time",
+              #`cooking_fuel_collection_time` = "Cooking Fuel Collection Time")
+re_names <- c(
+  `kerosene_lamps_count` = "No. of Kerosene Lamps"
+                    )
+box_data$Period <- factor(box_data$Period , levels=c("pre", "post"))
+box_plot <- box_data %>% ggplot(aes(x = Period, 
+                                    y = value, fill=Period)) + 
+                        geom_boxplot(position = position_dodge(),
+                                     outlier.shape = NA) +
+                        labs(y="Normalized Value" 
+                             #title = "Health - Paired Testing Results"
+                             ) + 
+                        facet_grid(~factor(var,
+                                           levels=var_names),
+                                   labeller = as_labeller(re_names),
+                                   switch = "both") + 
+                        theme_classic() +
+                        scale_fill_manual(values=c("#ef641e", "#87CEEB")) +
+                        theme(legend.position = 'top', 
+                       legend.text=element_text(size=12),
+                       strip.background = element_blank(),
+                       strip.text = element_text(size = 12),
+                       axis.text=element_text(size=12), #change font size of axis text
+                       axis.title=element_text(size=12)) + remove_x
+
+ggsave("health_paired_results.pdf", box_plot)
+box_plot 
+```
+
+```{r, fig.width=12, fig.height=12}
+# Productivity
+violins(data = paired_enc, 
+        var_names = c("light_hours_current", 
+                      "appliances_count",
+                      "phone_charge_travel_distance",
+                      "water_collection_travel_distance"
+                      ),
+        new_names = c("Light Hours",
+                      "No. of Appliances",
+                      "Phone Charging Distance",
+                      "Water Collection Distance"),
+        show_median = "point"
+        #title="Productivity - Paired Testing Results"
+        )
+```
+
+```{r, fig.width=12, fig.height=12}
+# Health
+violins(data = paired_enc, 
+        var_names = c("kerosene_lamps_count"
+                      ),
+        new_names = c("No. of Kerosene Lamps"),
+        show_median = "point"
+        #title="Health - Paired Testing Result(s)"
+        )
+```
+
+```{r}
+# Nigeria
+nigeria_paired_incomes <- nigeria_paired_enc[, c("renewvia_id",
+                                                 "avg_household_income_pre",
+                                                "avg_household_income_post")]
+names(nigeria_paired_incomes)[names(nigeria_paired_incomes) == "avg_household_income_pre"] <- "avg_household_income_nigeria_pre"
+names(nigeria_paired_incomes)[names(nigeria_paired_incomes) == "avg_household_income_post"] <- "avg_household_income_nigeria_post"
+
+# Kenya
+kenya_paired_incomes <- kenya_paired_enc[, c("renewvia_id",
+                                                 "avg_household_income_pre",
+                                                "avg_household_income_post")]
+names(kenya_paired_incomes)[names(kenya_paired_incomes) == "avg_household_income_pre"] <- "avg_household_income_kenya_pre"
+names(kenya_paired_incomes)[names(kenya_paired_incomes) == "avg_household_income_post"] <- "avg_household_income_kenya_post"
+
+```
+
+```{r, fig.width=10, fig.height=10}
+paired_merged <- merge(x=paired_enc,y=kenya_paired_incomes, 
+                    by="renewvia_id", all.x=TRUE)
+paired_merged <- merge(x=paired_merged,y=nigeria_paired_incomes, 
+                    by="renewvia_id", all.x=TRUE)
+
+cols <- c("renewvia_id")
+var_names = c("phone_charge_cost",
+              "applicances_charging_cost",
+              "cooking_energy_cost", 
+              "kerosene_lamps_cost",
+              "water_cost",
+              "avg_household_income_nigeria",
+              "avg_household_income_kenya"
+                      )
+for(var in var_names) {
+  pre_name <- paste(var, "pre", sep="_")
+  post_name <- paste(var, "post", sep="_")
+  cols <- c(cols,pre_name, post_name)
+}
+test_paired <- paired_merged[, cols]
+
+test_paired_longer <- test_paired %>%
+                              pivot_longer(
+                                cols = -renewvia_id,
+                                #names_to = "when",
+                                # names_prefix = var_name,
+                                # values_to = var_name,
+                                # values_drop_na = TRUE,
+                                # names_transform = list(var_name = as.numeric)
+                                names_to = c(".value","Period"), 
+                                names_pattern =  "(\\w+)_(pre|post)"
+                              )
+test_paired_longer[, var_names] <- normalize(test_paired_longer[, var_names])
+box_data <- test_paired_longer  %>%
+                        pivot_longer(
+                          cols = -c("renewvia_id", "Period"),
+                          names_to = c("var"), 
+                          #names_pattern =  "(\\w+)_(pre|post)"
+                        )
+
+re_names <- c(
+  # `light_hours_current` = "Light Hours", 
+  # `appliances_count` = "No. of Appliances", 
+  # `phone_charge_travel_distance` = "Phone Charging Distance",
+  `phone_charge_cost` = "Phone Charge Cost",
+  `applicances_charging_cost` = "Appliance Charge Cost",
+  `cooking_energy_cost` = "Cooking Energy Cost", 
+  `kerosene_lamps_cost` = "Kerosene Lamps Cost",
+  `water_cost` = "Water Cost",
+  `avg_household_income_nigeria` = "Nigeria Incomes",
+  `avg_household_income_kenya` = "Kenya Incomes"
+                    )
+box_data$Period <- factor(box_data$Period , levels=c("pre", "post"))
+box_plot <- box_data %>% ggplot(aes(x = Period, 
+                                    y = value, fill=Period)) + 
+                        geom_boxplot(position = position_dodge(),
+                                     outlier.shape = NA) +
+                        labs(y="Normalized Value"
+                             #title = "Economic Activity - Paired Testing Results"#
+                             ) + 
+                        facet_grid(~factor(var,
+                                           levels=var_names),
+                                   labeller = as_labeller(re_names),
+                                   switch = "both") + 
+                        theme_classic() +
+                        scale_fill_manual(values=c("#ef641e", "#87CEEB")) +
+                        theme(legend.position = 'top', 
+                       legend.text=element_text(size=6),
+                       strip.background = element_blank(),
+                       strip.text = element_text(size = 6),
+                       axis.text=element_text(size=6),
+                       axis.title=element_text(size=6)) + remove_x
+
+ggsave("economic_activity_paired_results.pdf", box_plot)
+box_plot  
+```
+
+```{r, fig.width=20, fig.height=14}
+violins(data = paired_merged, 
+        var_names = c("phone_charge_cost",
+              "applicances_charging_cost",
+              "cooking_energy_cost", 
+              "kerosene_lamps_cost",
+              "water_cost",
+              "avg_household_income_nigeria",
+              "avg_household_income_kenya"
+                      ),
+        new_names = c( 
+          "Phone Charging Cost",
+          "Appliances Charging Cost",
+          "Cooking Energy Cost", 
+          "Kerosene Lamps Cost",
+          "Water Cost",
+          "Nigeria Incomes",
+          "Kenya Incomes"),
+        show_median = "point",
+        #title="Economic Activity - Paired Testing Result(s)"
+        )
+```
+
+```{r, fig.width=10, fig.height=10}
+# violins(data = paired_merged, 
+#         var_names = c("cooking_fuel_collection_time",
+#                       "light_hours_current",
+#                       "kerosene_lamps_count",
+#                       "phone_charge_cost"
+#                       ),
+#         new_names = c( 
+#           "Cooking Fuel Collection Time",
+#           "Light Hours",
+#           "No. of Kerosene Lamps",
+#           "Phone Charging Cost"),
+#         show_median = "point",
+#         #title="Economic Activity - Paired Testing Result(s)"
+#         )
+
+
+cols <- c("renewvia_id")
+var_names = c("cooking_fuel_collection_time",
+                      "light_hours_current",
+                      "kerosene_lamps_count",
+                      "phone_charge_cost"
+                      )
+for(var in var_names) {
+  pre_name <- paste(var, "pre", sep="_")
+  post_name <- paste(var, "post", sep="_")
+  cols <- c(cols,pre_name, post_name)
+}
+test_paired <- paired_merged[, cols]
+
+test_paired_longer <- test_paired %>%
+                              pivot_longer(
+                                cols = -renewvia_id,
+                                #names_to = "when",
+                                # names_prefix = var_name,
+                                # values_to = var_name,
+                                # values_drop_na = TRUE,
+                                # names_transform = list(var_name = as.numeric)
+                                names_to = c(".value","Period"), 
+                                names_pattern =  "(\\w+)_(pre|post)"
+                              )
+test_paired_longer[, var_names] <- normalize(test_paired_longer[, var_names])
+box_data <- test_paired_longer  %>%
+                        pivot_longer(
+                          cols = -c("renewvia_id", "Period"),
+                          names_to = c("var"), 
+                          #names_pattern =  "(\\w+)_(pre|post)"
+                        )
+
+re_names <- c(
+  `cooking_fuel_collection_time` = "Cooking Fuel Collection Time",
+  `light_hours_current` = "Light Hours", 
+  # `appliances_count` = "No. of Appliances", 
+  # `phone_charge_travel_distance` = "Phone Charging Distance",
+  `kerosene_lamps_count` = "No. of Kerosene Lamps",
+  `phone_charge_cost` = "Phone Charging Cost"
+                    )
+box_data$Period <- factor(box_data$Period , levels=c("pre", "post"))
+par(ps=12)
+box_plot <- box_data %>% ggplot(aes(x = Period, 
+                                    y = value, fill=Period)) + 
+                        geom_boxplot(position = position_dodge(),
+                                     outlier.shape = NA) +
+                        labs(y="Normalized Value" 
+                             #title = "Economic Activity - Paired Testing Results"
+                        ) + 
+                        facet_grid(~factor(var,
+                                           levels=var_names),
+                                   labeller = as_labeller(re_names),
+                                   switch = "both") + 
+                        theme_classic() +
+                        scale_fill_manual(values=c("#ef641e", "#87CEEB")) +
+                        theme(legend.position = 'top', 
+                       legend.text=element_text(size=12),
+                       strip.background = element_blank(),
+                       strip.text = element_text(size = 12),
+                       axis.text=element_text(size=12),
+                       axis.title=element_text(size=12)) + remove_x
+
+ggsave("title_figure_paired_results.pdf", box_plot)
+box_plot 
 ```
